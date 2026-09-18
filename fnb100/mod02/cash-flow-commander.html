@@ -103,6 +103,7 @@
                         • Answer questions about balance sheet changes<br>
                         • Use <span class="rule-highlight">NO IMPACT</span> for non-cash events<br>
                         • Build streaks for bonus points!<br>
+                        • Questions get tougher as your level climbs &mdash; early levels stick to one rule at a time, later ones stack concepts<br>
                         • Stuck? <span class="rule-highlight" style="color:var(--mango-orange)">CALL MANGO</span>, the bodega cat, for a lifeline &mdash; he's a good boy, but he gets less reliable the higher your level gets.
                     </div>
                 </div>
@@ -221,45 +222,47 @@
             mangoFail() { slide(300, 90, 0, 0.35, 'sawtooth', 0.16); }
         };
 
+        // difficulty: 1 = single rule application, 2 = requires a concept beyond the four rules
+        // (accruals, non-cash add-backs, equity events), 3 = combines two rules or two events
         const classificationQuestions = [
-            { text: "Company buys inventory for $5,000 cash", answer: "USE", explanation: "Inventory (Asset) ↑ is a USE." },
-            { text: "Company collects $3,000 from customers", answer: "SOURCE", explanation: "A/R (Asset) ↓ is a SOURCE." },
-            { text: "Company buys supplies on credit for $2,500", answer: "NO IMPACT", explanation: "Accrual event; cash doesn't move today." },
-            { text: "Recorded $2,000 of Depreciation expense", answer: "SOURCE", explanation: "Non-cash; add-back in reconciliation." },
-            { text: "Company borrows $6,000 from bank", answer: "SOURCE", explanation: "Liability (Loan) ↑ is a SOURCE." },
-            { text: "Company pays off $4,000 of a loan", answer: "USE", explanation: "Liability (Loan) ↓ is a USE." },
-            { text: "Company declares a 2-for-1 stock split", answer: "NO IMPACT", explanation: "Purely an equity adjustment." },
-            { text: "Recognized $1,500 in Amortization of patent", answer: "SOURCE", explanation: "Non-cash charge; add-back in reconciliation." },
-            { text: "Accrued $800 in wages (unpaid)", answer: "SOURCE", explanation: "Wages Payable (Liability) ↑ is a SOURCE add-back." },
-            { text: "Company issued a stock dividend", answer: "NO IMPACT", explanation: "Non-cash equity event." },
-            { text: "Wrote off $500 of obsolete inventory", answer: "SOURCE", explanation: "Asset ↓ is a SOURCE adjustment." },
-            { text: "Signed a 5-year lease for new office space", answer: "NO IMPACT", explanation: "Contract signature has no immediate cash impact." },
-            { text: "Company buys equipment for $10k cash", answer: "USE", explanation: "Asset ↑ is a USE." },
-            { text: "Equipment sold for book value", answer: "SOURCE", explanation: "Asset ↓ is a SOURCE." },
-            { text: "A customer paid their $3,000 invoice", answer: "SOURCE", explanation: "A/R (Asset) ↓ is a SOURCE." }
+            { text: "Company buys inventory for $5,000 cash", answer: "USE", explanation: "Inventory (Asset) ↑ is a USE.", difficulty: 1 },
+            { text: "Company collects $3,000 from customers", answer: "SOURCE", explanation: "A/R (Asset) ↓ is a SOURCE.", difficulty: 1 },
+            { text: "Company borrows $6,000 from bank", answer: "SOURCE", explanation: "Liability (Loan) ↑ is a SOURCE.", difficulty: 1 },
+            { text: "Company pays off $4,000 of a loan", answer: "USE", explanation: "Liability (Loan) ↓ is a USE.", difficulty: 1 },
+            { text: "Signed a 5-year lease for new office space", answer: "NO IMPACT", explanation: "Contract signature has no immediate cash impact.", difficulty: 1 },
+            { text: "Company buys equipment for $10k cash", answer: "USE", explanation: "Asset ↑ is a USE.", difficulty: 1 },
+            { text: "Equipment sold for book value", answer: "SOURCE", explanation: "Asset ↓ is a SOURCE.", difficulty: 1 },
+            { text: "A customer paid their $3,000 invoice", answer: "SOURCE", explanation: "A/R (Asset) ↓ is a SOURCE.", difficulty: 1 },
+            { text: "Company buys supplies on credit for $2,500", answer: "NO IMPACT", explanation: "Accrual event; cash doesn't move today.", difficulty: 2 },
+            { text: "Recorded $2,000 of Depreciation expense", answer: "SOURCE", explanation: "Non-cash; add-back in reconciliation.", difficulty: 2 },
+            { text: "Company declares a 2-for-1 stock split", answer: "NO IMPACT", explanation: "Purely an equity adjustment.", difficulty: 2 },
+            { text: "Recognized $1,500 in Amortization of patent", answer: "SOURCE", explanation: "Non-cash charge; add-back in reconciliation.", difficulty: 2 },
+            { text: "Accrued $800 in wages (unpaid)", answer: "SOURCE", explanation: "Wages Payable (Liability) ↑ is a SOURCE add-back.", difficulty: 2 },
+            { text: "Company issued a stock dividend", answer: "NO IMPACT", explanation: "Non-cash equity event.", difficulty: 2 },
+            { text: "Wrote off $500 of obsolete inventory", answer: "SOURCE", explanation: "Asset ↓ is a SOURCE adjustment.", difficulty: 3 }
         ];
 
         const mathQuestions = [
-            { text: "Inventory went from $5k to $9k. Net impact on cash?", answer: -4000, options: [4000, -4000, 9000, 0], explanation: "Asset ↑ is a USE. Impact: -$4,000." },
-            { text: "Net Income was $10k, including $2k Depreciation. Net impact?", answer: 12000, options: [12000, 8000, 10000, 2000], explanation: "$10k + $2k add-back = $12k." },
-            { text: "A/P went from $2k to $4k. Net impact on cash?", answer: 2000, options: [2000, -2000, 4000, 0], explanation: "Liability ↑ is a SOURCE. Impact: +$2,000." },
-            { text: "Made a $4,000 sale on credit. Net impact on cash?", answer: 0, options: [4000, -4000, 0, 8000], explanation: "Sale on credit = $0 cash moved." },
-            { text: "A/P decreased by $2k; Depreciation was $500. Net impact?", answer: -1500, options: [2500, -1500, -2500, 1500], explanation: "-$2k (USE) + $500 (SOURCE) = -$1,500." },
-            { text: "Net Income $8k; patent amortization $1k. Net impact?", answer: 9000, options: [9000, 7000, 8000, 1000], explanation: "Income + non-cash add-back = $9k." },
-            { text: "A/R decreased by $5k; A/P decreased by $3k. Net impact?", answer: 2000, options: [8000, 2000, -2000, -8000], explanation: "+$5k (SOURCE) - $3k (USE) = +$2k." },
-            { text: "Bought $3k equipment; half paid in cash. Net impact?", answer: -1500, options: [-3000, -1500, 0, 1500], explanation: "Only the cash portion is a USE." },
-            { text: "Prepaid Rent increased by $1,200. Net impact on cash?", answer: -1200, options: [1200, -1200, 0, 2400], explanation: "Asset ↑ is a USE." },
-            { text: "Loan went from $10k to $7k. Net impact on cash?", answer: -3000, options: [3000, -3000, 7000, 0], explanation: "Liability ↓ is a USE." },
-            { text: "Equipment went from $15k to $20k. Net impact on cash?", answer: -5000, options: [5000, -5000, 20000, 0], explanation: "Asset ↑ is a USE." },
-            { text: "Inventory sold: went from $12k to $10k. Net impact on cash?", answer: 2000, options: [2000, -2000, 10000, 0], explanation: "Asset ↓ is a SOURCE." },
-            { text: "Supplies went from $1k to $1.8k. Net impact on cash?", answer: -800, options: [800, -800, 1800, 0], explanation: "Asset ↑ is a USE." },
-            { text: "A/R went from $10k to $6k. Net impact on cash?", answer: 4000, options: [4000, -4000, 6000, 0], explanation: "Asset ↓ is a SOURCE." },
-            { text: "A/P went from $5k to $3.5k. Net impact on cash?", answer: -1500, options: [1500, -1500, 3500, 0], explanation: "Liability ↓ is a USE." },
-            { text: "Accrued Expenses increased by $800. Net impact on cash?", answer: 800, options: [800, -800, 0, 1600], explanation: "Liability ↑ is a SOURCE." },
-            { text: "Paid $500 interest on a loan. Net impact on cash?", answer: -500, options: [500, -500, 0, 1000], explanation: "Cash payment is a USE." },
-            { text: "Dividends of $1,000 were paid. Net impact on cash?", answer: -1000, options: [1000, -1000, 0, 2000], explanation: "Cash payment is a USE." },
-            { text: "Sold equipment for $2k (its book value). Net impact?", answer: 2000, options: [2000, -2000, 0, 4000], explanation: "Sale for cash is a SOURCE." },
-            { text: "Signed contract for $10k sales. Net impact today?", answer: 0, options: [10000, -10000, 0, 5000], explanation: "No cash impact today." }
+            { text: "Inventory went from $5k to $9k. Net impact on cash?", answer: -4000, options: [4000, -4000, 9000, 0], explanation: "Asset ↑ is a USE. Impact: -$4,000.", difficulty: 1 },
+            { text: "A/P went from $2k to $4k. Net impact on cash?", answer: 2000, options: [2000, -2000, 4000, 0], explanation: "Liability ↑ is a SOURCE. Impact: +$2,000.", difficulty: 1 },
+            { text: "Prepaid Rent increased by $1,200. Net impact on cash?", answer: -1200, options: [1200, -1200, 0, 2400], explanation: "Asset ↑ is a USE.", difficulty: 1 },
+            { text: "Loan went from $10k to $7k. Net impact on cash?", answer: -3000, options: [3000, -3000, 7000, 0], explanation: "Liability ↓ is a USE.", difficulty: 1 },
+            { text: "Equipment went from $15k to $20k. Net impact on cash?", answer: -5000, options: [5000, -5000, 20000, 0], explanation: "Asset ↑ is a USE.", difficulty: 1 },
+            { text: "Inventory sold: went from $12k to $10k. Net impact on cash?", answer: 2000, options: [2000, -2000, 10000, 0], explanation: "Asset ↓ is a SOURCE.", difficulty: 1 },
+            { text: "Supplies went from $1k to $1.8k. Net impact on cash?", answer: -800, options: [800, -800, 1800, 0], explanation: "Asset ↑ is a USE.", difficulty: 1 },
+            { text: "A/R went from $10k to $6k. Net impact on cash?", answer: 4000, options: [4000, -4000, 6000, 0], explanation: "Asset ↓ is a SOURCE.", difficulty: 1 },
+            { text: "A/P went from $5k to $3.5k. Net impact on cash?", answer: -1500, options: [1500, -1500, 3500, 0], explanation: "Liability ↓ is a USE.", difficulty: 1 },
+            { text: "Accrued Expenses increased by $800. Net impact on cash?", answer: 800, options: [800, -800, 0, 1600], explanation: "Liability ↑ is a SOURCE.", difficulty: 1 },
+            { text: "Paid $500 interest on a loan. Net impact on cash?", answer: -500, options: [500, -500, 0, 1000], explanation: "Cash payment is a USE.", difficulty: 1 },
+            { text: "Dividends of $1,000 were paid. Net impact on cash?", answer: -1000, options: [1000, -1000, 0, 2000], explanation: "Cash payment is a USE.", difficulty: 1 },
+            { text: "Sold equipment for $2k (its book value). Net impact?", answer: 2000, options: [2000, -2000, 0, 4000], explanation: "Sale for cash is a SOURCE.", difficulty: 1 },
+            { text: "Net Income was $10k, including $2k Depreciation. Net impact?", answer: 12000, options: [12000, 8000, 10000, 2000], explanation: "$10k + $2k add-back = $12k.", difficulty: 2 },
+            { text: "Made a $4,000 sale on credit. Net impact on cash?", answer: 0, options: [4000, -4000, 0, 8000], explanation: "Sale on credit = $0 cash moved.", difficulty: 2 },
+            { text: "Net Income $8k; patent amortization $1k. Net impact?", answer: 9000, options: [9000, 7000, 8000, 1000], explanation: "Income + non-cash add-back = $9k.", difficulty: 2 },
+            { text: "Signed contract for $10k sales. Net impact today?", answer: 0, options: [10000, -10000, 0, 5000], explanation: "No cash impact today.", difficulty: 2 },
+            { text: "A/P decreased by $2k; Depreciation was $500. Net impact?", answer: -1500, options: [2500, -1500, -2500, 1500], explanation: "-$2k (USE) + $500 (SOURCE) = -$1,500.", difficulty: 3 },
+            { text: "A/R decreased by $5k; A/P decreased by $3k. Net impact?", answer: 2000, options: [8000, 2000, -2000, -8000], explanation: "+$5k (SOURCE) - $3k (USE) = +$2k.", difficulty: 3 },
+            { text: "Bought $3k equipment; half paid in cash. Net impact?", answer: -1500, options: [-3000, -1500, 0, 1500], explanation: "Only the cash portion is a USE.", difficulty: 3 }
         ];
 
         const mangoSuccessLines = [
@@ -322,6 +325,12 @@
             }, 300);
         }
 
+        function maxDifficultyForLevel(lvl) {
+            if (lvl >= 5) return 3;
+            if (lvl >= 3) return 2;
+            return 1;
+        }
+
         function nextQuestion() {
             document.getElementById('feedbackContainer').innerHTML = '';
             questionsAnswered++;
@@ -330,7 +339,9 @@
             if (level !== prevLevel) SFX.levelUp();
 
             let isMath = Math.random() < 0.5;
-            let q = isMath ? mathQuestions[Math.floor(Math.random() * mathQuestions.length)] : classificationQuestions[Math.floor(Math.random() * classificationQuestions.length)];
+            let maxDiff = maxDifficultyForLevel(level);
+            let pool = (isMath ? mathQuestions : classificationQuestions).filter(q => q.difficulty <= maxDiff);
+            let q = pool[Math.floor(Math.random() * pool.length)];
             currentQuestion = q;
 
             document.getElementById('questionType').textContent = isMath ? "MENTAL MATH" : "CLASSIFICATION";
