@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CASH FLOW COMMANDER</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --neon-green: #39ff14; --neon-pink: #ff10f0; --neon-cyan: #00ffff;
+            --neon-yellow: #ffff00; --dark-bg: #0a0a0a; --grid-color: #1a1a2e; --arcade-red: #ff0040;
+            --mango-orange: #ff8c1a;
+        }
+        body {
+            font-family: 'VT323', monospace; background: var(--dark-bg); color: var(--neon-green);
+            overflow-x: hidden; min-height: 100vh; display: flex; justify-content: center; align-items: center; position: relative;
+        }
+        body::before {
+            content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: linear-gradient(var(--grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 50px 50px; opacity: 0.3; pointer-events: none; z-index: 0;
+        }
+        .container { max-width: 900px; width: 90%; position: relative; z-index: 1; }
+        .arcade-border {
+            border: 4px solid var(--neon-cyan); border-radius: 8px; padding: 2rem;
+            background: rgba(10, 10, 10, 0.95); box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            animation: borderPulse 2s infinite alternate;
+        }
+        @keyframes borderPulse { 0% { box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); } 100% { box-shadow: 0 0 30px rgba(0, 255, 255, 0.8); } }
+        h1 { font-family: 'Press Start 2P', cursive; font-size: 2rem; text-align: center; margin-bottom: 1rem; color: var(--neon-pink); text-shadow: 0 0 10px var(--neon-pink); animation: titleGlow 1.5s infinite alternate; }
+        .subtitle { text-align: center; font-size: 1.5rem; color: var(--neon-cyan); margin-bottom: 2rem; }
+        .screen { display: none; animation: fadeIn 0.3s; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .rules-box { background: rgba(57, 255, 20, 0.1); border: 2px solid var(--neon-green); padding: 1.5rem; margin: 1.5rem 0; border-radius: 4px; font-size: 1.3rem; line-height: 1.8; }
+        .rule-item { margin: 0.8rem 0; padding-left: 1rem; }
+        .rule-highlight { color: var(--neon-yellow); font-weight: bold; }
+
+        /* Updated Main Buttons for Accessibility */
+        button { font-family: 'Press Start 2P', cursive; font-size: 0.8rem; padding: 1rem 1.5rem; background: var(--neon-pink); color: #000; border: none; cursor: pointer; transition: 0.2s; margin: 0.5rem; }
+        button:hover { background: var(--neon-yellow); color: #000; transform: scale(1.05); }
+        button:disabled { background: #333; color: #777; cursor: not-allowed; transform: none; }
+        button:disabled:hover { background: #333; color: #777; transform: none; }
+
+        .hud { display: flex; flex-wrap: wrap; justify-content: space-between; margin-bottom: 2rem; padding: 1rem; background: rgba(255, 16, 240, 0.1); border: 2px solid var(--neon-pink); gap: 0.5rem; }
+        .hud-value { color: var(--neon-yellow); font-family: 'Press Start 2P', cursive; font-size: 1.2rem; }
+        .question-box { background: rgba(0, 255, 255, 0.1); border: 3px solid var(--neon-cyan); padding: 2rem; margin: 2rem 0; min-height: 250px; position: relative; }
+        .timer-bar-container { width: 100%; height: 30px; background: rgba(255, 0, 64, 0.2); border: 2px solid var(--arcade-red); margin-bottom: 1.5rem; overflow: hidden; }
+        .timer-bar { height: 100%; background: linear-gradient(90deg, var(--neon-green), var(--neon-yellow), var(--arcade-red)); transition: width 0.1s linear; }
+
+        /* Fixed Answer Button Styling for High Contrast Hover */
+        .answer-buttons { display: flex; flex-direction: column; gap: 1rem; }
+        .answer-btn {
+            font-family: 'VT323', monospace;
+            font-size: 1.5rem;
+            padding: 1rem;
+            background: rgba(57, 255, 20, 0.1);
+            border: 3px solid var(--neon-green);
+            color: var(--neon-green);
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.1s ease;
+        }
+        .answer-btn:hover {
+            background: var(--neon-green);
+            color: #000;
+        }
+        .answer-btn.correct { background: rgba(57, 255, 20, 0.6); color: #000; border-color: var(--neon-green); }
+        .answer-btn.incorrect { background: rgba(255, 0, 64, 0.6); color: #fff; border-color: var(--arcade-red); }
+        .answer-btn.eliminated { opacity: 0.25; text-decoration: line-through; pointer-events: none; border-color: #555; color: #888; background: rgba(0,0,0,0.3); }
+
+        .streak-indicator { position: absolute; top: 1rem; right: 1rem; font-family: 'Press Start 2P', cursive; color: var(--neon-yellow); opacity: 0; }
+        .streak-indicator.show { animation: streakPop 1.2s forwards; }
+        @keyframes streakPop { 0% { opacity: 0; transform: translateY(-20px); } 20% { opacity: 1; transform: translateY(0); } 80% { opacity: 1; } 100% { opacity: 0; transform: translateY(20px); } }
+
+        .mango-btn { background: var(--mango-orange); }
+        .mango-btn:hover { background: var(--neon-yellow); }
+        .sound-btn { background: var(--neon-cyan); color: #000; }
+        #mangoMessage { min-height: 2.2rem; margin-top: 1rem; font-size: 1.2rem; color: var(--mango-orange); }
+        #mangoMessage.show { animation: mangoPounce 0.4s ease; }
+        @keyframes mangoPounce { 0% { transform: translateX(-15px); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
+        .hud-mango { color: var(--mango-orange); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="arcade-border">
+            <h1>CASH FLOW<br>COMMANDER</h1>
+            <div class="subtitle">ARCADE EDITION</div>
+
+            <div id="instructionsScreen" class="screen active">
+                <div class="rules-box">
+                    <div style="text-align: center; font-size: 1.6rem; margin-bottom: 1.5rem; color: var(--neon-yellow);">★ THE FOUR CASH FLOW RULES ★</div>
+                    <div class="rule-item"><span class="rule-highlight">ASSET ↑</span> = USE of cash</div>
+                    <div class="rule-item"><span class="rule-highlight">ASSET ↓</span> = SOURCE of cash</div>
+                    <div class="rule-item"><span class="rule-highlight">LIABILITY ↑</span> = SOURCE of cash</div>
+                    <div class="rule-item"><span class="rule-highlight">LIABILITY ↓</span> = USE of cash</div>
+                </div>
+                <div class="rules-box" style="background: rgba(255, 16, 240, 0.1); border-color: var(--neon-pink);">
+                    <div style="text-align: center; font-size: 1.4rem; margin-bottom: 1rem;">HOW TO PLAY</div>
+                    <div style="font-size: 1.2rem; line-height: 1.8;">
+                        • Answer questions about balance sheet changes<br>
+                        • Use <span class="rule-highlight">NO IMPACT</span> for non-cash events<br>
+                        • Build streaks for bonus points!<br>
+                        • Stuck? <span class="rule-highlight" style="color:var(--mango-orange)">CALL MANGO</span>, the bodega cat, for a lifeline &mdash; he's a good boy, but he gets less reliable the higher your level gets.
+                    </div>
+                </div>
+                <div style="text-align:center"><button id="startBtn">INSERT COIN</button></div>
+            </div>
+
+            <div id="gameScreen" class="screen">
+                <div class="hud">
+                    <div>SCORE: <span id="scoreDisplay" class="hud-value">0</span></div>
+                    <div>LIVES: <span id="livesDisplay" class="hud-value" style="color:var(--arcade-red)">❤❤❤</span></div>
+                    <div>LVL: <span id="levelDisplay" class="hud-value">1</span></div>
+                    <div>🐱 MANGO: <span id="mangoDisplay" class="hud-value hud-mango">x2</span></div>
+                </div>
+
+                <div style="text-align: center; margin-bottom: 1rem;">
+                    <button id="pauseBtn" style="font-size: 0.7rem; padding: 0.5rem 1rem; background: var(--neon-cyan); color:#000;">PAUSE</button>
+                    <button id="helpBtn" style="font-size: 0.7rem; padding: 0.5rem 1rem; background: var(--neon-yellow); color:#000;">VIEW RULES</button>
+                    <button id="mangoBtn" class="mango-btn" style="font-size: 0.7rem; padding: 0.5rem 1rem;">🐱 CALL MANGO</button>
+                    <button id="soundBtn" class="sound-btn" style="font-size: 0.7rem; padding: 0.5rem 1rem;">🔊 SOUND</button>
+                </div>
+
+                <div class="timer-bar-container"><div id="timerBar" class="timer-bar"></div></div>
+                <div class="question-box">
+                    <div id="streakIndicator" class="streak-indicator">+STREAK!</div>
+                    <div id="questionType" style="color:var(--neon-pink); text-transform:uppercase">TYPE</div>
+                    <div id="questionText" style="font-size: 1.8rem; margin: 1rem 0;">Loading...</div>
+                    <div id="answerButtons" class="answer-buttons"></div>
+                    <div id="mangoMessage"></div>
+                    <div id="feedbackContainer"></div>
+                </div>
+            </div>
+
+            <div id="gameOverScreen" class="screen">
+                <h2 style="text-align:center; font-family:'Press Start 2P'">GAME OVER</h2>
+                <div style="text-align:center; margin: 2rem 0;">
+                    <p style="font-size: 1.5rem;">FINAL SCORE</p>
+                    <p id="finalScore" class="hud-value" style="font-size: 3rem;">0</p>
+                    <p id="finalMessage" style="font-size: 1.4rem; margin-top: 1rem; color: var(--neon-cyan);"></p>
+                </div>
+                <div style="text-align:center"><button onclick="location.reload()">RETRY</button></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let score = 0, lives = 3, streak = 0, level = 1, questionsAnswered = 0, isPaused = false;
+        let currentQuestion, timerInterval, timeRemaining;
+        const baseTimeLimit = 20000;
+        const GOOD_SCORE_THRESHOLD = 1000;
+
+        const MANGO_LIFELINES = 2;
+        let mangoUses = MANGO_LIFELINES;
+        let mangoUsedThisQuestion = false;
+
+        // ---- Retro SFX Engine (synthesized, no audio files) ----
+        let audioCtx = null;
+        let soundOn = true;
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+        function tone(freq, start, duration, type = 'square', peakGain = 0.15) {
+            if (!soundOn || !audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime + start);
+            gain.gain.setValueAtTime(0, audioCtx.currentTime + start);
+            gain.gain.linearRampToValueAtTime(peakGain, audioCtx.currentTime + start + 0.01);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + start + duration);
+            osc.connect(gain).connect(audioCtx.destination);
+            osc.start(audioCtx.currentTime + start);
+            osc.stop(audioCtx.currentTime + start + duration + 0.02);
+        }
+        function slide(freqStart, freqEnd, start, duration, type = 'square', peakGain = 0.15) {
+            if (!soundOn || !audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freqStart, audioCtx.currentTime + start);
+            osc.frequency.exponentialRampToValueAtTime(Math.max(freqEnd, 1), audioCtx.currentTime + start + duration);
+            gain.gain.setValueAtTime(peakGain, audioCtx.currentTime + start);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + start + duration);
+            osc.connect(gain).connect(audioCtx.destination);
+            osc.start(audioCtx.currentTime + start);
+            osc.stop(audioCtx.currentTime + start + duration + 0.02);
+        }
+        function noiseBurst(start, duration, peakGain = 0.2) {
+            if (!soundOn || !audioCtx) return;
+            const bufferSize = Math.floor(audioCtx.sampleRate * duration);
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+            const src = audioCtx.createBufferSource();
+            src.buffer = buffer;
+            const gain = audioCtx.createGain();
+            gain.gain.setValueAtTime(peakGain, audioCtx.currentTime + start);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + start + duration);
+            src.connect(gain).connect(audioCtx.destination);
+            src.start(audioCtx.currentTime + start);
+        }
+        const SFX = {
+            coin() { tone(988, 0, 0.08); tone(1319, 0.08, 0.15); },
+            correct() { tone(660, 0, 0.08); tone(880, 0.08, 0.12); },
+            wrong() { tone(180, 0, 0.15, 'sawtooth', 0.18); tone(120, 0.12, 0.2, 'sawtooth', 0.18); },
+            lifeLost() { slide(400, 80, 0, 0.4, 'sawtooth', 0.2); noiseBurst(0.05, 0.15, 0.1); },
+            tick(freq) { tone(freq || 1000, 0, 0.05, 'square', 0.1); },
+            levelUp() { [523, 659, 784, 1047].forEach((f, i) => tone(f, i * 0.09, 0.12, 'square', 0.15)); },
+            streak() { [784, 988, 1175].forEach((f, i) => tone(f, i * 0.06, 0.1, 'square', 0.12)); },
+            gameOverBad() { [400, 350, 300, 200].forEach((f, i) => tone(f, i * 0.18, 0.25, 'triangle', 0.15)); },
+            gameOverGood() { [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, i * 0.12, 0.2, 'square', 0.18)); },
+            meow() { slide(600, 1300, 0, 0.12, 'sine', 0.15); slide(1300, 700, 0.12, 0.15, 'sine', 0.12); },
+            mangoSuccess() { [700, 900, 1100].forEach((f, i) => tone(f, i * 0.08, 0.12, 'triangle', 0.15)); },
+            mangoFail() { slide(300, 90, 0, 0.35, 'sawtooth', 0.16); }
+        };
+
+        const classificationQuestions = [
+            { text: "Company buys inventory for $5,000 cash", answer: "USE", explanation: "Inventory (Asset) ↑ is a USE." },
+            { text: "Company collects $3,000 from customers", answer: "SOURCE", explanation: "A/R (Asset) ↓ is a SOURCE." },
+            { text: "Company buys supplies on credit for $2,500", answer: "NO IMPACT", explanation: "Accrual event; cash doesn't move today." },
+            { text: "Recorded $2,000 of Depreciation expense", answer: "SOURCE", explanation: "Non-cash; add-back in reconciliation." },
+            { text: "Company borrows $6,000 from bank", answer: "SOURCE", explanation: "Liability (Loan) ↑ is a SOURCE." },
+            { text: "Company pays off $4,000 of a loan", answer: "USE", explanation: "Liability (Loan) ↓ is a USE." },
+            { text: "Company declares a 2-for-1 stock split", answer: "NO IMPACT", explanation: "Purely an equity adjustment." },
+            { text: "Recognized $1,500 in Amortization of patent", answer: "SOURCE", explanation: "Non-cash charge; add-back in reconciliation." },
+            { text: "Accrued $800 in wages (unpaid)", answer: "NO IMPACT", explanation: "No cash moved; this is an accrual." },
+            { text: "Company issued a stock dividend", answer: "NO IMPACT", explanation: "Non-cash equity event." },
+            { text: "Wrote off $500 of obsolete inventory", answer: "SOURCE", explanation: "Asset ↓ is a SOURCE adjustment." },
+            { text: "Signed a 5-year lease for new office space", answer: "NO IMPACT", explanation: "Contract signature has no immediate cash impact." },
+            { text: "Company buys equipment for $10k cash", answer: "USE", explanation: "Asset ↑ is a USE." },
+            { text: "Equipment sold for book value", answer: "SOURCE", explanation: "Asset ↓ is a SOURCE." },
+            { text: "A customer paid their $3,000 invoice", answer: "SOURCE", explanation: "A/R (Asset) ↓ is a SOURCE." }
+        ];
+
+        const mathQuestions = [
+            { text: "Inventory went from $5k to $9k. Net impact on cash?", answer: -4000, options: [4000, -4000, 9000, 0], explanation: "Asset ↑ is a USE. Impact: -$4,000." },
+            { text: "Net Income was $10k, including $2k Depreciation. Net impact?", answer: 12000, options: [12000, 8000, 10000, 2000], explanation: "$10k + $2k add-back = $12k." },
+            { text: "A/P went from $2k to $4k. Net impact on cash?", answer: 2000, options: [2000, -2000, 4000, 0], explanation: "Liability ↑ is a SOURCE. Impact: +$2,000." },
+            { text: "Made a $4,000 sale on credit. Net impact on cash?", answer: 0, options: [4000, -4000, 0, 8000], explanation: "Sale on credit = $0 cash moved." },
+            { text: "A/P decreased by $2k; Depreciation was $500. Net impact?", answer: -1500, options: [2500, -1500, -2500, 1500], explanation: "-$2k (USE) + $500 (SOURCE) = -$1,500." },
+            { text: "Net Income $8k; patent amortization $1k. Net impact?", answer: 9000, options: [9000, 7000, 8000, 1000], explanation: "Income + non-cash add-back = $9k." },
+            { text: "A/R decreased by $5k; A/P decreased by $3k. Net impact?", answer: 2000, options: [8000, 2000, -2000, -8000], explanation: "+$5k (SOURCE) - $3k (USE) = +$2k." },
+            { text: "Bought $3k equipment; half paid in cash. Net impact?", answer: -1500, options: [-3000, -1500, 0, 1500], explanation: "Only the cash portion is a USE." },
+            { text: "Prepaid Rent increased by $1,200. Net impact on cash?", answer: -1200, options: [1200, -1200, 0, 2400], explanation: "Asset ↑ is a USE." },
+            { text: "Loan went from $10k to $7k. Net impact on cash?", answer: -3000, options: [3000, -3000, 7000, 0], explanation: "Liability ↓ is a USE." },
+            { text: "Equipment went from $15k to $20k. Net impact on cash?", answer: -5000, options: [5000, -5000, 20000, 0], explanation: "Asset ↑ is a USE." },
+            { text: "Inventory sold: went from $12k to $10k. Net impact on cash?", answer: 2000, options: [2000, -2000, 10000, 0], explanation: "Asset ↓ is a SOURCE." },
+            { text: "Supplies went from $1k to $1.8k. Net impact on cash?", answer: -800, options: [800, -800, 1800, 0], explanation: "Asset ↑ is a USE." },
+            { text: "A/R went from $10k to $6k. Net impact on cash?", answer: 4000, options: [4000, -4000, 6000, 0], explanation: "Asset ↓ is a SOURCE." },
+            { text: "A/P went from $5k to $3.5k. Net impact on cash?", answer: -1500, options: [1500, -1500, 3500, 0], explanation: "Liability ↓ is a USE." },
+            { text: "Accrued Expenses increased by $800. Net impact on cash?", answer: 800, options: [800, -800, 0, 1600], explanation: "Liability ↑ is a SOURCE." },
+            { text: "Paid $500 interest on a loan. Net impact on cash?", answer: -500, options: [500, -500, 0, 1000], explanation: "Cash payment is a USE." },
+            { text: "Dividends of $1,000 were paid. Net impact on cash?", answer: -1000, options: [1000, -1000, 0, 2000], explanation: "Cash payment is a USE." },
+            { text: "Sold equipment for $2k (its book value). Net impact?", answer: 2000, options: [2000, -2000, 0, 4000], explanation: "Sale for cash is a SOURCE." },
+            { text: "Signed contract for $10k sales. Net impact today?", answer: 0, options: [10000, -10000, 0, 5000], explanation: "No cash impact today." }
+        ];
+
+        const mangoSuccessLines = [
+            "Mango sniffs the ledger and confidently paws two options off the counter. 🐾",
+            "Mango head-bonks the answer he trusts. He's usually right about tuna, too.",
+            "Mango knocks the wrong answers into the trash. Efficient, honestly.",
+            "Mango stares intensely at the numbers, then swats away the losers."
+        ];
+        const mangoFailLines = [
+            "Mango yawns, knocks a pen off the counter, and walks away. No help today.",
+            "Mango is far more interested in the bodega's bacon, egg, and cheese.",
+            "Mango sits on the receipts. Unmoved by your predicament.",
+            "Mango stares at you judgmentally and offers absolutely nothing.",
+            "Mango naps through your entire request.",
+            "Mango bats a pen off the counter and refuses to make eye contact."
+        ];
+
+        function mangoHelpChance() {
+            return Math.max(0.2, 0.9 - (level - 1) * 0.15);
+        }
+
+        function resetMangoForQuestion() {
+            mangoUsedThisQuestion = false;
+            document.getElementById('mangoMessage').textContent = '';
+            document.getElementById('mangoMessage').classList.remove('show');
+            updateMangoBtn();
+        }
+
+        function updateMangoBtn() {
+            const btn = document.getElementById('mangoBtn');
+            document.getElementById('mangoDisplay').textContent = 'x' + Math.max(0, mangoUses);
+            btn.disabled = mangoUses <= 0 || mangoUsedThisQuestion || isPaused;
+        }
+
+        function callMango() {
+            if (mangoUses <= 0 || mangoUsedThisQuestion) return;
+            mangoUses--;
+            mangoUsedThisQuestion = true;
+            SFX.meow();
+            updateMangoBtn();
+
+            const succeeded = Math.random() < mangoHelpChance();
+            const msgBox = document.getElementById('mangoMessage');
+
+            setTimeout(() => {
+                if (succeeded) {
+                    const buttons = Array.from(document.querySelectorAll('#answerButtons .answer-btn'))
+                        .filter(b => String(b.dataset.value) !== String(currentQuestion.answer));
+                    const eliminateCount = buttons.length > 2 ? 2 : 1;
+                    buttons.sort(() => Math.random() - 0.5)
+                        .slice(0, eliminateCount)
+                        .forEach(b => b.classList.add('eliminated'));
+                    msgBox.textContent = "🐱 " + mangoSuccessLines[Math.floor(Math.random() * mangoSuccessLines.length)];
+                    SFX.mangoSuccess();
+                } else {
+                    msgBox.textContent = "🐱 " + mangoFailLines[Math.floor(Math.random() * mangoFailLines.length)];
+                    SFX.mangoFail();
+                }
+                msgBox.classList.add('show');
+            }, 300);
+        }
+
+        function nextQuestion() {
+            document.getElementById('feedbackContainer').innerHTML = '';
+            questionsAnswered++;
+            const prevLevel = level;
+            if (questionsAnswered % 6 === 0) level++;
+            if (level !== prevLevel) SFX.levelUp();
+
+            let isMath = Math.random() < 0.5;
+            let q = isMath ? mathQuestions[Math.floor(Math.random() * mathQuestions.length)] : classificationQuestions[Math.floor(Math.random() * classificationQuestions.length)];
+            currentQuestion = q;
+
+            document.getElementById('questionType').textContent = isMath ? "MENTAL MATH" : "CLASSIFICATION";
+            document.getElementById('questionText').textContent = q.text;
+            document.getElementById('levelDisplay').textContent = level;
+
+            const btnContainer = document.getElementById('answerButtons');
+            btnContainer.innerHTML = '';
+            let opts = isMath ? q.options.sort(() => Math.random() - 0.5) : ["SOURCE", "USE", "NO IMPACT"];
+            opts.forEach(o => {
+                const b = document.createElement('button');
+                b.className = 'answer-btn';
+                b.textContent = isMath ? (o >= 0 ? "+$" + o : "-$" + Math.abs(o)) : o;
+                if (isMath && o === 0) b.textContent = "$0";
+                b.dataset.value = o;
+                b.onclick = () => checkAnswer(o, b);
+                btnContainer.appendChild(b);
+            });
+            resetMangoForQuestion();
+            startTimer();
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            let timeLimit = Math.max(10000, baseTimeLimit - (level - 1) * 1000);
+            let startTime = Date.now();
+            let lastTickSecond = null;
+            timerInterval = setInterval(() => {
+                if (!isPaused) {
+                    let elapsed = Date.now() - startTime;
+                    timeRemaining = Math.max(0, 100 - (elapsed / timeLimit) * 100);
+                    document.getElementById('timerBar').style.width = timeRemaining + '%';
+
+                    let secondsLeft = Math.ceil((timeLimit - elapsed) / 1000);
+                    if (secondsLeft <= 5 && secondsLeft >= 1 && secondsLeft !== lastTickSecond) {
+                        lastTickSecond = secondsLeft;
+                        SFX.tick(700 + (5 - secondsLeft) * 120);
+                    }
+
+                    if (timeRemaining <= 0) { clearInterval(timerInterval); checkAnswer(null, null); }
+                } else { startTime += 50; }
+            }, 50);
+        }
+
+        function checkAnswer(val, btn) {
+            clearInterval(timerInterval);
+            let isCorrect = val === currentQuestion.answer;
+            if (btn) btn.classList.add(isCorrect ? 'correct' : 'incorrect');
+            document.getElementById('mangoBtn').disabled = true;
+
+            const feedback = document.getElementById('feedbackContainer');
+            feedback.innerHTML = `<div style="margin-top:1rem; color:var(--neon-cyan); font-size:1.2rem;">${isCorrect ? "✓ " : "✗ "}${currentQuestion.explanation}</div>`;
+
+            if (isCorrect) {
+                SFX.correct();
+                score += 100 + Math.floor(timeRemaining);
+                streak++;
+                if (streak > 1) {
+                    let ind = document.getElementById('streakIndicator');
+                    ind.textContent = "STREAK X" + streak;
+                    ind.classList.add('show');
+                    SFX.streak();
+                    setTimeout(() => ind.classList.remove('show'), 1200);
+                }
+            } else {
+                SFX.wrong();
+                setTimeout(() => SFX.lifeLost(), 150);
+                lives--; streak = 0;
+            }
+
+            document.getElementById('scoreDisplay').textContent = score;
+            document.getElementById('livesDisplay').textContent = "❤".repeat(Math.max(0, lives));
+
+            setTimeout(() => {
+                if (lives <= 0) {
+                    document.getElementById('gameScreen').classList.remove('active');
+                    document.getElementById('gameOverScreen').classList.add('active');
+                    document.getElementById('finalScore').textContent = score;
+                    const finalMsg = document.getElementById('finalMessage');
+                    if (score >= GOOD_SCORE_THRESHOLD) {
+                        SFX.gameOverGood();
+                        finalMsg.textContent = "★ CASH FLOW COMMANDER! Nicely played. ★";
+                        finalMsg.style.color = 'var(--neon-green)';
+                    } else {
+                        SFX.gameOverBad();
+                        finalMsg.textContent = "Back to the ledgers, recruit. Run it again!";
+                        finalMsg.style.color = 'var(--arcade-red)';
+                    }
+                } else { nextQuestion(); }
+            }, 2500);
+        }
+
+        document.getElementById('startBtn').onclick = () => {
+            initAudio();
+            SFX.coin();
+            document.getElementById('instructionsScreen').classList.remove('active');
+            document.getElementById('gameScreen').classList.add('active');
+            nextQuestion();
+        };
+
+        document.getElementById('pauseBtn').onclick = () => {
+            isPaused = !isPaused;
+            document.getElementById('pauseBtn').textContent = isPaused ? 'RESUME' : 'PAUSE';
+            document.querySelectorAll('.answer-btn').forEach(b => b.style.pointerEvents = isPaused ? 'none' : 'auto');
+            updateMangoBtn();
+        };
+
+        document.getElementById('helpBtn').onclick = () => {
+            isPaused = true;
+            document.getElementById('pauseBtn').textContent = 'RESUME';
+            updateMangoBtn();
+            alert("ASSET ↑ = USE\nASSET ↓ = SOURCE\nLIABILITY ↑ = SOURCE\nLIABILITY ↓ = USE\nNO IMPACT = Non-cash events\nDepreciation = SOURCE (Add-back)\n\n🐱 CALL MANGO eliminates wrong answers, but he's less reliable at higher levels.");
+        };
+
+        document.getElementById('mangoBtn').onclick = callMango;
+
+        document.getElementById('soundBtn').onclick = () => {
+            soundOn = !soundOn;
+            document.getElementById('soundBtn').textContent = soundOn ? '🔊 SOUND' : '🔇 MUTED';
+            if (soundOn) { initAudio(); SFX.coin(); }
+        };
+    </script>
+</body>
+</html>
