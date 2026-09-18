@@ -318,7 +318,7 @@
                     msgBox.textContent = "🐱 " + mangoSuccessLines[Math.floor(Math.random() * mangoSuccessLines.length)];
                     SFX.mangoSuccess();
                 } else {
-                    msgBox.textContent = "🐱 " + mangoFailLines[Math.floor(Math.random() * mangoFailLines.length)];
+                    msgBox.textContent = "😼 " + mangoFailLines[Math.floor(Math.random() * mangoFailLines.length)];
                     SFX.mangoFail();
                 }
                 msgBox.classList.add('show');
@@ -331,6 +331,9 @@
             return 1;
         }
 
+        let recentQuestionTexts = [];
+        const RECENT_MEMORY = 5;
+
         function nextQuestion() {
             document.getElementById('feedbackContainer').innerHTML = '';
             questionsAnswered++;
@@ -341,8 +344,12 @@
             let isMath = Math.random() < 0.5;
             let maxDiff = maxDifficultyForLevel(level);
             let pool = (isMath ? mathQuestions : classificationQuestions).filter(q => q.difficulty <= maxDiff);
-            let q = pool[Math.floor(Math.random() * pool.length)];
+            let candidates = pool.filter(q => !recentQuestionTexts.includes(q.text));
+            if (candidates.length === 0) candidates = pool;
+            let q = candidates[Math.floor(Math.random() * candidates.length)];
             currentQuestion = q;
+            recentQuestionTexts.push(q.text);
+            if (recentQuestionTexts.length > RECENT_MEMORY) recentQuestionTexts.shift();
 
             document.getElementById('questionType').textContent = isMath ? "MENTAL MATH" : "CLASSIFICATION";
             document.getElementById('questionText').textContent = q.text;
