@@ -115,7 +115,7 @@
                     <div>SCORE: <span id="scoreDisplay" class="hud-value">0</span></div>
                     <div>LIVES: <span id="livesDisplay" class="hud-value" style="color:var(--arcade-red)">❤❤❤</span></div>
                     <div>LVL: <span id="levelDisplay" class="hud-value">1</span></div>
-                    <div>🐱 MANGO: <span id="mangoDisplay" class="hud-value hud-mango">x2</span></div>
+                    <div>MANGO: <span id="mangoDisplay" class="hud-value hud-mango">😼😼</span></div>
                 </div>
 
                 <div style="text-align: center; margin-bottom: 1rem;">
@@ -149,7 +149,8 @@
     </div>
 
     <script>
-        let score = 0, lives = 3, streak = 0, level = 1, questionsAnswered = 0, isPaused = false;
+        const MAX_LIVES = 3;
+        let score = 0, lives = MAX_LIVES, streak = 0, level = 1, questionsAnswered = 0, isPaused = false;
         let currentQuestion, timerInterval, timeRemaining;
         const baseTimeLimit = 20000;
         const GOOD_SCORE_THRESHOLD = 1000;
@@ -293,7 +294,7 @@
 
         function updateMangoBtn() {
             const btn = document.getElementById('mangoBtn');
-            document.getElementById('mangoDisplay').textContent = 'x' + Math.max(0, mangoUses);
+            document.getElementById('mangoDisplay').textContent = '😼'.repeat(Math.max(0, mangoUses));
             btn.disabled = mangoUses <= 0 || mangoUsedThisQuestion || isPaused;
         }
 
@@ -420,7 +421,8 @@
             }
 
             document.getElementById('scoreDisplay').textContent = score;
-            document.getElementById('livesDisplay').textContent = "❤".repeat(Math.max(0, lives));
+            const livesLeft = Math.max(0, lives);
+            document.getElementById('livesDisplay').textContent = "❤".repeat(livesLeft) + "🤍".repeat(MAX_LIVES - livesLeft);
 
             setTimeout(() => {
                 if (lives <= 0) {
