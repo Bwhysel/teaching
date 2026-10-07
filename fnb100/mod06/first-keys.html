@@ -1,0 +1,2215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>First Keys - Housing Counselor Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            padding: 0;
+            color: #1a202c;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            box-shadow: 0 0 40px rgba(0,0,0,0.08);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+            color: white;
+            padding: 56px 24px 40px 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255,255,255,0.08) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(255,255,255,0.06) 0%, transparent 40%);
+            pointer-events: none;
+        }
+
+        .header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 48px;
+            font-weight: 600;
+            font-style: italic;
+            margin-bottom: 0;
+            letter-spacing: 1px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        #header-score {
+            margin-top: 20px;
+            font-size: 13px;
+            font-weight: 400;
+            opacity: 0.95;
+            letter-spacing: 1.5px;
+            position: relative;
+            z-index: 1;
+            text-transform: uppercase;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .client-face {
+            font-size: 24px;
+            filter: grayscale(100%) brightness(0.6);
+            opacity: 0.3;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .client-face.happy {
+            filter: grayscale(0%) brightness(1);
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .client-face.neutral {
+            filter: grayscale(0%) brightness(1);
+            opacity: 0.8;
+        }
+
+        .client-face.sad {
+            filter: grayscale(0%) brightness(1);
+            opacity: 0.9;
+        }
+
+        .final-face {
+            font-size: 40px;
+            filter: grayscale(100%) brightness(0.6);
+            opacity: 0.3;
+            transition: all 0.4s ease;
+            display: inline-block;
+        }
+
+        .final-face.happy {
+            filter: grayscale(0%) brightness(1);
+            opacity: 1;
+            animation: facePop 0.5s ease;
+        }
+
+        .final-face.neutral {
+            filter: grayscale(0%) brightness(1);
+            opacity: 0.8;
+            animation: facePop 0.5s ease;
+        }
+
+        .final-face.sad {
+            filter: grayscale(0%) brightness(1);
+            opacity: 0.9;
+            animation: facePop 0.5s ease;
+        }
+
+        @keyframes facePop {
+            0% { transform: scale(0.5); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .content {
+            padding: 24px;
+        }
+
+        .intro-screen, .game-screen, .results-screen {
+            display: none;
+        }
+
+        .intro-screen.active, .game-screen.active, .results-screen.active {
+            display: block;
+        }
+
+        .intro-text {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 24px;
+            color: #4a5568;
+            font-weight: 300;
+        }
+
+        .objectives {
+            background: #f7fafc;
+            border-left: 4px solid #5a67d8;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .objectives h3 {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 12px;
+            color: #2d3748;
+            letter-spacing: -0.3px;
+        }
+
+        .objectives ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .objectives li {
+            padding: 8px 0;
+            padding-left: 24px;
+            position: relative;
+            color: #4a5568;
+            font-size: 14px;
+            font-weight: 300;
+        }
+
+        .objectives li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #5a67d8;
+            font-weight: 500;
+        }
+
+        .mango-intro {
+            display: flex;
+            align-items: center;
+            background: #fffbeb;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+            border: 1px solid #fbbf24;
+        }
+
+        .mango-intro .cat-icon {
+            font-size: 36px;
+            margin-right: 12px;
+            cursor: pointer;
+        }
+
+        .mango-intro p {
+            font-size: 14px;
+            color: #78350f;
+            font-weight: 300;
+            line-height: 1.5;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+            color: white;
+            letter-spacing: 0.3px;
+            box-shadow: 0 2px 4px rgba(90, 103, 216, 0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(90, 103, 216, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        /* Game Screen */
+        .client-card {
+            background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(90, 103, 216, 0.2);
+        }
+
+        .client-card h2 {
+            font-size: 22px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+        }
+
+        .client-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 13px;
+        }
+
+        .client-info-item {
+            background: rgba(255,255,255,0.15);
+            padding: 10px 12px;
+            border-radius: 6px;
+            backdrop-filter: blur(10px);
+        }
+
+        .client-info-label {
+            opacity: 0.9;
+            font-size: 11px;
+            margin-bottom: 4px;
+            font-weight: 300;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .client-info-value {
+            font-weight: 500;
+            font-size: 15px;
+        }
+
+        .special-note {
+            background: rgba(255,255,255,0.15);
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 12px;
+            font-size: 13px;
+            font-weight: 300;
+            line-height: 1.5;
+            backdrop-filter: blur(10px);
+        }
+
+        .controls-section {
+            margin-bottom: 24px;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #2d3748;
+            letter-spacing: -0.2px;
+        }
+
+        .control-value {
+            color: #5a67d8;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .slider-container {
+            position: relative;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 4px;
+            border-radius: 2px;
+            background: #e2e8f0;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #5a67d8;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(90, 103, 216, 0.4);
+            transition: all 0.2s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #5a67d8;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 6px rgba(90, 103, 216, 0.4);
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+            color: #2d3748;
+            cursor: pointer;
+            font-weight: 400;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #5a67d8;
+            box-shadow: 0 0 0 3px rgba(90, 103, 216, 0.1);
+        }
+
+        .feedback-display {
+            background: #f7fafc;
+            border-radius: 10px;
+            padding: 18px;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .feedback-display h3 {
+            font-size: 15px;
+            font-weight: 500;
+            margin-bottom: 14px;
+            color: #2d3748;
+            letter-spacing: -0.3px;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .metric:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            font-size: 13px;
+            color: #4a5568;
+            font-weight: 400;
+        }
+
+        .metric-value {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .metric-value.good {
+            color: #10b981;
+        }
+
+        .metric-value.warning {
+            color: #f59e0b;
+        }
+
+        .metric-value.bad {
+            color: #ef4444;
+        }
+
+        .amort-insight {
+            background: #edf2f7;
+            padding: 14px;
+            border-radius: 8px;
+            margin-top: 12px;
+            font-size: 13px;
+            color: #4a5568;
+            line-height: 1.6;
+            font-weight: 300;
+            border-left: 3px solid #5a67d8;
+        }
+
+        .mango-tooltip {
+            position: relative;
+            display: inline-block;
+            margin-left: 6px;
+            cursor: pointer;
+        }
+
+        .mango-icon {
+            font-size: 18px;
+        }
+
+        .mango-content {
+            display: none;
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #fffbeb;
+            border: 1px solid #fbbf24;
+            border-radius: 8px;
+            padding: 12px;
+            width: 200px;
+            margin-bottom: 8px;
+            font-size: 12px;
+            color: #78350f;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-weight: 300;
+            line-height: 1.5;
+        }
+
+        .mango-tooltip.active .mango-content {
+            display: block;
+        }
+
+        .case-feedback {
+            background: #f7fafc;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .case-feedback.correct {
+            background: #f0fdf4;
+            border: 2px solid #10b981;
+        }
+
+        .case-feedback.partial {
+            background: #fffbeb;
+            border: 2px solid #f59e0b;
+        }
+
+        .case-feedback.incorrect {
+            background: #fef2f2;
+            border: 2px solid #ef4444;
+        }
+
+        .feedback-title {
+            font-size: 17px;
+            font-weight: 500;
+            margin-bottom: 12px;
+            letter-spacing: -0.3px;
+        }
+
+        .feedback-title.correct {
+            color: #047857;
+        }
+
+        .feedback-title.partial {
+            color: #d97706;
+        }
+
+        .feedback-title.incorrect {
+            color: #b91c1c;
+        }
+
+        .feedback-text {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #4a5568;
+            font-weight: 300;
+        }
+
+        .amort-chart {
+            margin: 20px 0;
+            padding: 16px;
+            background: #f9fafb;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .amort-chart-title {
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 12px;
+            color: #374151;
+        }
+
+        .amort-bar-row {
+            margin-bottom: 10px;
+        }
+
+        .amort-bar-label {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+
+        .amort-bar-container {
+            display: flex;
+            height: 24px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .amort-bar-interest {
+            background: #ef4444;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            color: white;
+            font-weight: 500;
+        }
+
+        .amort-bar-principal {
+            background: #10b981;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            color: white;
+            font-weight: 500;
+        }
+
+        @media (max-width: 600px) {
+            .amort-bar-interest,
+            .amort-bar-principal {
+                font-size: 10px;
+            }
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: #e2e8f0;
+            border-radius: 2px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #5a67d8 0%, #6b46c1 100%);
+            transition: width 0.3s;
+        }
+
+        /* Results Screen */
+        .final-score {
+            text-align: center;
+            padding: 32px 0;
+        }
+
+        .final-score-value {
+            font-size: 64px;
+            font-weight: 300;
+            color: #5a67d8;
+            margin-bottom: 8px;
+            letter-spacing: -2px;
+        }
+
+        .final-score-label {
+            font-size: 16px;
+            color: #4a5568;
+            font-weight: 300;
+        }
+
+        .performance-message {
+            background: #f7fafc;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 24px;
+            text-align: center;
+            font-size: 15px;
+            line-height: 1.6;
+            color: #4a5568;
+            font-weight: 300;
+            border: 1px solid #e2e8f0;
+        }
+
+        .reflection-prompt {
+            background: #edf2f7;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 24px;
+            border-left: 4px solid #5a67d8;
+        }
+
+        .reflection-prompt h3 {
+            font-size: 15px;
+            margin-bottom: 12px;
+            color: #2d3748;
+            font-weight: 500;
+            letter-spacing: -0.3px;
+        }
+
+        .reflection-prompt p {
+            font-size: 14px;
+            color: #4a5568;
+            line-height: 1.6;
+            font-weight: 300;
+        }
+
+        .submission-info {
+            background: #fffbeb;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 24px;
+            border: 1px solid #fbbf24;
+        }
+
+        .submission-info h3 {
+            font-size: 15px;
+            margin-bottom: 12px;
+            color: #78350f;
+            font-weight: 500;
+            letter-spacing: -0.3px;
+        }
+
+        .submission-info p {
+            font-size: 14px;
+            color: #78350f;
+            line-height: 1.6;
+            font-weight: 300;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header" id="main-header" style="display: none;">
+            <h1>🔑 First Keys</h1>
+            <div id="header-score" style="display: none;">
+                <div style="display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 16px;">
+                    <span id="face-1" class="client-face">😊</span>
+                    <span id="face-2" class="client-face">😊</span>
+                    <span id="face-3" class="client-face">😊</span>
+                    <span id="face-4" class="client-face">😊</span>
+                    <span id="face-5" class="client-face">😊</span>
+                    <span id="face-6" class="client-face">😊</span>
+                    <span id="face-7" class="client-face">😊</span>
+                    <span id="face-8" class="client-face">😊</span>
+                </div>
+                <div style="font-size: 12px; margin-top: 6px; opacity: 0.9;">
+                    <span id="header-score-text">Your Clients' Feedback</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Intro Screen -->
+            <div class="intro-screen active">
+                <!-- Hero Banner -->
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 32px 24px; margin: -24px -24px 24px -24px; border-radius: 0 0 24px 24px; position: relative; overflow: hidden;">
+                    <!-- NYC skyline line art -->
+                    <svg style="position: absolute; bottom: 0; left: 0; width: 100%; height: 80%; opacity: 0.4;" viewBox="0 0 100 100" preserveAspectRatio="none">
+                        <!-- Left section -->
+                        <rect x="1" y="55" width="3" height="45" fill="none" stroke="white" stroke-width="0.3"/>
+                        <line x1="1.8" y1="60" x2="1.8" y2="100" stroke="white" stroke-width="0.15" opacity="0.6"/>
+                        <line x1="3" y1="60" x2="3" y2="100" stroke="white" stroke-width="0.15" opacity="0.4"/>
+                        
+                        <rect x="5" y="50" width="2.5" height="50" fill="none" stroke="white" stroke-width="0.3"/>
+                        <line x1="6" y1="55" x2="6" y2="100" stroke="white" stroke-width="0.15" opacity="0.4"/>
+                        
+                        <rect x="8" y="45" width="3.5" height="55" fill="none" stroke="white" stroke-width="0.3"/>
+                        <line x1="9" y1="50" x2="9" y2="100" stroke="white" stroke-width="0.15" opacity="0.4"/>
+                        <line x1="10.5" y1="50" x2="10.5" y2="100" stroke="white" stroke-width="0.15" opacity="0.4"/>
+                        
+                        <!-- One World Trade Center -->
+                        <rect x="12" y="25" width="3" height="75" fill="none" stroke="white" stroke-width="0.3"/>
+                        <polygon points="13,25 13.5,18 14,25" fill="none" stroke="white" stroke-width="0.3"/>
+                        <line x1="13" y1="30" x2="13" y2="100" stroke="white" stroke-width="0.15" opacity="0.5"/>
+                        <line x1="14.5" y1="30" x2="14.5" y2="100" stroke="white" stroke-width="0.15" opacity="0.5"/>
+                        
+                        <rect x="16" y="52" width="3" height="48" fill="none" stroke="white" stroke-width="0.3"/>
+                        <line x1="17" y1="57" x2="17" y2="100" stroke="white" stroke-width="0.15" opacity="0.4"/>
+                        
+                        <rect x="20" y="42" width="3.5" height="58" fill="none" stroke="white" stroke-width="0.3"/>
+                        <line x1="21" y1="47" x2="21" y2="100" stroke="white" stroke-width="0.15" opacity="0.4"/>
+                        <line x1="22.5" y1="47" x2="22.5" y2="100" stroke="white" stroke-width="0.15" opacity="0.4"/>
+                        
+                        <rect x="24.5" y="38" width="4" height="62" fill="none" stroke="white" stroke-width="0.3"/>
+                        <line x1="25.5" y1="43" x2="25.5" y2="100" stroke="white" stroke-width="0.15" opacity="0.4"/>
+                        <line x1="27.5" y1="43" x2="27.5" y2="100" stroke="white" stroke-width="0.15" opacity="0.4"/>
+                        
+                        <rect x="29.5" y="50" width="2.5" height="50" fill="none" stroke="white" stroke-width="0.3"/>
+                        <line x1="30.5" y1="55" x2="30.5" y2="100" stroke="white" stroke-width="0.15" opacity="0.4"/>
+                        
+                        <rect x="33" y="35" width="3.5" height="65" fill="none" stroke="white" stroke-width="0.3"/>
+                        <line x1="34" y1="40" x2="34" y2="100" stroke="white" stroke-width="0.15" opacity="0.4"/>
+                        <line x1="35.5" y1="40" x2="35.5" y2="100" stroke="white" stroke-width="0.15" opacity="0.4"/>
+                        
+                        <!-- Chrysler Building (art deco) -->
+                        <rect x="38" y="42" width="3" height="58" fill="none" stroke="white" stroke-width="0.3"/>
+                        <polygon points="38.5,42 39.5,32 40.5,42" fill="none" stroke="white" stroke-width="0.3"/>
+                        <line x1="39" y1="47" x2="39" y2="100" stroke="white" stroke-width="0.15" opacity="0.5"/>
+                        <line x1="40.5" y1="47" x2="40.5" y2="100" stroke="white" stroke-width="0.15" opacity="0.5"/>
+                        
+                        <rect x="42" y="55" width="3" height="45" fill="none" stroke="white" stroke-width="0.3"/>
+                        <line x1="43" y1="60" x2="43" y2="100" stroke="white" stroke-width="0.15" opacity="0.4"/>
+                        
+                        <!-- Empire State Building (center iconic) -->
+                        <rect x="46" y="28" width="2.5" height="72" fill="none" stroke="white" stroke-width="0.3"/>
+                        <rect x="46.5" y="22" width="1.5" height="6" fill="none" stroke="white" stroke-width="0.3"/>
+                        <rect x="47" y="18" width="1" height="4" fill="none" stroke="white" stroke-width="0.3"/>
+                        <line x1="47.5" y1="18" x2="47.5" y2="12" stroke="white" stroke-width="0.3"/>
+                        <line x1="46.8" y1="33" x2="46.8" y2="100" stroke="white" stroke-width="0.15" opacity="0.5"/>
+                        <line x1="47.5" y1="33" x2="47.5" y2="100" stroke="white" stroke-width="0.15" opacity="0.5"/>
+                        <line x1="48.2" y1="33" x2="48.2" y2="100" stroke="white" stroke-width="0.15" opacity="0.5"/>
+                        
+                        <rect x="50" y="45" width="3.5" height="55" fill="none" stroke="white" stroke-width="0.3"/>
+                        <line x1="51" y1="50" x2="51" y2="100" stroke="white" stroke-width="0.15" opacity="0.4"/>
+                        <line x1="52.5" y1="50" x2="52.5" y2="100" stroke="white" stroke-width="0.15" opacity="0.4"/>
+                        
+                        <rect x="54.5" y="38" width="4" height="62" fill="none" stroke="white" stroke-width="0.3"/>
+                        <line x1="55.5" y1="43" x2="55.5" y2="100" stroke="white" stroke-width="0.15" opacity="0.4"/>
+                        <line x1="57" y1="43" x2="57" y2="100" stroke="white" stroke-width="0.15" opacity="0.4"/>
+                        
+                        <rect x="59.5" y="52" width="2.5" height="48" fill="none" stroke="white" stroke-width="0.3"/>
+                        <line x1="60.5" y1="57" x2="60.5" y2="100" stroke="white" stroke-width="0.15" opacity="0.4"/>
+                        
+                        <rect x="63" y="30" width="4" height="70" fill="none" stroke="white" stroke-width="0.3"/>
+                        <line x1="64" y1="35" x2="64" y2="100" stroke="white" stroke-width="0.15" opacity="0.4"/>
+                        <line x1="65.5" y1="35" x2="65.5" y2="100" stroke="white" stroke-width="0.15" opacity="0.4"/>
+                        
+                        <rect x="68" y="48" width="3" height="52" fill="none" stroke="white" stroke-width="0.3"/>
+                        <line x1="69" y1="53" x2="69" y2="100" stroke="white" stroke-width="0.15" opacity="0.4"/>
+                        <line x1="70.5" y1="53" x2="70.5" y2="100" stroke="white" stroke-width="0.15" opacity="0.4"/>
+                        
+                        <rect x="72" y="40" width="3.5" height="60" fill="none" stroke="white" stroke-width="0.3"/>
+                        <line x1="73" y1="45" x2="73" y2="100" stroke="white" stroke-width="0.15" opacity="0.4"/>
+                        <line x1="74.5" y1="45" x2="74.5" y2="100" stroke="white" stroke-width="0.15" opacity="0.4"/>
+                        
+                        <rect x="76.5" y="55" width="2.5" height="45" fill="none" stroke="white" stroke-width="0.3"/>
+                        <line x1="77.5" y1="60" x2="77.5" y2="100" stroke="white" stroke-width="0.15" opacity="0.4"/>
+                        
+                        <rect x="80" y="33" width="4" height="67" fill="none" stroke="white" stroke-width="0.3"/>
+                        <line x1="81" y1="38" x2="81" y2="100" stroke="white" stroke-width="0.15" opacity="0.4"/>
+                        <line x1="82.5" y1="38" x2="82.5" y2="100" stroke="white" stroke-width="0.15" opacity="0.4"/>
+                        
+                        <rect x="85" y="50" width="3" height="50" fill="none" stroke="white" stroke-width="0.3"/>
+                        <line x1="86" y1="55" x2="86" y2="100" stroke="white" stroke-width="0.15" opacity="0.4"/>
+                        
+                        <rect x="89" y="42" width="3.5" height="58" fill="none" stroke="white" stroke-width="0.3"/>
+                        <line x1="90" y1="47" x2="90" y2="100" stroke="white" stroke-width="0.15" opacity="0.4"/>
+                        <line x1="91.5" y1="47" x2="91.5" y2="100" stroke="white" stroke-width="0.15" opacity="0.4"/>
+                        
+                        <rect x="93.5" y="48" width="3" height="52" fill="none" stroke="white" stroke-width="0.3"/>
+                        <line x1="94.5" y1="53" x2="94.5" y2="100" stroke="white" stroke-width="0.15" opacity="0.4"/>
+                        
+                        <rect x="97" y="53" width="2.5" height="47" fill="none" stroke="white" stroke-width="0.3"/>
+                        <line x1="98" y1="58" x2="98" y2="100" stroke="white" stroke-width="0.15" opacity="0.4"/>
+                    </svg>
+                    
+                    <!-- Content -->
+                    <div style="position: relative; z-index: 1; text-align: center; color: white;">
+                        <h1 style="font-family: 'Playfair Display', serif; font-size: 38px; font-weight: 600; font-style: italic; margin: 0 0 8px 0; text-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+                            <span style="font-size: 42px; margin-right: 8px;">🔑</span>First Keys
+                        </h1>
+                        <div style="font-size: 14px; opacity: 0.95; font-weight: 300; letter-spacing: 0.5px; text-shadow: 0 1px 3px rgba(0,0,0,0.2);">NYC Housing Counselor Simulator</div>
+                    </div>
+                </div>
+                
+                <p class="intro-text">
+                    You're a housing counselor at a NYC community organization. Your mission: <strong>find the most expensive home each client can afford</strong> while keeping their finances healthy.
+                </p>
+
+                <div class="objectives">
+                    <h3>Your Challenge</h3>
+                    <ul>
+                        <li>Maximize home price while staying affordable</li>
+                        <li>🟢 Green = optimal | 🟡 Yellow = acceptable | 🔴 Red = problem</li>
+                        <li>Adjust price, down payment, and loan type to find the ceiling</li>
+                        <li>Get within 5% of maximum for full points!</li>
+                    </ul>
+                </div>
+
+                <div class="objectives">
+                    <h3>Scoring</h3>
+                    <ul>
+                        <li><strong>10 points:</strong> Within 5% of maximum affordable price</li>
+                        <li><strong>5 points:</strong> Affordable but not maximized</li>
+                        <li><strong>0 points:</strong> Unaffordable (DTI >43% or insufficient reserves)</li>
+                    </ul>
+                </div>
+
+                <div class="mango-intro">
+                    <span class="cat-icon mango-tooltip">
+                        😼
+                        <div class="mango-content" style="width: 220px;">
+                            <strong>You'll learn:</strong><br>
+                            • How down payments affect monthly costs<br>
+                            • How loan terms impact total interest paid<br>
+                            • How to calculate debt-to-income ratios<br>
+                            • The relationship between loan amounts and payments<br>
+                            • How to buy a home that will make you feel poor
+                        </div>
+                    </span>
+                    <p>That's Mango. He has opinions. He works for the bank. Use your judgment. Click on the cat for more.</p>
+                </div>
+
+                <button class="btn" onclick="startGame()">Start Counseling</button>
+            </div>
+
+            <!-- Game Screen -->
+            <div class="game-screen">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+
+                <div id="case-container"></div>
+
+                <div id="feedback-container" class="hidden"></div>
+
+                <button class="btn" id="submit-btn" onclick="submitRecommendation()">Submit Recommendation</button>
+                <button class="btn hidden" id="next-btn" onclick="nextCase()">Next Client</button>
+            </div>
+
+            <!-- Results Screen -->
+            <div class="results-screen">
+                <div style="text-align: center; margin-bottom: 32px;">
+                    <h2 style="font-size: 28px; margin-bottom: 24px;">Final Results</h2>
+                    
+                    <!-- Performance Percentage -->
+                    <div style="font-size: 72px; font-weight: 300; color: #5a67d8; margin-bottom: 8px; letter-spacing: -2px;" id="performance-percent">
+                        0%
+                    </div>
+                    <div style="font-size: 16px; color: #4a5568; font-weight: 300; margin-bottom: 32px;">
+                        Performance Rating
+                    </div>
+                </div>
+
+                <div class="performance-message" id="performance-message"></div>
+
+                <div class="reflection-prompt">
+                    <h3>💡 What You Just Learned</h3>
+                    <p style="margin-bottom: 12px;">You just applied the core concepts of <strong>Time Value of Money</strong>:</p>
+                    <ul style="font-size: 14px; line-height: 1.8; color: #4a5568; font-weight: 300; list-style-position: inside; padding-left: 0;">
+                        <li><strong>PV/PMT relationship:</strong> The loan amount is the present value of all future payments</li>
+                        <li><strong>Inverse rates:</strong> Higher interest rates mean smaller affordable loans</li>
+                        <li><strong>Amortization:</strong> Early payments are mostly interest; later payments are mostly principal</li>
+                        <li><strong>Total cost:</strong> A 30-year mortgage means paying 80-100% of the home price just in interest</li>
+                    </ul>
+                </div>
+
+                <div class="reflection-prompt" style="background: #fef3c7; border-left-color: #f59e0b;">
+                    <h3>🤔 Reflect:</h3>
+                    <p>What surprised you most? Which client's situation felt closest to your own future?</p>
+                </div>
+
+                <div class="submission-info">
+                    <h3>📸 Submit to Brightspace</h3>
+                    <p>Take a screenshot of this screen showing your final score and submit it to complete this assignment.</p>
+                </div>
+
+                <button class="btn" onclick="restartGame()">Play Again</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game State
+        let currentCase = 0;
+        let totalScore = 0;
+        let cases = [];
+
+        // Case Definitions (8 scenarios, increasing difficulty)
+        function initializeCases() {
+            cases = [
+                {
+                    id: 1,
+                    emoji: "👩🏽",
+                    name: "Maria Rodriguez",
+                    concept: "CONCEPT: Down Payment & PMI",
+                    income: 69000,
+                    monthlyIncome: 5750,
+                    debts: 200,
+                    savings: 60000,
+                    creditScore: 720,
+                    propertyType: "Condo",
+                    neighborhood: "Astoria, Queens",
+                    targetPrice: 280000,
+                    specialNote: "First-time homebuyer, stable teaching job",
+                    loanOptions: [
+                        { value: "conventional-30", label: "30-Year Conventional (6.5%)", rate: 0.065, years: 30, pmi: true, pmiRate: 0.005 },
+                        { value: "fha-30", label: "FHA 30-Year (6.0%)", rate: 0.06, years: 30, pmi: true, pmiRate: 0.008 }
+                    ],
+                    propertyTax: 235,
+                    insurance: 120,
+                    hoaFees: 250,
+                    closingCostRate: 0.03,
+                    priceRange: [250000, 310000],
+                    downPaymentRange: [8750, 77500], // 3.5% to 25% of price range
+                    optimalSolution: {
+                        price: 280000,
+                        downPayment: 42000, // 15% - balances PMI vs reserves
+                        loanType: "conventional-30",
+                        maxDTI: 42,
+                        minCashReserve: 7225
+                    },
+                    showAmortization: true,
+                    mangoTriggers: {
+                        lowDownPayment: "Minimum down payment means you pay us PMI! That's extra income for the bank every month. I recommend going as low as possible on that down payment.",
+                        highPrice: "The higher the price, the bigger the loan, the more interest we collect! Go big - the bank loves when clients max out their budget."
+                    },
+                    feedback: {
+                        correct: "Excellent! 15% down balances PMI cost ($99/month) with keeping reserves healthy. DTI at 42% is manageable. Maria can afford this sustainably.",
+                        incorrect: "Check DTI and cash reserves. Does Maria have enough cushion? Consider the trade-off between down payment size and emergency fund.",
+                        insight: "💡 KEY INSIGHT: Sometimes 15% down is smarter than 20%! Keeping extra cash for emergencies is worth the $99/month PMI."
+                    }
+                },
+                {
+                    id: 2,
+                    emoji: "👨🏻",
+                    name: "James Chen",
+                    concept: "CONCEPT: Balancing Down Payment vs Reserves",
+                    income: 78000,
+                    monthlyIncome: 6500,
+                    debts: 300,
+                    savings: 60000,
+                    creditScore: 695,
+                    propertyType: "Condo",
+                    neighborhood: "Sunset Park, Brooklyn",
+                    targetPrice: 280000,
+                    specialNote: "Registered nurse, considering down payment strategy",
+                    loanOptions: [
+                        { value: "conventional-30", label: "30-Year Conventional (6.75%)", rate: 0.0675, years: 30, pmi: true, pmiRate: 0.005 }
+                    ],
+                    propertyTax: 235,
+                    insurance: 120,
+                    hoaFees: 250,
+                    closingCostRate: 0.03,
+                    priceRange: [250000, 310000],
+                    downPaymentRange: [8750, 77500], // 3.5% to 25%
+                    optimalSolution: {
+                        price: 280000,
+                        downPayment: 42000,
+                        loanType: "conventional-30",
+                        maxDTI: 40,
+                        minCashReserve: 7643
+                    },
+                    showAmortization: true,
+                    mangoTriggers: {
+                        maxDownPayment: "Empty ALL the savings! You only live once! What could possibly go wrong? My whiskers are tingling with confidence!",
+                        minDownPayment: "Keep all your cash - PMI is basically free money for insurance companies. I mean, I'm just a cat with no financial training, but that sounds smart to me."
+                    },
+                    feedback: {
+                        correct: "Great judgment! 15% down balances lower PMI ($127/month) with solid reserves. DTI at 39% is manageable with his stable income.",
+                        incorrect: "Consider the trade-off: too much down depletes reserves, too little increases PMI cost. What's the sweet spot?",
+                        insight: "💡 KEY INSIGHT: The sweet spot was 15% down - paying some PMI but keeping enough reserves for emergencies."
+                    }
+                },
+                {
+                    id: 3,
+                    emoji: "👨🏿‍👩🏿",
+                    name: "The Okafor Family",
+                    concept: "CONCEPT: 15-Year vs 30-Year Amortization",
+                    income: 126000,
+                    monthlyIncome: 10500,
+                    debts: 600,
+                    savings: 135000,
+                    creditScore: 750,
+                    propertyType: "Townhouse",
+                    neighborhood: "Crown Heights, Brooklyn",
+                    targetPrice: 480000,
+                    specialNote: "Dual income, low debt - considering 15 vs 30 year mortgage",
+                    loanOptions: [
+                        { value: "conventional-30", label: "30-Year Conventional (6.5%)", rate: 0.065, years: 30, pmi: false, pmiRate: 0 },
+                        { value: "conventional-15", label: "15-Year Conventional (5.75%)", rate: 0.0575, years: 15, pmi: false, pmiRate: 0 }
+                    ],
+                    propertyTax: 400,
+                    insurance: 180,
+                    hoaFees: 0,
+                    closingCostRate: 0.03,
+                    priceRange: [450000, 650000],
+                    downPaymentRange: [15750, 162500], // 3.5% to 25%
+                    optimalSolution: {
+                        price: 480000,
+                        downPayment: 96000,
+                        loanType: "conventional-15",
+                        maxDTI: 40,
+                        minCashReserve: 10821
+                    },
+                    showAmortization: true,
+                    mangoTriggers: {
+                        term30: "30-year loans generate WAY more interest income for the bank. Take your time paying us back - we're in no rush!",
+                        term15: "15 years? That's half the interest we'd collect on a 30-year. I mean... your monthly payment would be higher. Probably too high. Stick with 30."
+                    },
+                    feedback: {
+                        correct: "Perfect! With their income, the 15-year saves them $198,000 in total interest. Monthly payment is higher but DTI stays at 38%. They can handle it.",
+                        incorrect: "Look at total interest paid over the life of each loan. With their strong income and low debt, which term makes more financial sense long-term?",
+                        insight: "💡 KEY INSIGHT: The 15-year term saved $198,000 in interest! Early payments are mostly interest, but this shifts faster on shorter loans."
+                    }
+                },
+                {
+                    id: 4,
+                    emoji: "👩🏾",
+                    name: "Sandra Williams",
+                    concept: "CONCEPT: Interest Rate Impact",
+                    income: 66000,
+                    monthlyIncome: 5500,
+                    debts: 280,
+                    savings: 72000,
+                    creditScore: 680,
+                    propertyType: "Co-op",
+                    neighborhood: "Inwood, Manhattan",
+                    targetPrice: 260000,
+                    specialNote: "Social worker, rate shopping between lenders",
+                    loanOptions: [
+                        { value: "conventional-30-high", label: "Lender A: 30-Year (7.0%)", rate: 0.07, years: 30, pmi: true, pmiRate: 0.005 },
+                        { value: "conventional-30-low", label: "Lender B: 30-Year (6.25%)", rate: 0.0625, years: 30, pmi: true, pmiRate: 0.005 }
+                    ],
+                    propertyTax: 0,
+                    insurance: 95,
+                    hoaFees: 480,
+                    closingCostRate: 0.03,
+                    priceRange: [230000, 290000],
+                    downPaymentRange: [8050, 72500], // 3.5% to 25%
+                    optimalSolution: {
+                        price: 260000,
+                        downPayment: 52000,
+                        loanType: "conventional-30-low",
+                        maxDTI: 40,
+                        minCashReserve: 6407
+                    },
+                    showAmortization: true,
+                    mangoTriggers: {
+                        highRate: "Higher rate means more profit for us! I mean... 7% is totally reasonable in this market. Don't worry about that extra 0.75% - what's a few dollars a month?",
+                        lowRate: "The difference is only 0.75%. That's like... a few tuna cans per month. No big deal. I once ate a tuna can and was fine. Totally worth it."
+                    },
+                    feedback: {
+                        correct: "Smart choice! The lower rate saves $115/month and $41,000 over 30 years. With co-op maintenance already high, every dollar matters.",
+                        incorrect: "Compare monthly payments and total interest across both rates. Even small rate differences compound significantly over 30 years.",
+                        insight: "💡 KEY INSIGHT: That 0.75% rate difference saved $115/month and $41,400 over 30 years. Rate shopping pays off!"
+                    }
+                },
+                {
+                    id: 5,
+                    emoji: "👨🏽",
+                    name: "David Martinez (Veteran)",
+                    concept: "CONCEPT: Special Programs (VA Loans)",
+                    income: 81600,
+                    monthlyIncome: 6800,
+                    debts: 400,
+                    savings: 35000,
+                    creditScore: 710,
+                    propertyType: "Condo",
+                    neighborhood: "Bay Ridge, Brooklyn",
+                    targetPrice: 300000,
+                    specialNote: "U.S. Army veteran, eligible for VA loan",
+                    loanOptions: [
+                        { value: "conventional-30", label: "Conventional 30-Year (6.5%)", rate: 0.065, years: 30, pmi: true, pmiRate: 0.005 },
+                        { value: "va-30", label: "VA Loan 30-Year (6.0%)", rate: 0.06, years: 30, pmi: false, pmiRate: 0, minDown: 0 }
+                    ],
+                    propertyTax: 250,
+                    insurance: 130,
+                    hoaFees: 245,
+                    closingCostRate: 0.03,
+                    priceRange: [280000, 350000],
+                    downPaymentRange: [0, 87500], // 0% to 25% (VA allows 0%)
+                    optimalSolution: {
+                        price: 300000,
+                        downPayment: 0,
+                        loanType: "va-30",
+                        maxDTI: 42,
+                        minCashReserve: 8471
+                    },
+                    showAmortization: true,
+                    mangoTriggers: {
+                        vaLoan: "Zero down means higher risk for the bank! Put at least 20% down - that protects our investment. The bigger your down payment, the safer we feel.",
+                        noDownPayment: "No down payment means you don't really own it. Better to put down at least 10%. I'm very wise about homeownership. Despite having nine lives and never owning a home."
+                    },
+                    feedback: {
+                        correct: "Perfect! VA loan with 0% down keeps all his savings for emergencies, eliminates PMI (saves $167/month!), and offers a better rate. DTI is 40% - well managed.",
+                        incorrect: "Consider the VA loan benefits: no PMI, lower rate, and 0% down option. How does this preserve his emergency fund while keeping DTI manageable?",
+                        insight: "💡 KEY INSIGHT: VA loan saved $167/month in PMI and preserved all $28k in savings. Special programs can be game-changers!"
+                    }
+                },
+                {
+                    id: 6,
+                    emoji: "👨🏽",
+                    name: "Ahmed Hassan",
+                    concept: "CONCEPT: Rental Income Offset",
+                    income: 96000,
+                    monthlyIncome: 8000,
+                    debts: 480,
+                    savings: 100000,
+                    creditScore: 725,
+                    propertyType: "Townhouse",
+                    neighborhood: "Sunset Park, Brooklyn",
+                    targetPrice: 460000,
+                    specialNote: "Townhouse with legal basement apartment (rental income: $1,800/mo)",
+                    loanOptions: [
+                        { value: "conventional-30", label: "30-Year Conventional (6.75%)", rate: 0.0675, years: 30, pmi: true, pmiRate: 0.005 }
+                    ],
+                    propertyTax: 383,
+                    insurance: 190,
+                    hoaFees: 0,
+                    closingCostRate: 0.03,
+                    priceRange: [430000, 520000],
+                    downPaymentRange: [15050, 130000], // 3.5% to 25%
+                    rentalIncome: 1800,
+                    optimalSolution: {
+                        price: 460000,
+                        downPayment: 69000,
+                        loanType: "conventional-30",
+                        maxDTI: 41,
+                        minCashReserve: 11256
+                    },
+                    showAmortization: true,
+                    mangoTriggers: {
+                        rentalIncome: "Rental income? Just assume it'll always be there! Tenants never leave or stop paying. I'm a cat, I know these things. My landlord loves me.",
+                        noRental: "Don't count rental income at all - what if the tenant is secretly a dog person? The horror! Better to be safe. My tail is never wrong."
+                    },
+                    feedback: {
+                        correct: "Excellent! With rental income (lenders count 75%), effective DTI drops to 27%. 15% down maintains reserves while PMI is offset by rental cash flow.",
+                        incorrect: "Factor in the rental income when calculating DTI (lenders count 75% of it). How does this additional income stream affect affordability and optimal down payment?",
+                        insight: "💡 KEY INSIGHT: Rental income ($1,800/mo) reduced effective DTI from 40% to 27%. Multi-family homes can make ownership more affordable!"
+                    }
+                },
+                {
+                    id: 7,
+                    emoji: "👩🏽",
+                    name: "Monica Santos",
+                    concept: "CONCEPT: Down Payment Assistance vs Lower Rates",
+                    income: 75600,
+                    monthlyIncome: 6300,
+                    debts: 330,
+                    savings: 48000,
+                    creditScore: 690,
+                    propertyType: "Condo",
+                    neighborhood: "University Heights, Bronx",
+                    targetPrice: 300000,
+                    specialNote: "Eligible for either HomeFirst DPA ($15k grant) OR SONYMA (5.5% rate) - not both",
+                    loanOptions: [
+                        { value: "homefirst-dpa", label: "HomeFirst DPA ($15k grant, 6.75% rate)", rate: 0.0675, years: 30, pmi: true, pmiRate: 0.005, dpaGrant: 15000 },
+                        { value: "sonyma", label: "SONYMA Low Rate (5.5% rate, no grant)", rate: 0.055, years: 30, pmi: true, pmiRate: 0.005, dpaGrant: 0 }
+                    ],
+                    propertyTax: 250,
+                    insurance: 135,
+                    hoaFees: 255,
+                    closingCostRate: 0.03,
+                    priceRange: [280000, 350000],
+                    downPaymentRange: [9800, 85000], // 3.5% to 25%
+                    optimalSolution: {
+                        price: 300000,
+                        downPayment: 30000,
+                        loanType: "sonyma",
+                        maxDTI: 42,
+                        minCashReserve: 7847
+                    },
+                    showAmortization: true,
+                    mangoTriggers: {
+                        dpa: "Take the grant! Sure, the rate is higher, but we make an extra 1.25% on every dollar for 30 years. I mean... free money is free money, right?",
+                        lowRate: "Lower rate sounds boring. Where's the excitement? The drama? The grant is way cooler. Plus free stuff is always better! My nine lives of wisdom speaking here."
+                    },
+                    feedback: {
+                        correct: "Great analysis! SONYMA's lower rate saves $145/month vs HomeFirst despite no grant. Over 30 years, she saves $52,000 in interest.",
+                        incorrect: "Compare total cost over loan life. The $15k grant is tempting, but does the lower interest rate from SONYMA save more money long-term?",
+                        insight: "💡 KEY INSIGHT: Lower rate beat the grant! SONYMA saved $145/month and $52,000 over 30 years despite no upfront grant."
+                    }
+                },
+                {
+                    id: 8,
+                    emoji: "👨🏿",
+                    name: "Robert Thompson",
+                    concept: "CONCEPT: High Debt Constraints",
+                    income: 70800,
+                    monthlyIncome: 5900,
+                    debts: 620,
+                    savings: 42000,
+                    creditScore: 670,
+                    propertyType: "Condo",
+                    neighborhood: "Concourse, Bronx",
+                    targetPrice: 205000,
+                    specialNote: "High existing debt load - student loans + car payment",
+                    loanOptions: [
+                        { value: "fha-30", label: "FHA 30-Year (6.5%)", rate: 0.065, years: 30, pmi: true, pmiRate: 0.008 }
+                    ],
+                    propertyTax: 171,
+                    insurance: 98,
+                    hoaFees: 215,
+                    closingCostRate: 0.035,
+                    priceRange: [180000, 240000],
+                    downPaymentRange: [6300, 60000], // 3.5% to 25%
+                    optimalSolution: {
+                        price: 205000,
+                        downPayment: 10250,
+                        loanType: "fha-30",
+                        maxDTI: 42,
+                        minCashReserve: 7394
+                    },
+                    showAmortization: true,
+                    mangoTriggers: {
+                        highDebt: "Debt is just spicy savings! Add some more, what's the big deal? I have nine lives to pay things off. And opposable thumbs. Wait, no I don't. But still!",
+                        maxPrice: "Go for the full $290k! You deserve it! I mean, I deserve tuna, and I always get it... eventually. From someone. Usually by knocking things off tables."
+                    },
+                    feedback: {
+                        correct: "Strong judgment! With $820 in existing debt, even $250k pushes DTI to 42%. Any higher and he's over-leveraged. Price restraint was key here.",
+                        incorrect: "His existing debt ($820/month) severely limits housing budget. What's the maximum affordable price keeping DTI under 43% and maintaining reserves?",
+                        insight: "💡 KEY INSIGHT: High existing debt limits home price. At $250k, DTI hit 42%. Sometimes the right answer is a lower price (or paying down debt first)."
+                    }
+                }
+            ];
+        }
+
+        // Calculate monthly P&I payment
+        function calculatePI(principal, rate, years) {
+            const monthlyRate = rate / 12;
+            const numPayments = years * 12;
+            const payment = principal * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1);
+            return payment;
+        }
+
+        // Calculate PMI
+        function calculatePMI(loanAmount, homePrice, pmiRate, hasPMI) {
+            if (!hasPMI) return 0;
+            const ltv = loanAmount / homePrice;
+            if (ltv <= 0.8) return 0; // No PMI if LTV <= 80%
+            return loanAmount * pmiRate / 12;
+        }
+
+        // Calculate total monthly PITI
+        function calculatePITI(homePrice, downPayment, loanOption, propertyTax, insurance, hoaFees) {
+            const loanAmount = homePrice - downPayment;
+            const pi = calculatePI(loanAmount, loanOption.rate, loanOption.years);
+            const pmi = calculatePMI(loanAmount, homePrice, loanOption.pmiRate, loanOption.pmi);
+            const piti = pi + pmi + propertyTax + insurance + hoaFees;
+            return { pi, pmi, piti, loanAmount };
+        }
+
+        // Calculate DTI
+        function calculateDTI(piti, existingDebts, monthlyIncome, rentalIncome = 0) {
+            const totalDebt = piti + existingDebts;
+            const effectiveIncome = monthlyIncome + (rentalIncome * 0.75); // Lenders typically count 75% of rental income
+            return (totalDebt / effectiveIncome) * 100;
+        }
+
+        // Get DTI color class
+        function getDTIClass(dti) {
+            if (dti < 36) return 'good';
+            if (dti < 43) return 'warning';
+            return 'bad';
+        }
+
+        // Get cash reserve color class
+        function getCashClass(cash, minReserve) {
+            if (cash >= minReserve * 1.5) return 'good';
+            if (cash >= minReserve) return 'warning';
+            return 'bad';
+        }
+
+        // Format currency
+        function formatCurrency(amount) {
+            return '$' + Math.round(amount).toLocaleString();
+        }
+
+        // Format percentage
+        function formatPercent(percent) {
+            return percent.toFixed(1) + '%';
+        }
+
+        // Calculate amortization insights
+        function calculateAmortization(loanAmount, rate, years) {
+            const monthlyRate = rate / 12;
+            const numPayments = years * 12;
+            const payment = calculatePI(loanAmount, rate, years);
+            
+            // First payment
+            const firstInterest = loanAmount * monthlyRate;
+            const firstPrincipal = payment - firstInterest;
+            
+            // Mid-point payment
+            let balance = loanAmount;
+            const midPoint = Math.floor(numPayments / 2);
+            for (let i = 0; i < midPoint; i++) {
+                const interest = balance * monthlyRate;
+                const principal = payment - interest;
+                balance -= principal;
+            }
+            const midInterest = balance * monthlyRate;
+            const midPrincipal = payment - midInterest;
+            
+            // Total interest
+            const totalPaid = payment * numPayments;
+            const totalInterest = totalPaid - loanAmount;
+            
+            return {
+                firstInterest,
+                firstPrincipal,
+                midInterest,
+                midPrincipal,
+                totalInterest,
+                totalPaid
+            };
+        }
+
+        // Find maximum affordable price for a client
+        function findMaxAffordablePrice(caseData, loanOption) {
+            let maxPrice = 0;
+            const downPaymentPercentages = [0.05, 0.10, 0.15, 0.20, 0.25];
+            
+            for (const downPct of downPaymentPercentages) {
+                let low = 100000;
+                let high = 2000000;
+                
+                for (let iteration = 0; iteration < 50; iteration++) {
+                    const testPrice = Math.round((low + high) / 2);
+                    const downPayment = Math.round(testPrice * downPct);
+                    const loanAmount = testPrice - downPayment;
+                    
+                    const pi = calculatePI(loanAmount, loanOption.rate, loanOption.years);
+                    const pmi = calculatePMI(loanAmount, testPrice, loanOption.pmiRate || 0, loanOption.pmi);
+                    const piti = pi + pmi + caseData.propertyTax + caseData.insurance + caseData.hoaFees;
+                    
+                    const rentalIncome = caseData.rentalIncome || 0;
+                    const effectiveIncome = caseData.monthlyIncome + (rentalIncome * 0.75);
+                    const dti = ((piti + caseData.debts) / effectiveIncome) * 100;
+                    
+                    const dpaGrant = loanOption.dpaGrant || 0;
+                    const giftAmount = caseData.giftAmount || 0;
+                    const closingCosts = testPrice * caseData.closingCostRate;
+                    const cashNeeded = downPayment + closingCosts - dpaGrant;
+                    const cashRemaining = caseData.savings + giftAmount - cashNeeded;
+                    const minReserve = (piti + caseData.debts) * 3;
+                    
+                    const isAffordable = dti <= 43 && cashRemaining >= minReserve;
+                    
+                    if (isAffordable) {
+                        maxPrice = Math.max(maxPrice, testPrice);
+                        low = testPrice;
+                    } else {
+                        high = testPrice;
+                    }
+                    
+                    if (high - low < 500) break;
+                }
+            }
+            
+            return maxPrice;
+        }
+
+        // Generate amortization comparison chart
+        function generateAmortChart(loanAmount, rate, years, title) {
+            const amort = calculateAmortization(loanAmount, rate, years);
+            const monthlyPayment = calculatePI(loanAmount, rate, years);
+            const totalInterest = amort.totalInterest;
+            const totalPrincipal = loanAmount;
+            const totalPaid = amort.totalPaid;
+            
+            // Calculate percentages for visual
+            const interestPct = (totalInterest / totalPaid) * 100;
+            const principalPct = (totalPrincipal / totalPaid) * 100;
+            
+            return `
+                <div class="amort-chart">
+                    <div class="amort-chart-title">${title}</div>
+                    <div class="amort-bar-row">
+                        <div class="amort-bar-label">Total Over ${years} Years</div>
+                        <div class="amort-bar-container">
+                            <div class="amort-bar-interest" style="width: ${interestPct}%">
+                                Interest: ${formatCurrency(totalInterest)}
+                            </div>
+                            <div class="amort-bar-principal" style="width: ${principalPct}%">
+                                Principal: ${formatCurrency(totalPrincipal)}
+                            </div>
+                        </div>
+                    </div>
+                    <div style="font-size: 12px; color: #6b7280; margin-top: 8px;">
+                        Monthly Payment: ${formatCurrency(monthlyPayment)} × ${years * 12} months = ${formatCurrency(totalPaid)} total
+                    </div>
+                </div>
+            `;
+        }
+
+        // Start game
+        function startGame() {
+            initializeCases();
+            currentCase = 0;
+            totalScore = 0;
+            document.querySelector('.intro-screen').classList.remove('active');
+            document.querySelector('.game-screen').classList.add('active');
+            document.getElementById('main-header').style.display = 'block';
+            document.getElementById('header-score').style.display = 'block';
+            loadCase();
+        }
+
+        // Load current case
+        function loadCase() {
+            const caseData = cases[currentCase];
+            updateProgress();
+            updateScore();
+            
+            // Re-enable all inputs for new case (will be applied after HTML loads)
+            setTimeout(() => {
+                const priceSlider = document.getElementById('price-slider');
+                const downSlider = document.getElementById('down-slider');
+                const loanRadios = document.querySelectorAll('input[name="loan-type"]');
+                
+                if (priceSlider) priceSlider.disabled = false;
+                if (downSlider) downSlider.disabled = false;
+                if (loanRadios) loanRadios.forEach(radio => radio.disabled = false);
+            }, 0);
+            
+            const caseHTML = `
+                <div class="client-card">
+                    <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8; margin-bottom: 8px; font-weight: 300;">
+                        ${caseData.concept}
+                    </div>
+                    <h2>${caseData.emoji} ${caseData.name}</h2>
+                    <div class="client-info">
+                        <div class="client-info-item">
+                            <div class="client-info-label">Annual Income</div>
+                            <div class="client-info-value">${formatCurrency(caseData.income)}</div>
+                        </div>
+                        <div class="client-info-item">
+                            <div class="client-info-label">Monthly Debts</div>
+                            <div class="client-info-value">${formatCurrency(caseData.debts)}</div>
+                        </div>
+                        <div class="client-info-item">
+                            <div class="client-info-label">Savings</div>
+                            <div class="client-info-value">${formatCurrency(caseData.savings)}</div>
+                        </div>
+                        <div class="client-info-item">
+                            <div class="client-info-label">Credit Score</div>
+                            <div class="client-info-value">${caseData.creditScore}</div>
+                        </div>
+                    </div>
+                    <div class="special-note">
+                        📍 ${caseData.propertyType} in ${caseData.neighborhood}<br>
+                        ${caseData.specialNote}
+                    </div>
+                </div>
+
+                <div class="controls-section">
+                    <div class="control-group">
+                        <label class="control-label">
+                            <span>Home Price</span>
+                            <span class="control-value" id="price-display">${formatCurrency(caseData.targetPrice)}</span>
+                        </label>
+                        <input type="range" id="price-slider" 
+                            min="${caseData.priceRange[0]}" 
+                            max="${caseData.priceRange[1]}" 
+                            value="${caseData.targetPrice}" 
+                            step="5000"
+                            oninput="updateCalculations()">
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">
+                            <span>Down Payment 
+                                <span class="mango-tooltip" id="down-tooltip">
+                                    <span class="mango-icon">😼</span>
+                                    <div class="mango-content" id="mango-down">
+                                        <div style="font-size: 10px; color: #f59e0b; margin-bottom: 6px; font-weight: 500;">💼 Mango works for the bank</div>
+                                    </div>
+                                </span>
+                            </span>
+                            <span class="control-value" id="down-display">${formatCurrency(caseData.downPaymentRange[1])} (20%)</span>
+                        </label>
+                        <input type="range" id="down-slider" 
+                            min="${caseData.downPaymentRange[0]}" 
+                            max="${caseData.downPaymentRange[1]}" 
+                            value="${caseData.downPaymentRange[1]}" 
+                            step="1000"
+                            oninput="updateCalculations()">
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">
+                            <span>Loan Type
+                                <span class="mango-tooltip" id="loan-tooltip">
+                                    <span class="mango-icon">😼</span>
+                                    <div class="mango-content" id="mango-loan" style="width: 240px;">
+                                        <div style="font-size: 10px; color: #f59e0b; margin-bottom: 6px; font-weight: 500;">💼 Mango works for the bank</div>
+                                        <strong>Loan Types:</strong><br>
+                                        <strong>FHA:</strong> 3.5% down min, higher PMI, easier to qualify<br>
+                                        <strong>Conventional:</strong> 5% down min, lower PMI, stricter credit<br>
+                                        <strong>VA:</strong> 0% down, no PMI, veterans only<br>
+                                        Different rates and rules!
+                                    </div>
+                                </span>
+                            </span>
+                        </label>
+                        <div id="loan-options" style="display: flex; flex-direction: column; gap: 10px; margin-top: 8px;">
+                            ${caseData.loanOptions.map((opt, idx) => 
+                                `<label style="display: flex; align-items: center; padding: 12px; background: #f9fafb; border-radius: 8px; cursor: pointer; border: 2px solid transparent; transition: all 0.2s;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='#f9fafb'" onclick="document.getElementById('loan-${idx}').checked=true; updateCalculations();">
+                                    <input type="radio" name="loan-type" id="loan-${idx}" value="${idx}" ${idx === 0 ? 'checked' : ''} onchange="updateCalculations()" style="margin-right: 10px; width: 18px; height: 18px; cursor: pointer;">
+                                    <span style="font-size: 14px; font-weight: 400; color: #2d3748;">${opt.label}</span>
+                                </label>`
+                            ).join('')}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feedback-display">
+                    <h3>Financial Summary</h3>
+                    <div class="metric">
+                        <span class="metric-label">
+                            Loan Amount
+                            <span class="mango-tooltip">
+                                <span class="mango-icon">😼</span>
+                                <div class="mango-content">
+                                    <strong>Loan Amount = Home Price - Down Payment</strong><br>
+                                    This is how much you're borrowing. Your monthly payment is calculated from this amount using the interest rate and loan term. Bigger loan = bigger monthly payment.
+                                </div>
+                            </span>
+                        </span>
+                        <span class="metric-value" id="loan-amount-value">$0</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">
+                            Monthly P&I
+                            <span class="mango-tooltip">
+                                <span class="mango-icon">😼</span>
+                                <div class="mango-content" style="width: 260px;">
+                                    <strong>P&I = Principal & Interest</strong><br>
+                                    Your loan amount is the PRESENT VALUE of all your future monthly payments. Your monthly P&I is the ANNUITY PAYMENT that makes this work.<br><br>
+                                    <strong>Here's the trick:</strong> Higher interest rate = smaller loan you can afford for the same payment. At higher rates, more goes to interest, so the bank lends you LESS. At lower rates, your payment does more work, so they lend you MORE.<br><br>
+                                    I'm a cat, but even I get this one.
+                                </div>
+                            </span>
+                        </span>
+                        <span class="metric-value" id="pi-value">$0</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">
+                            PMI (Insurance)
+                            <span class="mango-tooltip">
+                                <span class="mango-icon">😼</span>
+                                <div class="mango-content">
+                                    <strong>PMI = Private Mortgage Insurance</strong><br>
+                                    Required when you put down less than 20%. It protects the LENDER, not you. Costs 0.5-0.8% of loan amount per year. Put 20% down to avoid it!
+                                </div>
+                            </span>
+                        </span>
+                        <span class="metric-value" id="pmi-value">$0</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">
+                            Monthly PITI + Fees
+                            <span class="mango-tooltip">
+                                <span class="mango-icon">😼</span>
+                                <div class="mango-content">
+                                    <strong>PITI = Principal, Interest, Taxes, Insurance</strong><br>
+                                    Your P&I payment plus property taxes and homeowner's insurance, plus any HOA or co-op maintenance fees. This is what you'll actually pay every month. Surprise! It's more than just the mortgage.
+                                </div>
+                            </span>
+                        </span>
+                        <span class="metric-value" id="piti-value">$0</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">
+                            Debt-to-Income Ratio
+                            <span class="mango-tooltip">
+                                <span class="mango-icon">😼</span>
+                                <div class="mango-content">
+                                    <strong>DTI = Debt-to-Income Ratio</strong><br>
+                                    All your monthly debts (including this new housing payment) divided by your gross monthly income. Under 36% = comfortable. 36-43% = manageable. Over 43% = your home is unaffordable.
+                                </div>
+                            </span>
+                        </span>
+                        <span class="metric-value" id="dti-value">0%</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">
+                            Cash After Closing
+                            <span class="mango-tooltip">
+                                <span class="mango-icon">😼</span>
+                                <div class="mango-content">
+                                    <strong>Emergency Fund Check</strong><br>
+                                    What's left in savings after down payment and closing costs. You need at least 3 months of expenses. Because stuff breaks. Always.
+                                </div>
+                            </span>
+                        </span>
+                        <span class="metric-value" id="cash-value">$0</span>
+                    </div>
+                    <div id="amort-container"></div>
+                    
+                    <div id="optimization-hint" style="display: none; margin-top: 16px; padding: 12px; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 6px;">
+                        <div style="font-size: 13px; color: #92400e; font-weight: 500;">
+                            💡 <strong>Optimization Tip:</strong> <span id="hint-text"></span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('case-container').innerHTML = caseHTML;
+            document.getElementById('feedback-container').classList.add('hidden');
+            
+            const submitBtn = document.getElementById('submit-btn');
+            if (submitBtn) {
+                submitBtn.classList.remove('hidden');
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = '1';
+                submitBtn.style.cursor = 'pointer';
+            }
+            
+            document.getElementById('next-btn').classList.add('hidden');
+            
+            updateCalculations();
+        }
+
+        // Update calculations
+        // Animation for number updates
+        const animatedValues = {};
+        
+        function updateCalculations() {
+            performCalculations();
+        }
+        
+        function animateValue(elementId, start, end, duration = 150) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            
+            const range = end - start;
+            const startTime = performance.now();
+            
+            function update(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // Ease-out for smooth deceleration
+                const easeProgress = 1 - Math.pow(1 - progress, 3);
+                const current = start + (range * easeProgress);
+                
+                // Format based on element type
+                if (elementId.includes('dti')) {
+                    element.textContent = current.toFixed(1) + '%';
+                } else if (elementId.includes('value') || elementId.includes('amount')) {
+                    element.textContent = formatCurrency(Math.round(current));
+                } else {
+                    element.textContent = Math.round(current);
+                }
+                
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                } else {
+                    // Ensure final value is exact
+                    if (elementId.includes('dti')) {
+                        element.textContent = end.toFixed(1) + '%';
+                    } else if (elementId.includes('value') || elementId.includes('amount')) {
+                        element.textContent = formatCurrency(Math.round(end));
+                    }
+                }
+            }
+            
+            requestAnimationFrame(update);
+        }
+        
+        function performCalculations() {
+            const caseData = cases[currentCase];
+            const homePrice = parseInt(document.getElementById('price-slider').value);
+            const downPayment = parseInt(document.getElementById('down-slider').value);
+            const loanIdx = parseInt(document.querySelector('input[name="loan-type"]:checked').value);
+            const loanOption = caseData.loanOptions[loanIdx];
+            
+            // Update displays
+            const downPercent = (downPayment / homePrice * 100).toFixed(1);
+            document.getElementById('price-display').textContent = formatCurrency(homePrice);
+            document.getElementById('down-display').textContent = `${formatCurrency(downPayment)} (${downPercent}%)`;
+            
+            // Calculate PITI
+            const { pi, pmi, piti, loanAmount } = calculatePITI(
+                homePrice, 
+                downPayment, 
+                loanOption, 
+                caseData.propertyTax, 
+                caseData.insurance, 
+                caseData.hoaFees
+            );
+            
+            // Animate loan amount
+            if (!animatedValues.loanAmount) animatedValues.loanAmount = loanAmount;
+            animateValue('loan-amount-value', animatedValues.loanAmount, loanAmount, 150);
+            animatedValues.loanAmount = loanAmount;
+            
+            // Animate PMI with color coding
+            const pmiElement = document.getElementById('pmi-value');
+            if (!animatedValues.pmi) animatedValues.pmi = pmi;
+            
+            let pmiSteps = 0;
+            const pmiStepsTotal = 8;
+            const pmiInterval = setInterval(() => {
+                pmiSteps++;
+                const progress = pmiSteps / pmiStepsTotal;
+                const currentPMI = animatedValues.pmi + (pmi - animatedValues.pmi) * progress;
+                pmiElement.textContent = formatCurrency(Math.round(currentPMI));
+                
+                // Update color based on current value
+                if (currentPMI === 0) {
+                    pmiElement.className = 'metric-value good';
+                } else {
+                    // Check if PMI is avoidable
+                    const twentyPercentDown = homePrice * 0.20;
+                    const closingCosts = homePrice * caseData.closingCostRate;
+                    const dpaGrant = loanOption.dpaGrant || 0;
+                    const giftAmount = caseData.giftAmount || 0;
+                    const cashNeededAt20 = twentyPercentDown + closingCosts - dpaGrant;
+                    const cashRemainingAt20 = caseData.savings + giftAmount - cashNeededAt20;
+                    
+                    const loanAt20 = homePrice - twentyPercentDown;
+                    const piAt20 = calculatePI(loanAt20, loanOption.rate, loanOption.years);
+                    const pitiAt20 = piAt20 + caseData.propertyTax + caseData.insurance + caseData.hoaFees;
+                    const minReserveAt20 = (pitiAt20 + caseData.debts) * 3;
+                    
+                    const pmiAvoidable = cashRemainingAt20 >= minReserveAt20;
+                    pmiElement.className = pmiAvoidable ? 'metric-value bad' : 'metric-value warning';
+                }
+                
+                if (pmiSteps >= pmiStepsTotal) {
+                    clearInterval(pmiInterval);
+                    pmiElement.textContent = formatCurrency(pmi);
+                }
+            }, 20);
+            
+            animatedValues.pmi = pmi;
+            
+            // Calculate DTI
+            const rentalIncome = caseData.rentalIncome || 0;
+            const dti = calculateDTI(piti, caseData.debts, caseData.monthlyIncome, rentalIncome);
+            
+            // Calculate cash remaining
+            const dpaGrant = loanOption.dpaGrant || 0;
+            const giftAmount = caseData.giftAmount || 0;
+            const closingCosts = homePrice * caseData.closingCostRate;
+            const totalCashNeeded = downPayment + closingCosts - dpaGrant;
+            const cashRemaining = caseData.savings + giftAmount - totalCashNeeded;
+            
+            // Store previous values for animation
+            if (!animatedValues.pi) animatedValues.pi = pi;
+            if (!animatedValues.piti) animatedValues.piti = piti;
+            if (!animatedValues.dti) animatedValues.dti = dti;
+            if (!animatedValues.cash) animatedValues.cash = cashRemaining;
+            
+            // Animate to new values
+            const piElement = document.getElementById('pi-value');
+            const pitiElement = document.getElementById('piti-value');
+            const dtiElement = document.getElementById('dti-value');
+            const cashElement = document.getElementById('cash-value');
+            
+            // Animate numbers
+            animateValue('pi-value', animatedValues.pi, pi, 150);
+            animateValue('piti-value', animatedValues.piti, piti, 150);
+            
+            // DTI with class update
+            const oldDTI = animatedValues.dti;
+            animatedValues.dti = dti;
+            let steps = 0;
+            const dtiSteps = 8; // Number of visual steps
+            const dtiInterval = setInterval(() => {
+                steps++;
+                const progress = steps / dtiSteps;
+                const currentDTI = oldDTI + (dti - oldDTI) * progress;
+                dtiElement.textContent = currentDTI.toFixed(1) + '%';
+                dtiElement.className = 'metric-value ' + getDTIClass(currentDTI);
+                
+                if (steps >= dtiSteps) {
+                    clearInterval(dtiInterval);
+                    dtiElement.textContent = dti.toFixed(1) + '%';
+                    dtiElement.className = 'metric-value ' + getDTIClass(dti);
+                }
+            }, 20);
+            
+            // Cash with class update
+            const minReserve = (piti + caseData.debts) * 3;
+            const oldCash = animatedValues.cash;
+            animatedValues.cash = cashRemaining;
+            steps = 0;
+            const cashInterval = setInterval(() => {
+                steps++;
+                const progress = steps / dtiSteps;
+                const currentCash = oldCash + (cashRemaining - oldCash) * progress;
+                cashElement.textContent = formatCurrency(Math.round(currentCash));
+                cashElement.className = 'metric-value ' + getCashClass(currentCash, minReserve);
+                
+                if (steps >= dtiSteps) {
+                    clearInterval(cashInterval);
+                    cashElement.textContent = formatCurrency(cashRemaining);
+                    cashElement.className = 'metric-value ' + getCashClass(cashRemaining, minReserve);
+                }
+            }, 20);
+            
+            // Update stored values
+            animatedValues.pi = pi;
+            animatedValues.piti = piti;
+            
+            // Amortization insight
+            if (caseData.showAmortization) {
+                const amort = calculateAmortization(loanAmount, loanOption.rate, loanOption.years);
+                const amortHTML = `
+                    <div class="amort-insight">
+                        <strong>⏰ Amortization Insight:</strong><br>
+                        <strong>First year:</strong> ${formatCurrency(amort.firstInterest/12)} interest/month, ${formatCurrency(amort.firstPrincipal/12)} principal/month<br>
+                        <strong>Year ${loanOption.years/2}:</strong> ${formatCurrency(amort.midInterest/12)} interest/month, ${formatCurrency(amort.midPrincipal/12)} principal/month<br>
+                        <strong>💰 Total interest over ${loanOption.years} years: ${formatCurrency(amort.totalInterest)}</strong>
+                    </div>
+                `;
+                document.getElementById('amort-container').innerHTML = amortHTML;
+            }
+            
+            // Mango triggers
+            updateMangoCommentary(downPayment, homePrice, loanOption, caseData);
+            
+            // Optimization hints
+            const hintContainer = document.getElementById('optimization-hint');
+            const hintText = document.getElementById('hint-text');
+            let hints = [];
+            
+            if (dti > 43) {
+                hints.push('DTI is too high - try lowering the home price or increasing down payment');
+            } else if (dti > 36) {
+                hints.push('DTI is manageable but on the higher side - consider lowering price or increasing down payment');
+            }
+            
+            if (cashRemaining < minReserve) {
+                hints.push('Insufficient cash reserves - lower the home price or reduce down payment');
+            }
+            
+            if (pmi > 0) {
+                const twentyPercentDown = homePrice * 0.20;
+                const closingCosts = homePrice * caseData.closingCostRate;
+                const dpaGrant = loanOption.dpaGrant || 0;
+                const giftAmount = caseData.giftAmount || 0;
+                const cashNeededAt20 = twentyPercentDown + closingCosts - dpaGrant;
+                const cashRemainingAt20 = caseData.savings + giftAmount - cashNeededAt20;
+                
+                const loanAt20 = homePrice - twentyPercentDown;
+                const piAt20 = calculatePI(loanAt20, loanOption.rate, loanOption.years);
+                const pitiAt20 = piAt20 + caseData.propertyTax + caseData.insurance + caseData.hoaFees;
+                const minReserveAt20 = (pitiAt20 + caseData.debts) * 3;
+                
+                if (cashRemainingAt20 >= minReserveAt20) {
+                    hints.push(`You could eliminate PMI (save ${formatCurrency(pmi)}/month) by putting 20% down or choosing a lower-priced home`);
+                }
+            }
+            
+            if (hints.length > 0) {
+                hintText.textContent = hints[0]; // Show first hint
+                hintContainer.style.display = 'block';
+            } else {
+                hintContainer.style.display = 'none';
+            }
+        }
+
+        // Update Mango commentary
+        function updateMangoCommentary(downPayment, homePrice, loanOption, caseData) {
+            const downPercent = downPayment / homePrice;
+            const mangoDown = document.getElementById('mango-down');
+            const mangoLoan = document.getElementById('mango-loan');
+            
+            const warning = '<div style="font-size: 10px; color: #f59e0b; margin-bottom: 6px; font-weight: 500;">💼 Mango works for the bank</div>';
+            
+            // Down payment commentary
+            let downText = '';
+            if (downPercent < 0.1 && caseData.mangoTriggers.lowDownPayment) {
+                downText = caseData.mangoTriggers.lowDownPayment;
+            } else if (downPercent >= 0.2 && caseData.mangoTriggers.maxDownPayment) {
+                downText = caseData.mangoTriggers.maxDownPayment;
+            } else if (homePrice > caseData.targetPrice * 1.1 && caseData.mangoTriggers.highPrice) {
+                downText = caseData.mangoTriggers.highPrice;
+            } else {
+                downText = "Down payment affects your monthly payment AND total interest paid. The loan amount is just the present value of all those future payments. Math!";
+            }
+            mangoDown.innerHTML = warning + downText;
+            
+            // Loan type commentary
+            let loanText = '<strong>Loan Types:</strong><br>';
+            if (caseData.loanOptions.length > 1) {
+                const triggers = caseData.mangoTriggers;
+                const loanValue = loanOption.value;
+                
+                if (triggers[loanValue]) {
+                    loanText += triggers[loanValue];
+                } else if (loanValue.includes('15') && triggers.term15) {
+                    loanText += triggers.term15;
+                } else if (loanValue.includes('30') && triggers.term30) {
+                    loanText += triggers.term30;
+                } else if (loanValue.includes('affordable') && triggers.affordable) {
+                    loanText += triggers.affordable;
+                } else if (loanValue.includes('va') && triggers.vaLoan) {
+                    loanText += triggers.vaLoan;
+                } else if (loanValue.includes('high') && triggers.highRate) {
+                    loanText += triggers.highRate;
+                } else if (loanValue.includes('dpa') && triggers.dpa) {
+                    loanText += triggers.dpa;
+                } else {
+                    loanText += "Different loan types have different rates and rules. Choose wisely! Or don't. I'm a cat, not a counselor.";
+                }
+            } else {
+                loanText += "Only one loan option? Boring! But hey, makes the choice easier.";
+            }
+            mangoLoan.innerHTML = warning + loanText;
+        }
+
+        // Submit recommendation
+        function submitRecommendation() {
+            // Lock all inputs immediately (with null checks)
+            const priceSlider = document.getElementById('price-slider');
+            const downSlider = document.getElementById('down-slider');
+            const submitBtn = document.getElementById('submit-btn');
+            const loanRadios = document.querySelectorAll('input[name="loan-type"]');
+            
+            if (priceSlider) priceSlider.disabled = true;
+            if (downSlider) downSlider.disabled = true;
+            if (loanRadios) loanRadios.forEach(radio => radio.disabled = true);
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.style.opacity = '0.5';
+                submitBtn.style.cursor = 'not-allowed';
+            }
+            
+            const caseData = cases[currentCase];
+            const homePrice = parseInt(document.getElementById('price-slider').value);
+            const downPayment = parseInt(document.getElementById('down-slider').value);
+            const loanIdx = parseInt(document.querySelector('input[name="loan-type"]:checked').value);
+            const loanOption = caseData.loanOptions[loanIdx];
+            
+            // Calculate metrics
+            const { piti } = calculatePITI(
+                homePrice, 
+                downPayment, 
+                loanOption, 
+                caseData.propertyTax, 
+                caseData.insurance, 
+                caseData.hoaFees
+            );
+            
+            const rentalIncome = caseData.rentalIncome || 0;
+            const dti = calculateDTI(piti, caseData.debts, caseData.monthlyIncome, rentalIncome);
+            
+            const dpaGrant = loanOption.dpaGrant || 0;
+            const giftAmount = caseData.giftAmount || 0;
+            const closingCosts = homePrice * caseData.closingCostRate;
+            const totalCashNeeded = downPayment + closingCosts - dpaGrant;
+            const cashRemaining = caseData.savings + giftAmount - totalCashNeeded;
+            const minReserve = (piti + caseData.debts) * 3;
+            
+            // Find maximum affordable price with this loan option
+            const rawMaxPrice = findMaxAffordablePrice(caseData, loanOption);
+            const maxPrice = Math.round(rawMaxPrice / 5000) * 5000; // Round to nearest $5k
+            
+            // Calculate how close they got to maximum
+            const percentOfMax = (homePrice / maxPrice) * 100;
+            const percentBelow = 100 - percentOfMax;
+            
+            // Determine affordability
+            const isAffordable = dti <= 43 && cashRemaining >= minReserve;
+            
+            // Score based on proximity to maximum
+            let points = 0;
+            let feedbackTitle = '';
+            let feedbackText = '';
+            let faceEmoji = '';
+            
+            if (!isAffordable) {
+                points = 0;
+                faceEmoji = '☹️';
+                feedbackTitle = '❌ Unaffordable';
+                if (dti > 43) feedbackText = `DTI of ${dti.toFixed(1)}% exceeds the 43% limit. `;
+                if (cashRemaining < minReserve) feedbackText += `Insufficient reserves (${formatCurrency(cashRemaining)} < ${formatCurrency(minReserve)} needed). `;
+                feedbackText += `<br><br><strong>Next time:</strong> Try lowering the home price or adjusting the down payment.`;
+            } else if (percentBelow <= 5) {
+                points = 10;
+                faceEmoji = '😀';
+                feedbackTitle = '🎯 Excellent!';
+                feedbackText = `You recommend <strong>${formatCurrency(homePrice)}</strong>, which is within 5% of the maximum (${formatCurrency(maxPrice)}). You have a happy client!`;
+            } else if (percentBelow <= 15) {
+                points = 5;
+                faceEmoji = '🙂';
+                feedbackTitle = '✓ Good, But Not Maximized';
+                feedbackText = `You recommend <strong>${formatCurrency(homePrice)}</strong>, which is affordable but ${percentBelow.toFixed(1)}% below the maximum possible of ${formatCurrency(maxPrice)}.`;
+            } else {
+                points = 5;
+                faceEmoji = '🙂';
+                feedbackTitle = '✓ Affordable, But Conservative';
+                feedbackText = `You recommend <strong>${formatCurrency(homePrice)}</strong>, which is affordable but quite conservative (${percentBelow.toFixed(1)}% below the maximum possible of ${formatCurrency(maxPrice)}).`;
+            }
+            
+            // Award points
+            totalScore += points;
+            
+            // Update the face for this case immediately
+            const currentFace = document.getElementById(`face-${currentCase + 1}`);
+            if (currentFace) {
+                currentFace.textContent = faceEmoji;
+                if (points === 10) {
+                    currentFace.className = 'client-face happy';
+                } else if (points === 5) {
+                    currentFace.className = 'client-face neutral';
+                } else {
+                    currentFace.className = 'client-face sad';
+                }
+            }
+            
+            // Update score display immediately
+            updateScore();
+            
+            // Add amortization comparison charts for relevant cases
+            let amortCharts = '';
+            const caseId = caseData.id;
+            
+            // Case 3: Okafor - 15yr vs 30yr comparison
+            if (caseId === 3) {
+                const loan30 = homePrice - downPayment;
+                const loan15 = homePrice - downPayment;
+                amortCharts = `
+                    <div style="margin-top: 16px;">
+                        ${generateAmortChart(loan30, 0.065, 30, "📊 30-Year Mortgage Breakdown")}
+                        ${generateAmortChart(loan15, 0.0575, 15, "📊 15-Year Mortgage Breakdown")}
+                        <div style="background: #fef3c7; padding: 12px; border-radius: 6px; margin-top: 12px; font-size: 13px; color: #92400e;">
+                            <strong>Notice:</strong> The 15-year saves ${formatCurrency(calculateAmortization(loan30, 0.065, 30).totalInterest - calculateAmortization(loan15, 0.0575, 15).totalInterest)} in interest, but limits how expensive a home they can afford due to higher monthly payments.
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Case 4: Sandra - Rate comparison
+            if (caseId === 4) {
+                const loanAmount = homePrice - downPayment;
+                amortCharts = `
+                    <div style="margin-top: 16px;">
+                        ${generateAmortChart(loanAmount, 0.0625, 30, "📊 Lender B (6.25%) - Lower Rate")}
+                        ${generateAmortChart(loanAmount, 0.07, 30, "📊 Lender A (7.0%) - Higher Rate")}
+                        <div style="background: #fef3c7; padding: 12px; border-radius: 6px; margin-top: 12px; font-size: 13px; color: #92400e;">
+                            <strong>Notice:</strong> The 0.75% rate difference saves ${formatCurrency(calculateAmortization(loanAmount, 0.07, 30).totalInterest - calculateAmortization(loanAmount, 0.0625, 30).totalInterest)} over 30 years!
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Case 7: Monica - DPA vs Low Rate comparison  
+            if (caseId === 7) {
+                const loanAmount = homePrice - downPayment;
+                amortCharts = `
+                    <div style="margin-top: 16px;">
+                        ${generateAmortChart(loanAmount, 0.055, 30, "📊 SONYMA (5.5% rate, no grant)")}
+                        ${generateAmortChart(loanAmount + 15000, 0.0675, 30, "📊 HomeFirst DPA (6.75% rate, $15k grant)")}
+                        <div style="background: #fef3c7; padding: 12px; border-radius: 6px; margin-top: 12px; font-size: 13px; color: #92400e;">
+                            <strong>Notice:</strong> The lower rate saves ~${formatCurrency(calculateAmortization(loanAmount + 15000, 0.0675, 30).totalInterest - calculateAmortization(loanAmount, 0.055, 30).totalInterest)} despite foregoing the $15k grant!
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Show feedback with insight
+            const insightBox = caseData.feedback.insight ? `
+                <div style="background: #eef2ff; border-left: 4px solid #5a67d8; padding: 14px; border-radius: 8px; margin-top: 14px;">
+                    <div style="font-size: 13px; color: #4338ca; font-weight: 500; line-height: 1.6;">
+                        ${caseData.feedback.insight}
+                    </div>
+                </div>
+            ` : '';
+            
+            const feedbackHTML = `
+                <div class="case-feedback ${points === 10 ? 'correct' : points > 0 ? 'partial' : 'incorrect'}">
+                    <div class="feedback-title ${points === 10 ? 'correct' : points > 0 ? 'partial' : 'incorrect'}">
+                        ${feedbackTitle}
+                    </div>
+                    <div class="feedback-text">${feedbackText}</div>
+                    ${amortCharts}
+                    ${insightBox}
+                </div>
+            `;
+            
+            const feedbackContainer = document.getElementById('feedback-container');
+            feedbackContainer.innerHTML = feedbackHTML;
+            feedbackContainer.classList.remove('hidden');
+            
+            document.getElementById('submit-btn').classList.add('hidden');
+            document.getElementById('next-btn').classList.remove('hidden');
+            
+            updateScore();
+        }
+
+        // Next case
+        function nextCase() {
+            currentCase++;
+            if (currentCase >= cases.length) {
+                showResults();
+            } else {
+                loadCase();
+            }
+        }
+
+        // Update progress bar
+        function updateProgress() {
+            const progress = ((currentCase) / cases.length) * 100;
+            document.getElementById('progress-fill').style.width = progress + '%';
+        }
+
+        // Update score display
+        function updateScore() {
+            // Just keep the text as "Your Clients' Feedback"
+            // Faces are updated directly in submitRecommendation
+            document.getElementById('header-score-text').textContent = "Your Clients' Feedback";
+        }
+
+        // Show results
+        function showResults() {
+            document.querySelector('.game-screen').classList.remove('active');
+            document.querySelector('.results-screen').classList.add('active');
+            
+            // Calculate and display percentage
+            const percentage = Math.round((totalScore / 80) * 100);
+            document.getElementById('performance-percent').textContent = percentage + '%';
+            
+            // Calculate message based on percentage
+            let message = '';
+            
+            if (percentage >= 93) {
+                message = "Outstanding work! You have a strong grasp of affordability analysis, amortization mechanics, and sound financial counseling. Your clients are in good hands.";
+            } else if (percentage >= 90) {
+                message = "Excellent! You understand these concepts deeply and made consistently sound recommendations.";
+            } else if (percentage >= 87) {
+                message = "Great job! You grasp the core concepts and made mostly sound recommendations.";
+            } else if (percentage >= 83) {
+                message = "Good work! You're building strong intuitions about affordability analysis.";
+            } else if (percentage >= 80) {
+                message = "Solid effort! Review the feedback to strengthen your analysis.";
+            } else if (percentage >= 77) {
+                message = "You're on the right track! Housing affordability involves many moving parts.";
+            } else if (percentage >= 70) {
+                message = "Keep practicing! Review the concepts and try again - you'll improve!";
+            } else {
+                message = "This is challenging material. Review the feedback carefully and give it another try!";
+            }
+            
+            document.getElementById('performance-message').textContent = message;
+        }
+
+        // Restart game
+        function restartGame() {
+            document.querySelector('.results-screen').classList.remove('active');
+            document.querySelector('.intro-screen').classList.add('active');
+            currentCase = 0;
+            totalScore = 0;
+        }
+
+        // Initialize on load
+        window.onload = function() {
+            // Setup tooltip click handlers
+            document.addEventListener('click', function(e) {
+                // Close all tooltips
+                document.querySelectorAll('.mango-tooltip').forEach(tip => {
+                    if (!tip.contains(e.target)) {
+                        tip.classList.remove('active');
+                    }
+                });
+                
+                // Toggle clicked tooltip
+                if (e.target.closest('.mango-tooltip')) {
+                    e.target.closest('.mango-tooltip').classList.toggle('active');
+                }
+            });
+        };
+    </script>
+</body>
+</html>
