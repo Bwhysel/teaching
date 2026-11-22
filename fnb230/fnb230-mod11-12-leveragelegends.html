@@ -310,6 +310,7 @@ var REDUCED = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)'
 function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 function money(x){ var n = Math.abs(x), s = (Math.round(n * 100) % 100 === 0) ? n.toFixed(0) : n.toFixed(2); s = s.replace(/\B(?=(\d{3})+(?!\d))/g, ','); return (x < 0 ? '−$' : '$') + s; }
 function m0(x){ return (x < 0 ? '−$' : '$') + Math.round(Math.abs(x)).toLocaleString(); }
+function signed0(x){ return (x > 0 ? '▲ +' : x < 0 ? '▼ ' : '') + m0(x); }
 function signed(x){ return (x > 0 ? '▲ +' : x < 0 ? '▼ ' : '') + money(x); }
 function pct(x){ var v = Math.round(x * 100); return (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v) + '%'; }
 function pr(x){ return (Math.round(Math.abs(x) * 1000) / 10) + '%'; }
@@ -378,7 +379,7 @@ function tipBox(i){
     return '<div class="mango" style="margin:10px 0 0"><div class="mface" aria-hidden="true">' + FACE.smug + '</div><div class="bubble">' + say + '</div></div>';
   }
   var can = one || S.st.cash >= cost * 2;
-  return '<button data-act="mango" style="width:100%;margin-top:10px"' + (can ? '' : ' disabled') + '>😼 Ask Mango: ' + money(cost) + ' for ' + toy(cost) + (one || !can ? '<small style="display:block;font-weight:500">' + (!can ? 'Not enough cash.' : (CONFIG.S1.TIP_PCT * 100) + '% of your stake') + '</small>' : '') + '</button>';
+  return '<button data-act="mango" style="width:100%;margin-top:10px"' + (can ? '' : ' disabled') + '>😼 Ask Mango: ' + m0(cost) + ' for ' + toy(cost) + (one || !can ? '<small style="display:block;font-weight:500">' + (!can ? 'Not enough cash.' : (CONFIG.S1.TIP_PCT * 100) + '% of your stake') + '</small>' : '') + '</button>';
 }
 /* One chart helper for both stages: lines over a shaded forecast band, with a dashed line at the likely result. */
 function plot(o){
@@ -404,12 +405,12 @@ function startScreen(){
     '<div class="card plain"><label class="field"><span>Your name</span><input id="f-name" maxlength="20" autocomplete="off" placeholder="Up to 20 letters" value="' + esc(ui.name) + '"></label><div class="field"><span>What you sell</span><div class="hgrid">' + hs + '</div></div><p class="err" role="alert">' + esc(ui.err) + '</p>' +
     '<div style="display:grid;gap:8px"><button class="btn-go" data-act="start" data-v="1">Stage 1 · Financial leverage and capital structure</button><button class="btn-go" data-act="start" data-v="2">Stage 2 · Adds operating leverage</button></div></div>';
 }
-function startLine(){ var c2 = CONFIG.S2; return S.from1 == null ? 'You start with <b>' + money(S.base) + '</b>.' : S.from1 >= c2.START ? 'Your last Stage 1 result was <b>' + money(S.from1) + '</b>. That is your starting cash.' : 'Your last Stage 1 result was ' + money(S.from1) + '. Mango tops you up to <b>' + money(S.base) + '</b>.'; }
+function startLine(){ var c2 = CONFIG.S2; return S.from1 == null ? 'You start with <b>' + m0(S.base) + '</b>.' : S.from1 >= c2.START ? 'Your last Stage 1 result was <b>' + m0(S.from1) + '</b>. That is your starting cash.' : 'Your last Stage 1 result was ' + m0(S.from1) + '. Mango tops you up to <b>' + m0(S.base) + '</b>.'; }
 function introScreen(){
   var c1 = CONFIG.S1, c2 = CONFIG.S2, m = s2Margins(), body = S.stage === 1 ?
-    '<h2>Six seasons. One resale business.</h2><p>You start with <b>' + money(c1.START) + '</b>. Each season you buy product and resell it.</p><p><b>Goal:</b> end with the biggest <b>stake</b> you can. Your stake is what your share of the business is worth.</p><p><b>Each season:</b></p><ol style="margin:.3em 0 .5em;padding-left:1.3em"><li>Read the forecast.</li><li>The business invests ' + c1.SIZE + '× your stake. Pay for the rest with <b>debt</b>, a <b>partner</b>, or both. Or sit the season out.</li><li>Run the season. Results are random, so the forecast can miss.</li></ol><p><b>Debt</b> means credit card debt. It costs ' + c1.RATES.map(p0).join(', then ') + ' a season as you borrow more. You owe it even if you lose. Go broke and the game ends.</p>' :
-    '<h2>Six months. One shop.</h2><p>' + startLine() + ' You sell ' + H().item + ' for ' + money(c2.PRICE) + '. Your supplier gives you ' + c2.STOCK + ' a month: you pay ' + money(c2.COST) + ' for each one you sell and send back the rest.</p><p><b>Goal:</b> make the most profit in six months.</p><p><b>Each month:</b></p><ol style="margin:.3em 0 .5em;padding-left:1.3em"><li>Read the forecast.</li><li>Choose how to sell: the <b>app</b> (' + money(c2.APP_FEE) + ' fee a sale, no rent) or a <b>stall</b> (keep ' + money(m.stall) + ' a sale, pay ' + money(c2.RENT) + ' rent). Or close: storage still costs ' + money(c2.SIT_COST) + '.</li><li>Run the month. Buyers are random, so the forecast can miss.</li></ol>';
-  return header() + '<div class="card plain">' + body + '</div>' + mango(FACE.smug, S.stage === 1 ? 'My tips are good, not perfect. They cost a cat toy. Bigger stake, fancier toy.' : 'My tips are good, not perfect. ' + money(c2.TIP_COST) + ' a month, for a camera feeder.') + '<button class="btn-go" data-act="go" style="width:100%">Open for business</button>' + footer();
+    '<h2>Six seasons. One resale business.</h2><p>You start with <b>' + m0(c1.START) + '</b>. Each season you buy product and resell it.</p><p><b>Goal:</b> end with the biggest <b>stake</b> you can. Your stake is what your share of the business is worth.</p><p><b>Each season:</b></p><ol style="margin:.3em 0 .5em;padding-left:1.3em"><li>Read the forecast.</li><li>The business invests ' + c1.SIZE + '× your stake. Pay for the rest with <b>debt</b>, a <b>partner</b>, or both. Or sit the season out.</li><li>Run the season. Results are random, so the forecast can miss.</li></ol><p><b>Debt</b> means credit card debt. It costs ' + c1.RATES.map(p0).join(', then ') + ' a season as you borrow more. You owe it even if you lose. Go broke and the game ends.</p>' :
+    '<h2>Six months. One shop.</h2><p>' + startLine() + ' You sell ' + H().item + ' for ' + m0(c2.PRICE) + '. Your supplier gives you ' + c2.STOCK + ' a month: you pay ' + m0(c2.COST) + ' for each one you sell and send back the rest.</p><p><b>Goal:</b> make the most profit in six months.</p><p><b>Each month:</b></p><ol style="margin:.3em 0 .5em;padding-left:1.3em"><li>Read the forecast.</li><li>Choose how to sell: the <b>app</b> (' + m0(c2.APP_FEE) + ' fee a sale, no rent) or a <b>stall</b> (keep ' + m0(m.stall) + ' a sale, pay ' + m0(c2.RENT) + ' rent). Or close: storage still costs ' + m0(c2.SIT_COST) + '.</li><li>Run the month. Buyers are random, so the forecast can miss.</li></ol>';
+  return header() + '<div class="card plain">' + body + '</div>' + mango(FACE.smug, S.stage === 1 ? 'My tips are good, not perfect. They cost a cat toy. Bigger stake, fancier toy.' : 'My tips are good, not perfect. ' + m0(c2.TIP_COST) + ' a month, for a camera feeder.') + '<button class="btn-go" data-act="go" style="width:100%">Open for business</button>' + footer();
 }
 
 /* ======================= STAGE 1 ======================= */
@@ -445,28 +446,28 @@ function decide1(){
   var i = S.i, own = S.st.own, c = CONFIG.S1, T = S1T[i], sit = !!S.sit, D = s1D(), mu = mu1(i), f = fcast(i), K = c.SIZE * own, sp = s1PartnerShare(own, D, mu), dfl = s1DFL(own, D, f.base);
   var h = (i === 0 ? mango(FACE.smug, 'Slide to choose debt or partner. Tap ⓘ if you\'re stuck.') : '') +
     '<div class="card" style="--ac:' + T.ac + '"><span class="pill">Season ' + (i + 1) + ' of ' + N() + ' · ' + T.name + '</span><h2>' + esc(T.items[S.hustle]) + '</h2><p>' + T.story + '</p>' + forecastBox(i) + tipBox(i) + (i + 1 < N() ? '' : '<p class="dim" style="margin-top:8px">This is the last season.</p>') + '</div>';
-  h += '<div class="card plain"><h3>The business invests <span style="color:var(--orange)">' + m0(K) + '</span>. You cover ' + m0(K - own) + ' more.' + tip('cost', 'Your ' + money(own) + ' goes in first. Pay for the rest with debt, a partner, or both. Debt costs ' + c.RATES.map(p0).join(', then ') + ' on each ' + money(own) + ' you borrow. You owe it, win or lose. A partner expects to get back +' + p0(c.PARTNER_RATE) + ' on average, so they take a share of the business. They share losses too.') + '</h3>' +
+  h += '<div class="card plain"><h3>The business invests <span style="color:var(--orange)">' + m0(K) + '</span>. You cover ' + m0(K - own) + ' more.' + tip('cost', 'Your ' + m0(own) + ' goes in first. Pay for the rest with debt, a partner, or both. Debt costs ' + c.RATES.map(p0).join(', then ') + ' on each ' + m0(own) + ' you borrow. You owe it, win or lose. A partner expects to get back +' + p0(c.PARTNER_RATE) + ' on average, so they take a share of the business. They share losses too.') + '</h3>' +
     mixBar(own, D, sit, sp) + mixSlider(own, D) +
     '<button data-act="sit" class="' + (sit ? 'mv on' : 'btn-ghost') + '" aria-pressed="' + sit + '" style="width:100%;margin-bottom:10px">' + (sit ? '✓ Sitting this season out' : 'Sit this season out') + '</button>' +
-    (sit ? '<p class="dim" style="margin:0">Your stake stays ' + money(own) + '. Move the slider to play instead.</p>' :
-      '<div class="mets">' + met('Debt', money(D)) + met('Next dollar', p0(s1NextRate(D, own))) + '</div>' +
+    (sit ? '<p class="dim" style="margin:0">Your stake stays ' + m0(own) + '. Move the slider to play instead.</p>' :
+      '<div class="mets">' + met('Debt', m0(D)) + met('Next dollar', p0(s1NextRate(D, own))) + '</div>' +
       '<div class="gauge"><b>Degree of financial leverage: ' + (D <= 0 ? '1.00×' : dfl ? dfl.toFixed(1) + '×' : 'very high') + '</b>' + tip('g1', 'How much harder your result moves than the business. With no debt it is 1.00×. More debt, bigger number.') + '</div>') + '</div>';
   var lo = s1StakeReturn(own, D, f.lo, mu), hi = s1StakeReturn(own, D, f.hi, mu), mid = s1StakeReturn(own, D, f.base, mu);
   h += '<div class="card plain"><h3>What this season could do to your stake' + tip('c1', 'Across: how the business does. Up: what happens to your money. White: no debt. Orange: your choice. The yellow band is the forecast; the dashed line is the likely result.') + '</h3>' + chart1(own, D, sit, i) +
-    '<p style="margin:.4em 0 0;font-weight:700">' + (sit ? 'Sitting out: your stake stays ' + money(own) + '.' : sp === null ? 'The partner says no to this mix. Use more debt, or sit out.' : 'Your stake: likely ' + pct(mid) + '. Could be ' + pct(lo) + ' to ' + pct(hi) + '.') + '</p></div>';
+    '<p style="margin:.4em 0 0;font-weight:700">' + (sit ? 'Sitting out: your stake stays ' + m0(own) + '.' : sp === null ? 'The partner says no to this mix. Use more debt, or sit out.' : 'Your stake: likely ' + pct(mid) + '. Could be ' + pct(lo) + ' to ' + pct(hi) + '.') + '</p></div>';
   return h + '<p class="err" id="hint" role="alert"></p><button class="btn-go" data-act="run" style="width:100%;font-size:1.1rem">Run the season</button>';
 }
 function bars(mx, a, b){
-  function bar(label, v){ var hgt = Math.max(4, Math.round(Math.abs(v) / mx * 76)); return '<div class="bar"><div class="dim">' + label + '</div><div class="col"><div class="fill' + (v < 0 ? ' neg' : '') + '" data-h="' + hgt + '" style="height:' + (REDUCED ? hgt : 4) + 'px"></div></div><b class="num ' + (v < 0 ? 'down' : v > 0 ? 'up' : '') + '">' + signed(v) + '</b></div>'; }
+  function bar(label, v){ var hgt = Math.max(4, Math.round(Math.abs(v) / mx * 76)); return '<div class="bar"><div class="dim">' + label + '</div><div class="col"><div class="fill' + (v < 0 ? ' neg' : '') + '" data-h="' + hgt + '" style="height:' + (REDUCED ? hgt : 4) + 'px"></div></div><b class="num ' + (v < 0 ? 'down' : v > 0 ? 'up' : '') + '">' + signed0(v) + '</b></div>'; }
   return '<div class="bars">' + bar(a[0], a[1]) + bar(b[0], b[1]) + '</div>';
 }
 function reveal1(){
   var e = S.hist[S.i], i = S.i, T = S1T[i], r = e.ret, mx = Math.max(Math.abs(e.mine), Math.abs(e.cmp), 1), say, face;
-  if (e.failed){ say = 'That wiped out the business. You still owe ' + money(e.owed) + ' on the card. Game over.'; face = FACE.wince; }
+  if (e.failed){ say = 'That wiped out the business. You still owe ' + m0(e.owed) + ' on the card. Game over.'; face = FACE.wince; }
   else if (e.sat){ say = e.cmp < 0 ? 'Smart. You dodged that.' : 'You missed a win this time. Sitting out is safe, not free.'; face = e.cmp < 0 ? FACE.wow : FACE.meh; }
   else if (e.D > 0){ say = e.mine >= 0 ? 'Debt made the win bigger.' : 'Debt made the loss bigger.'; face = e.mine >= 0 ? FACE.wow : FACE.wince; }
   else { say = e.mine >= 0 ? 'The partner took a share of the win.' : 'The partner shared the loss.'; face = e.mine >= 0 ? FACE.smug : FACE.meh; }
-  var line = e.sat ? '' : '<p>' + (e.D > 0 ? 'Interest: <b>' + money(cents(e.int)) + '</b>. ' : '') + (e.sp > 0 ? 'The partner took <b>' + Math.round(e.sp * 100) + '%</b>.' : 'No partner.') + '</p>';
+  var line = e.sat ? '' : '<p>' + (e.D > 0 ? 'Interest: <b>' + m0(cents(e.int)) + '</b>. ' : '') + (e.sp > 0 ? 'The partner took <b>' + Math.round(e.sp * 100) + '%</b>.' : 'No partner.') + '</p>';
   return '<div class="card" style="--ac:' + T.ac + '"><span class="pill">Season ' + (i + 1) + ' · ' + T.name + '</span><p class="dim" style="text-align:center;margin:0">The season returned</p><div class="ticker num ' + (r >= 0 ? 'up' : 'down') + '" id="tick" data-final="' + pct(r) + '">' + pct(r) + '</div>' +
     bars(mx, [e.sat ? 'You sat out' : 'You', e.mine], [e.cmpLabel, e.cmp]) + (i === 0 ? '<p class="dim">Left: what you made. Right: what ' + e.cmpLabel.toLowerCase() + ' would have made.</p>' : '') + line + (e.failed ? '<p><b>You went broke.</b></p>' : '') + '</div>' + mango(face, say) +
     '<div class="card plain"><h3>Where the result landed</h3>' + chart1(e.before, e.D, e.sat, i, r) + '</div>';
@@ -504,34 +505,34 @@ function decide2(){
   var i = S.i, st = S.st, c = CONFIG.S2, T = S2T[i], m = s2Margins(), opts = s2Options(st.lease, i), way = S.move, sit = way === 'sit', cardOpen = i >= c.CARD_FROM && !sit, card = cardOpen && S.card, rent = s2Rent(st.lease, way), sell = way === 'app' ? 'app' : 'stall', f = fcast(i), g = s2DOL(f.base, sell, rent, card), be = rent / m.stall;
   var look = c.MONTHS.slice(i + 1).map(function(x){ return n0(caseOf(x).base); }).join(' · ');
   var h = guide2(i) + '<div class="card" style="--ac:' + T.ac + '"><span class="pill">Month ' + (i + 1) + ' of ' + N() + ' · ' + T.name + '</span><h2>' + T.story + '</h2>' + forecastBox(i) + tipBox(i) + '<p class="dim" style="margin-top:8px">' + (look ? 'Coming up, likely buyers: ' + look : 'This is the last month.') + '</p></div>';
-  h += '<div class="card plain"><h3>What this month could earn' + tip('c2', 'The app keeps ' + money(m.app) + ' a sale. The stall keeps ' + money(m.stall) + ' a sale, minus ' + money(rent) + ' rent. Across: buyers. Up: profit. Where the orange stall line crosses $0, you have paid the rent. Where the two lines cross, the stall and the app pay the same. The yellow band is the forecast; the dashed line is the likely number.') + '</h3>' + chart2(st, i, way, card) +
+  h += '<div class="card plain"><h3>What this month could earn' + tip('c2', 'The app keeps ' + m0(m.app) + ' a sale. The stall keeps ' + m0(m.stall) + ' a sale, minus ' + m0(rent) + ' rent. Across: buyers. Up: profit. Where the orange stall line crosses $0, you have paid the rent. Where the two lines cross, the stall and the app pay the same. The yellow band is the forecast; the dashed line is the likely number.') + '</h3>' + chart2(st, i, way, card) +
 
     '<div class="gauge"><b>Stall: pays its rent at ' + Math.ceil(be) + ' sales.</b> Beats the app at ' + Math.ceil(rent / (m.stall - m.app)) + '.</div>' +
     (sit ? '' : '<div class="gauge"><b>' + (card ? 'Degree of total leverage: ' : 'Degree of operating leverage: ') + (!way ? 'choose how to sell' : sell === 'app' && !card ? '1.00×' : g.dtl ? g.dtl.toFixed(1) + '×' : 'very high') + '</b>' + tip('g2', card ? 'How much harder profit moves than sales, counting rent and card interest. Both are owed no matter what.' : 'How much harder profit moves than sales. Rent is owed no matter what, so it makes the number bigger. With no rent it is 1.00×.') + '</div>') + '</div>';
   h += '<div class="card plain"><h3>How do you sell this month?</h3><div class="moves">';
-  if (st.lease > 0) h += mvBtn('leased', way === 'leased', '⛱️ Stall, on your lease', money(c.LEASE_RENT) + ' rent. ' + st.lease + ' month' + (st.lease === 1 ? '' : 's') + ' left, this one included.');
+  if (st.lease > 0) h += mvBtn('leased', way === 'leased', '⛱️ Stall, on your lease', m0(c.LEASE_RENT) + ' rent. ' + st.lease + ' month' + (st.lease === 1 ? '' : 's') + ' left, this one included.');
   else {
-    h += mvBtn('app', way === 'app', '📱 The app', money(c.APP_FEE) + ' fee on each sale. No rent.');
-    h += mvBtn('stall', way === 'stall', '⛱️ Stall, this month only', money(c.RENT) + ' rent' + (i === 0 ? ', owed even if nobody comes.' : '.'));
-    if (opts.indexOf('lease') >= 0) h += mvBtn('lease', way === 'lease', '📝 Stall, sign a ' + c.LEASE_MONTHS + '-month lease', money(c.LEASE_RENT) + ' a month. You owe all ' + c.LEASE_MONTHS + ' months.', i === c.LEASE_FROM);
+    h += mvBtn('app', way === 'app', '📱 The app', m0(c.APP_FEE) + ' fee on each sale. No rent.');
+    h += mvBtn('stall', way === 'stall', '⛱️ Stall, this month only', m0(c.RENT) + ' rent' + (i === 0 ? ', owed even if nobody comes.' : '.'));
+    if (opts.indexOf('lease') >= 0) h += mvBtn('lease', way === 'lease', '📝 Stall, sign a ' + c.LEASE_MONTHS + '-month lease', m0(c.LEASE_RENT) + ' a month. You owe all ' + c.LEASE_MONTHS + ' months.', i === c.LEASE_FROM);
   }
-  h += mvBtn('sit', sit, '🔒 Close this month', money(c.SIT_COST) + ' storage' + (st.lease > 0 ? ', plus the lease rent' : '') + '. No sales.');
+  h += mvBtn('sit', sit, '🔒 Close this month', m0(c.SIT_COST) + ' storage' + (st.lease > 0 ? ', plus the lease rent' : '') + '. No sales.');
   h += '</div>';
-  if (cardOpen) h += '<h3 style="margin-top:14px">Product' + (i === c.CARD_FROM ? '<span class="new">NEW</span>' : '') + '</h3><div class="moves"><button class="mv' + (!card ? ' on' : '') + '" data-act="card" data-v="0" aria-pressed="' + !card + '"><b>📦 ' + c.STOCK + ' items</b><small>The usual. No borrowing.</small></button><button class="mv' + (card ? ' on' : '') + '" data-act="card" data-v="1" aria-pressed="' + !!card + '"><b>💳 ' + c.CARD_STOCK + ' items</b><small>Borrow for the extra ' + (c.CARD_STOCK - c.STOCK) + '. ' + money(s2CardCost()) + ' interest, owed no matter how many sell.</small></button></div>';
+  if (cardOpen) h += '<h3 style="margin-top:14px">Product' + (i === c.CARD_FROM ? '<span class="new">NEW</span>' : '') + '</h3><div class="moves"><button class="mv' + (!card ? ' on' : '') + '" data-act="card" data-v="0" aria-pressed="' + !card + '"><b>📦 ' + c.STOCK + ' items</b><small>The usual. No borrowing.</small></button><button class="mv' + (card ? ' on' : '') + '" data-act="card" data-v="1" aria-pressed="' + !!card + '"><b>💳 ' + c.CARD_STOCK + ' items</b><small>Borrow for the extra ' + (c.CARD_STOCK - c.STOCK) + '. ' + m0(s2CardCost()) + ' interest, owed no matter how many sell.</small></button></div>';
   return h + '</div><p class="err" id="hint" role="alert"></p><button class="btn-go" data-act="run" style="width:100%;font-size:1.1rem">Run the month</button>';
 }
 function reveal2(){
   var e = S.hist[S.i], i = S.i, c = CONFIG.S2, T = S2T[i], m = s2Margins(), mx = Math.max(Math.abs(e.profit), Math.abs(e.alt), 1), sales = Math.min(e.buyers, e.card ? c.CARD_STOCK : c.STOCK), say, math;
-  if (e.sell === 'sit'){ math = money(c.SIT_COST) + ' storage' + (e.rent ? ' + ' + money(e.rent) + ' lease rent' : ''); say = 'Closed this month. ' + (e.rent ? 'Storage and rent still cost ' + money(-e.profit) + '.' : 'Storage still cost ' + money(c.SIT_COST) + '.'); }
+  if (e.sell === 'sit'){ math = m0(c.SIT_COST) + ' storage' + (e.rent ? ' + ' + m0(e.rent) + ' lease rent' : ''); say = 'Closed this month. ' + (e.rent ? 'Storage and rent still cost ' + m0(-e.profit) + '.' : 'Storage still cost ' + m0(c.SIT_COST) + '.'); }
   else {
-    math = e.sell === 'stall' ? sales + ' × ' + money(m.stall) + ' − ' + money(e.rent) + ' rent' : sales + ' × ' + money(m.app);
-    if (e.card) math += ' − ' + money(s2CardCost()) + ' interest';
-    say = e.sell === 'stall' ? (e.profit < 0 ? 'Rent does not check the weather.' : e.profit >= e.alt ? 'Enough buyers to cover the rent, and then ' + money(m.stall) + ' on each sale.' : 'You covered the rent. The app would still have paid more.') : (e.profit >= e.alt ? 'Slow month, no rent. Good.' : 'The app took ' + money(c.APP_FEE) + ' from every sale. ' + sales + ' times.');
+    math = e.sell === 'stall' ? sales + ' × ' + m0(m.stall) + ' − ' + m0(e.rent) + ' rent' : sales + ' × ' + m0(m.app);
+    if (e.card) math += ' − ' + m0(s2CardCost()) + ' interest';
+    say = e.sell === 'stall' ? (e.profit < 0 ? 'Rent does not check the weather.' : e.profit >= e.alt ? 'Enough buyers to cover the rent, and then ' + m0(m.stall) + ' on each sale.' : 'You covered the rent. The app would still have paid more.') : (e.profit >= e.alt ? 'Slow month, no rent. Good.' : 'The app took ' + m0(c.APP_FEE) + ' from every sale. ' + sales + ' times.');
     if (e.card && e.buyers <= c.STOCK) say = 'You bought ' + c.CARD_STOCK + ' items and ' + e.buyers + ' people came. The interest was still due.';
   }
   var mine = e.sell === 'sit' ? 'Closed' : e.sell === 'stall' ? 'Your stall' : 'Your app sales', other = e.sell === 'app' ? 'The stall instead' : 'The app instead';
   return '<div class="card" style="--ac:' + T.ac + '"><span class="pill">Month ' + (i + 1) + ' · ' + T.name + '</span><p class="dim" style="text-align:center;margin:0">Buyers who showed up</p><div class="ticker num" id="tick" data-final="' + e.buyers + '">' + e.buyers + '</div>' +
-    bars(mx, [mine, e.profit], [other, e.alt]) + (i === 0 ? '<p class="dim">Left: what you made. Right: what the other choice would have made.</p>' : '') + '<p class="num">' + math + ' = <b>' + money(e.profit) + '</b></p></div>' + mango(e.profit < 0 ? FACE.wince : e.profit >= e.alt ? FACE.wow : FACE.meh, say) +
+    bars(mx, [mine, e.profit], [other, e.alt]) + (i === 0 ? '<p class="dim">Left: what you made. Right: what the other choice would have made.</p>' : '') + '<p class="num">' + math + ' = <b>' + m0(e.profit) + '</b></p></div>' + mango(e.profit < 0 ? FACE.wince : e.profit >= e.alt ? FACE.wow : FACE.meh, say) +
     '<div class="card plain"><h3>Where the result landed</h3>' + chart2(e.pre, i, e.way, e.card, e.buyers) + '</div>';
 }
 function debrief2(){
@@ -562,9 +563,9 @@ function closeOv(){ ov.innerHTML = ''; clearTimeout(ovTimer); ui.ov = 0; }
 function showReflect(e){
   var txt, sub;
   if (S.stage === 1){
-    txt = e.sat ? 'You sat out.<br>All debt would have turned ' + money(e.before) + ' into ' + money(cents(Math.max(0, e.before + e.cmp))) + '.' : e.failed ? 'Your stake went from ' + money(e.before) + ' to nothing.' : 'Your stake fell from ' + money(e.before) + ' to ' + money(e.after) + '.';
+    txt = e.sat ? 'You sat out.<br>All debt would have turned ' + m0(e.before) + ' into ' + m0(cents(Math.max(0, e.before + e.cmp))) + '.' : e.failed ? 'Your stake went from ' + m0(e.before) + ' to nothing.' : 'Your stake fell from ' + m0(e.before) + ' to ' + m0(e.after) + '.';
     sub = 'Debt makes losses bigger.';
-  } else { txt = 'You lost ' + money(-e.profit) + ' this month.'; sub = e.sell === 'sit' ? 'Storage is owed even when you close.' : 'Rent is owed whether anyone shows up or not.'; }
+  } else { txt = 'You lost ' + m0(-e.profit) + ' this month.'; sub = e.sell === 'sit' ? 'Storage is owed even when you close.' : 'Rent is owed whether anyone shows up or not.'; }
   ui.ov = 1;
   ov.innerHTML = '<div class="overlay" role="alertdialog" aria-live="assertive"><div class="big">' + txt + '</div><p class="dim" style="margin-top:14px">' + sub + '</p><div class="hold"><i id="holdbar"></i></div><div id="rc" style="margin-top:20px;min-height:48px"></div></div>';
   var hb = $('#holdbar'); if (REDUCED) hb.style.width = '100%'; else { hb.style.transition = 'width ' + CONFIG.REFLECT_SECONDS + 's linear'; requestAnimationFrame(function(){ requestAnimationFrame(function(){ hb.style.width = '100%'; }); }); }
