@@ -437,7 +437,7 @@ function chart1(own, D, sit, i, mark){
   for (k = 0; k <= 24; k++) xs.push(X0 + (X1 - X0) * k / 24);
   var mine = sit ? xs.map(function(x){ return [x, 0]; }) : xs.map(function(x){ return [x, sr(D, x)]; });
   return plot({ x0: X0, x1: X1, y0: -1.15, y1: 2.2, band: [f.lo, f.hi], tip: tipped(i), likely: f.base, yt: [-1, 0, 1, 2], xt: [-0.4, -0.2, 0, 0.2, 0.4],
-    yf: function(y){ return pct(y) || '0%'; }, xf: function(x){ return pct(x) || '0%'; }, xl: 'How the business does →', yl: 'How your money does', lab: [['No debt', '#FFF6E0'], [sit ? 'Sitting out' : 'Your mix', '#FF8A1F']],
+    yf: function(y){ return pct(y) || '0%'; }, xf: function(x){ return pct(x) || '0%'; }, xl: 'Business return →', yl: 'Your return', lab: [['No debt', '#FFF6E0'], [sit ? 'Sitting out' : 'Your mix', '#FF8A1F']],
     label: 'Return on your stake against the season return, with no debt and with your mix.',
     lines: [{ pts: xs.map(function(x){ return [x, sr(0, x)]; }), col: '#FFF6E0', title: 'All partner, no debt' }, { pts: mine, col: '#FF8A1F', w: 4, title: sit ? 'Sitting out' : 'Your mix' }],
     mark: mark != null ? [[mark, sr(0, mark), '#FFF6E0'], [mark, sit ? 0 : sr(D, mark), '#FF8A1F']] : null });
@@ -453,7 +453,7 @@ function decide1(){
       '<div class="mets">' + met('Debt', m0(D)) + met('Next dollar', p0(s1NextRate(D, own))) + '</div>' +
       '<div class="gauge"><b>Degree of financial leverage: ' + (D <= 0 ? '1.00×' : dfl ? dfl.toFixed(1) + '×' : 'very high') + '</b>' + tip('g1', 'How much harder your result moves than the business. With no debt it is 1.00×. More debt, bigger number.') + '</div>') + '</div>';
   var lo = s1StakeReturn(own, D, f.lo, mu), hi = s1StakeReturn(own, D, f.hi, mu), mid = s1StakeReturn(own, D, f.base, mu);
-  h += '<div class="card plain"><h3>What this season could do to your stake' + tip('c1', 'Across: how the business does. Up: what happens to your money. White: no debt. Orange: your choice. The yellow band is the forecast; the dashed line is the likely result.') + '</h3>' + chart1(own, D, sit, i) +
+  h += '<div class="card plain"><h3>What this season could do to your stake' + tip('c1', 'Across: the business\'s return. Up: your return. White: no debt. Orange: your choice. The yellow band is the forecast; the dashed line is the likely result.') + '</h3>' + chart1(own, D, sit, i) +
     '<p style="margin:.4em 0 0;font-weight:700">' + (sit ? 'Sitting out: your stake stays ' + m0(own) + '.' : sp === null ? 'The partner says no to this mix. Use more debt, or sit out.' : 'Your stake: likely ' + pct(mid) + '. Could be ' + pct(lo) + ' to ' + pct(hi) + '.') + '</p></div>';
   return h + '<p class="err" id="hint" role="alert"></p><button class="btn-go" data-act="run" style="width:100%;font-size:1.1rem">Run the season</button>';
 }
