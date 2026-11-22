@@ -464,7 +464,7 @@ function bars(mx, a, b){
 function reveal1(){
   var e = S.hist[S.i], i = S.i, T = S1T[i], r = e.ret, mx = Math.max(Math.abs(e.mine), Math.abs(e.cmp), 1), say, face;
   if (e.failed){ say = 'That wiped out the business. You still owe ' + m0(e.owed) + ' on the card. Game over.'; face = FACE.wince; }
-  else if (e.sat){ say = e.cmp < 0 ? 'Smart. You avoided that loss.' : 'You missed a win this time. Sitting out is safe, but you can miss a win.'; face = e.cmp < 0 ? FACE.wow : FACE.meh; }
+  else if (e.sat){ say = e.cmp < 0 ? 'Smart. You avoided that loss.' : 'Sitting out was safe, but this time you missed a win.'; face = e.cmp < 0 ? FACE.wow : FACE.meh; }
   else if (e.D > 0){ say = e.mine >= 0 ? 'Debt made the win bigger.' : 'Debt made the loss bigger.'; face = e.mine >= 0 ? FACE.wow : FACE.wince; }
   else { say = e.mine >= 0 ? 'The partner took a share of the win.' : 'The partner shared the loss.'; face = e.mine >= 0 ? FACE.smug : FACE.meh; }
   var line = e.sat ? '' : '<p>' + (e.D > 0 ? 'Interest: <b>' + m0(cents(e.int)) + '</b>. ' : '') + (e.sp > 0 ? 'The partner took <b>' + Math.round(e.sp * 100) + '%</b>.' : 'No partner.') + '</p>';
@@ -501,7 +501,7 @@ function guide2(i){
   var c = CONFIG.S2;
   if (i === 0) return mango(FACE.smug, 'Pick how to sell. Tap ⓘ if you\'re stuck.');
   if (i === c.LEASE_FROM) return mango(FACE.smug, 'New: a <b>' + c.LEASE_MONTHS + '-month lease</b>. Cheaper rent, owed every month.');
-  if (i === c.CARD_FROM) return mango(FACE.smug, 'New: <b>borrow</b> for ' + (c.CARD_STOCK - c.STOCK) + ' more items. Interest is owed even if they do not sell.');
+  if (i === c.CARD_FROM) return mango(FACE.smug, 'New: <b>borrow</b> for ' + (c.CARD_STOCK - c.STOCK) + ' more items. You owe the interest even if they don\'t sell.');
   return '';
 }
 function mvBtn(v, on, title, sub, isNew){ return '<button class="mv' + (on ? ' on' : '') + '" data-act="move" data-v="' + v + '" aria-pressed="' + on + '"><b>' + title + (isNew ? '<span class="new">NEW</span>' : '') + '</b><small>' + sub + '</small></button>'; }
@@ -531,7 +531,7 @@ function reveal2(){
   else {
     math = e.sell === 'stall' ? sales + ' × ' + m0(m.stall) + ' − ' + m0(e.rent) + ' rent' : sales + ' × ' + m0(m.app);
     if (e.card) math += ' − ' + m0(s2CardCost()) + ' interest';
-    say = e.sell === 'stall' ? (e.profit < 0 ? 'You still paid the full rent.' : e.profit >= e.alt ? 'Enough buyers to cover the rent, and then ' + m0(m.stall) + ' on each sale.' : 'You covered the rent. The app would still have paid more.') : (e.profit >= e.alt ? 'Slow month, no rent. Good.' : 'The app took ' + m0(c.APP_FEE) + ' from every sale. ' + sales + ' times.');
+    say = e.sell === 'stall' ? (e.profit < 0 ? 'You still paid the full rent.' : e.profit >= e.alt ? 'You covered the rent, then kept ' + m0(m.stall) + ' on every sale after that.' : 'You covered the rent. The app would still have paid more.') : (e.profit >= e.alt ? 'A slow month, but no rent to pay.' : 'The app took ' + m0(c.APP_FEE) + ' from each of your ' + sales + ' sales.');
     if (e.card && e.buyers <= c.STOCK) say = 'You bought ' + c.CARD_STOCK + ' items and ' + e.buyers + ' people came. The interest was still due.';
   }
   var mine = e.sell === 'sit' ? 'Closed' : e.sell === 'stall' ? 'Your stall' : 'Your app sales', other = e.altLabel || (e.sell === 'app' ? 'The stall instead' : 'The app instead');
@@ -601,7 +601,7 @@ function resultsScreen(){
     '<p style="color:#555;text-align:center;margin:12px 0 0">' + (S.stage === 1 ? 'YOUR STAKE' : 'YOUR PROFIT') + '</p><div class="total num">' + (S.stage === 1 ? money(total) : signed(cents(total - S.base))) + '</div>' + (S.stage === 1 ? '<p style="text-align:center;margin:0;font-weight:800">' + pct((total - CONFIG.S1.START) / CONFIG.S1.START) + ' on your ' + money(CONFIG.S1.START) + '</p>' : '') + '<p style="text-align:center;font-weight:800;font-size:1.2rem">' + label + '</p>' +
     '<p style="border-top:1px dashed #9A957F;padding-top:8px">' + best + '</p><table><thead>' + head + '</thead><tbody>' + rows + '</tbody></table>' +
     '<div class="copy">Take a screenshot of this receipt.</div></div>' +
-    mango(label === 'Legend' ? FACE.wow : FACE.smug, label === 'Legend' ? 'Okay. Legend. Don\'t brag.' : label === 'Played it safe' ? 'Safe. Nothing wrong with that. But safe did not grow your money.' : 'Everyone gets different luck. Compare your choices with a classmate, not your totals.') + (S.stage === 1 ? '<button class="btn-go" data-act="stage2" style="width:100%;margin-bottom:8px">Go on to Stage 2 with ' + money(Math.max(CONFIG.S2.START, total)) + '</button>' : '') + '<button data-act="again" style="width:100%">Play again</button><button class="btn-ghost" data-act="home" style="width:100%;margin-top:8px">Back to the counter</button>';
+    mango(label === 'Legend' ? FACE.wow : FACE.smug, label === 'Legend' ? 'Okay. Legend. Don\'t brag.' : label === 'Played it safe' ? 'Safe is fine. But your money did not grow.' : 'Your classmates had different seasons. Compare your choices with theirs, not your totals.') + (S.stage === 1 ? '<button class="btn-go" data-act="stage2" style="width:100%;margin-bottom:8px">Go on to Stage 2 with ' + money(Math.max(CONFIG.S2.START, total)) + '</button>' : '') + '<button data-act="again" style="width:100%">Play again</button><button class="btn-ghost" data-act="home" style="width:100%;margin-top:8px">Back to the counter</button>';
 }
 
 /* ======================= RENDER ======================= */
