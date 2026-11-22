@@ -370,11 +370,11 @@ function tipBox(i){
   if (tipped(i)){
     var f = fcast(i), say;
     if (one){
-      say = 'I checked what these sold for on three resale apps. Likely <b>' + pct(f.base) + '</b>, between <b>' + pct(f.lo) + ' and ' + pct(f.hi) + '</b>. ' + (s1RuleChoice(S.st.own, i, f.base) === 'sit' ? 'Sit this one out.' : 'Play this season.');
+      say = 'I checked what these sold for on three resale apps. Likely <b>' + pct(f.base) + '</b>, between <b>' + pct(f.lo) + ' and ' + pct(f.hi) + '</b>. ' + (s1RuleChoice(S.st.own, i, f.base) === 'sit' ? 'Sit this one out. You need about +' + p0(s1BreakEven()) + ' to cover the debt and the partner. ' + pct(f.base) + ' doesn\'t.' : 'Play this season. You need about +' + p0(s1BreakEven()) + ' to cover the debt and the partner. ' + pct(f.base) + ' beats that.');
     } else {
-      var w = s2RuleChoice(i, S.st.lease, f).split('+');
+      var w = s2RuleChoice(i, S.st.lease, f).split('+'); var m2 = s2Margins(), even = Math.ceil(CONFIG.S2.RENT / (m2.stall - m2.app));
       say = 'I counted foot traffic at the market last Saturday. Likely <b>' + n0(f.base) + '</b> buyers, between <b>' + n0(f.lo) + ' and ' + n0(f.hi) + '</b>. ' +
-        (S.st.lease > 0 && w[0] === 'leased' ? 'Your lease is running, so sell at the stall.' : w[0] === 'app' ? 'Use the app.' : w[0] === 'stall' ? 'The stall should pay.' : w[0] === 'lease' ? 'Sign the lease.' : 'Close this month.') + (w[1] ? ' Borrow for 40 items.' : '');
+        (S.st.lease > 0 && w[0] === 'leased' ? 'Your lease is running, so sell at the stall.' : w[0] === 'app' ? 'Use the app. The stall needs ' + even + ' buyers to beat it, and I expect ' + n0(f.base) + '.' : w[0] === 'stall' ? 'Use the stall. It beats the app at ' + even + ' buyers, and I expect ' + n0(f.base) + '.' : w[0] === 'lease' ? 'Sign the lease. The rent is lower, and the next months look busy.' : 'Close this month.') + (w[1] ? ' Borrow for 40 items: I expect more than 20 buyers.' : '');
     }
     return '<div class="mango" style="margin:10px 0 0"><div class="mface" aria-hidden="true">' + FACE.smug + '</div><div class="bubble">' + say + '</div></div>';
   }
