@@ -433,10 +433,10 @@ function mixSlider(own, D){
     '<div class="ends"><span>All debt</span><span>All partner</span></div>';
 }
 function chart1(own, D, sit, i, mark){
-  var X0 = -0.6, X1 = 0.6, mu = mu1(i), f = fcast(i), sr = function(d, r){ var v = s1StakeReturn(own, d, r, mu); return v == null ? -1 : v; }, xs = [], k;
+  var X0 = -0.4, X1 = 0.5, mu = mu1(i), f = fcast(i), sr = function(d, r){ var v = s1StakeReturn(own, d, r, mu); return v == null ? -1 : v; }, xs = [], k;
   for (k = 0; k <= 24; k++) xs.push(X0 + (X1 - X0) * k / 24);
   var mine = sit ? xs.map(function(x){ return [x, 0]; }) : xs.map(function(x){ return [x, sr(D, x)]; });
-  return plot({ x0: X0, x1: X1, y0: -1.15, y1: 2.2, band: [f.lo, f.hi], tip: tipped(i), likely: f.base, yt: [-1, 0, 1, 2], xt: [-0.5, -0.25, 0, 0.25, 0.5],
+  return plot({ x0: X0, x1: X1, y0: -1.15, y1: 2.2, band: [f.lo, f.hi], tip: tipped(i), likely: f.base, yt: [-1, 0, 1, 2], xt: [-0.4, -0.2, 0, 0.2, 0.4],
     yf: function(y){ return pct(y) || '0%'; }, xf: function(x){ return pct(x) || '0%'; }, xl: 'How the business does →', yl: 'How your money does', lab: [['No debt', '#FFF6E0'], [sit ? 'Sitting out' : 'Your mix', '#FF8A1F']],
     label: 'Return on your stake against the season return, with no debt and with your mix.',
     lines: [{ pts: xs.map(function(x){ return [x, sr(0, x)]; }), col: '#FFF6E0', title: 'All partner, no debt' }, { pts: mine, col: '#FF8A1F', w: 4, title: sit ? 'Sitting out' : 'Your mix' }],
