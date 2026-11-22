@@ -421,12 +421,12 @@ function s1D(){ var mx = s1DebtMax(S.st.own); return Math.max(0, Math.min(mx, S.
 function sliderTop(mx){ return Math.max(1, Math.ceil(mx / CONFIG.S1.MIN_MOVE - 1e-9)); }
 function toStop(a, mx){ return a >= mx - 0.005 ? sliderTop(mx) : Math.round(a / CONFIG.S1.MIN_MOVE); }
 function fromStop(i, mx){ return i >= sliderTop(mx) ? mx : Math.min(mx, i * CONFIG.S1.MIN_MOVE); }
-function mixBar(own, D, sit){
+function mixBar(own, D, sit, sp){
   var K = CONFIG.S1.SIZE * own, P = K - own - D, steps = CONFIG.S1.RATES.map(function(r, k){ var on = !sit && D > k * own + 0.005; return '<div style="width:25%;border-left:2px solid ' + (on ? '#FF8A1F' : '#3A4A7A') + ';padding-left:4px;color:' + (on ? '#FF8A1F' : '#7C8BBB') + ';font-weight:800;font-size:.8rem">' + p0(r) + '</div>'; }).join('');
   var seg = function(v, col, txt){ return v > 0.005 ? '<div style="width:' + (v / K * 100) + '%;background:' + col + '">' + (v / K >= 0.1 ? txt : '') + '</div>' : ''; };
   return '<div style="display:flex;margin:10px 0 2px' + (sit ? ';opacity:.4' : '') + '"><div style="width:25%;font-size:.8rem;color:var(--dim)">Debt rate →</div>' + steps + '</div>' +
     '<div class="mixbar" style="margin-top:0' + (sit ? ';opacity:.4' : '') + '">' + seg(own, '#3DDC84', 'You') + seg(D, '#FF8A1F', 'Debt') + seg(P, '#6BB6FF', 'Partner') + '</div>' +
-    '<div style="text-align:right;font-size:.8rem;font-weight:800;color:#6BB6FF;margin:-2px 0 6px">Partner expects +' + p0(CONFIG.S1.PARTNER_RATE) + '</div>';
+    '<p style="font-size:.9rem;font-weight:700;color:#6BB6FF;margin:2px 0 6px' + (sit ? ';opacity:.4' : '') + '">' + (sp === null ? 'The partner says no to this mix.' : P <= 0.005 ? 'No partner. A partner would expect a +' + p0(CONFIG.S1.PARTNER_RATE) + ' return.' : 'Partner pays ' + Math.round(P / K * 100) + '% of the money and takes ' + Math.round(sp * 100) + '% of the business. They expect a +' + p0(CONFIG.S1.PARTNER_RATE) + ' return.') + '</p>';
 }
 function mixSlider(own, D){
   var mx = s1DebtMax(own), top = sliderTop(mx);
@@ -448,10 +448,10 @@ function decide1(){
   var h = (i === 0 ? mango(FACE.smug, 'Slide to choose debt or partner. Tap ⓘ if you\'re stuck.') : '') +
     '<div class="card" style="--ac:' + T.ac + '"><span class="pill">Season ' + (i + 1) + ' of ' + N() + ' · ' + T.name + '</span><h2>' + esc(T.items[S.hustle]) + '</h2><p>' + T.story + '</p>' + forecastBox(i) + tipBox(i) + (i + 1 < N() ? '' : '<p class="dim" style="margin-top:8px">This is the last season.</p>') + '</div>';
   h += '<div class="card plain"><h3>The business invests <span style="color:var(--orange)">' + m0(K) + '</span>. You cover ' + m0(K - own) + ' more.' + tip('cost', 'Your ' + money(own) + ' goes in first. Pay for the rest with debt, a partner, or both. Debt costs ' + c.RATES.map(p0).join(', then ') + ' on each ' + money(own) + ' you borrow. You owe it, win or lose. A partner expects to get back +' + p0(c.PARTNER_RATE) + ' on average, so they take a share of the business. They share losses too.') + '</h3>' +
-    mixBar(own, D, sit) + mixSlider(own, D) +
+    mixBar(own, D, sit, sp) + mixSlider(own, D) +
     '<button data-act="sit" class="' + (sit ? 'mv on' : 'btn-ghost') + '" aria-pressed="' + sit + '" style="width:100%;margin-bottom:10px">' + (sit ? '✓ Sitting this season out' : 'Sit this season out') + '</button>' +
     (sit ? '<p class="dim" style="margin:0">Your stake stays ' + money(own) + '. Move the slider to play instead.</p>' :
-      '<div class="mets" style="grid-template-columns:1fr 1fr 1fr">' + met('Debt', money(D)) + met('Partner\'s share', sp === null ? 'Says no' : sp > 0 ? Math.round(sp * 100) + '%' : 'None') + met('Next dollar', p0(s1NextRate(D, own))) + '</div>' +
+      '<div class="mets">' + met('Debt', money(D)) + met('Next dollar', p0(s1NextRate(D, own))) + '</div>' +
       '<div class="gauge"><b>Degree of financial leverage: ' + (D <= 0 ? '1.00×' : dfl ? dfl.toFixed(1) + '×' : 'very high') + '</b>' + tip('g1', 'How much harder your result moves than the business. With no debt it is 1.00×. More debt, bigger number.') + '</div>') + '</div>';
   var lo = s1StakeReturn(own, D, f.lo, mu), hi = s1StakeReturn(own, D, f.hi, mu), mid = s1StakeReturn(own, D, f.base, mu);
   h += '<div class="card plain"><h3>What this season could do to your stake' + tip('c1', 'Across: how the business does. Up: what happens to your money. White: no debt. Orange: your choice. The yellow band is the forecast; the dashed line is the likely result.') + '</h3>' + chart1(own, D, sit, i) +
