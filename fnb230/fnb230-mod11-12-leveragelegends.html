@@ -125,10 +125,10 @@ var CONFIG = {
     PARTNER_RATE: 0.10,        // the partner sizes their share to expect this return, using the same forecast the student has (Mango's, once bought)
     SIZE: 4,                   // each season the business invests this many times your stake
     MIN_MOVE: 50,              // the slider moves in steps of this much
-    TIP_PCT: 0.08,             // Mango's tip costs this share of your stake, every season
+    TIP_PCT: 0.10,             // Mango's tip costs this share of your stake, every season
     SEASONS: [                 // worst case (1 in 10 below) and best case (1 in 10 above); the base case is the middle
       { lo: 0.10, hi: 0.30 }, { lo: 0.00, hi: 0.12 }, { lo: 0.15, hi: 0.40 },
-      { lo: -0.40, hi: 0.20 }, { lo: -0.25, hi: 0.25 }, { lo: 0.10, hi: 0.40 }
+      { lo: -0.30, hi: 0.40 }, { lo: -0.25, hi: 0.25 }, { lo: 0.10, hi: 0.40 }
     ]
   },
   S2: {
@@ -288,7 +288,7 @@ var HUSTLES = {
 };
 var S1T = [
   { name: 'Steady Seller', ac: '#4DA3FF', story: 'A popular release. Everybody wants it.', items: { sneakers: "Cloud Runner 'Subway Tile'", thrift: '90s varsity jackets, no stains', bags: 'The Everyday Tote in Deli Green' } },
-  { name: 'The Re-release', ac: '#B9C2DC', story: 'A common re-release. Easy to sell, thin profit.', items: { sneakers: 'Plain White Lows (re-release number 9)', thrift: 'Gray hoodies, a bale of 12', bags: 'Canvas totes everybody already has' } },
+  { name: 'The Re-release', ac: '#B9C2DC', story: 'A common re-release. Easy to sell, thin profit.', items: { sneakers: 'Plain White Lows (re-release number 9)', thrift: 'Gray hoodies, a bundle of 12', bags: 'Canvas totes everybody already has' } },
   { name: 'Hype Drop', ac: '#C77DFF', story: 'A limited release. The line goes around the block.', items: { sneakers: "Air Stoop 'Chopped Cheese', only 500 made", thrift: "Tour tees from a band's last show ever", bags: "The 'Bacon Egg and Chain' mini bag" } },
   { name: 'Risky Collab', ac: '#FF8A1F', story: 'Two brands made one strange item. Nobody knows if people want it.', items: { sneakers: 'Pigeon x Parking Ticket collab', thrift: 'Designer x Laundromat capsule', bags: 'Luxury house x Dollar Slice clutch' } },
   { name: 'Fakes Everywhere', ac: '#FF7B7B', story: 'The market is full of fakes. Buyers are nervous.', items: { sneakers: "'Real' Cloud Runners (the box says Clowd)", thrift: 'Vintage tees printed last Tuesday', bags: 'Bags with one extra letter in the logo' } },
@@ -394,7 +394,7 @@ function plot(o){
   if (o.mark) o.mark.forEach(function(mk){ h += '<circle cx="' + px(mk[0]) + '" cy="' + py(mk[1]) + '" r="6" fill="' + mk[2] + '" stroke="#0B1228" stroke-width="2"/>'; });
   h += '<text x="' + ((L + R) / 2) + '" y="' + (B + 34) + '" text-anchor="middle">' + o.xl + '</text>';
   if (o.yl) h += '<text x="' + (L + 4) + '" y="' + (T + 12) + '" fill="#B9C2DC">↑ ' + o.yl + '</text>';
-  if (o.lab) o.lines.forEach(function(ln, k){ var e = ln.pts[ln.pts.length - 1], y = py(e[1]); h += '<text x="' + (R - 2) + '" y="' + (y + (k ? -8 : 16)) + '" text-anchor="end" fill="' + o.lab[k][1] + '" font-weight="700">' + o.lab[k][0] + '</text>'; });
+  if (o.lab) o.lines.forEach(function(ln, k){ var e = ln.pts[ln.pts.length - 1], y = py(e[1]); h += '<text x="' + (px(e[0]) - 2) + '" y="' + Math.min(B - 4, y + (k ? -8 : 16) < T + 12 ? y + 20 : y + (k ? -8 : 16)) + '" text-anchor="end" fill="' + o.lab[k][1] + '" font-weight="700">' + o.lab[k][0] + '</text>'; });
   return '<div class="chart"><svg viewBox="0 0 ' + W + ' 212" role="img" aria-label="' + esc(o.label) + '"><g font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="12" fill="#FFF6E0">' + h + '</g></svg></div>';
 }
 
@@ -405,12 +405,12 @@ function startScreen(){
     '<div class="card plain"><label class="field"><span>Your name</span><input id="f-name" maxlength="20" autocomplete="off" placeholder="Up to 20 letters" value="' + esc(ui.name) + '"></label><div class="field"><span>What you sell</span><div class="hgrid">' + hs + '</div></div><p class="err" role="alert">' + esc(ui.err) + '</p>' +
     '<div style="display:grid;gap:8px"><button class="btn-go" data-act="start" data-v="1">Stage 1 · Financial leverage and capital structure</button><button class="btn-go" data-act="start" data-v="2">Stage 2 · Adds operating leverage</button></div></div>';
 }
-function startLine(){ var c2 = CONFIG.S2; return S.from1 == null ? 'You start with <b>' + m0(S.base) + '</b>.' : S.from1 >= c2.START ? 'Your last Stage 1 result was <b>' + m0(S.from1) + '</b>. That is your starting cash.' : 'Your last Stage 1 result was ' + m0(S.from1) + '. Mango tops you up to <b>' + m0(S.base) + '</b>.'; }
+function startLine(){ var c2 = CONFIG.S2; return S.from1 == null ? 'You start with <b>' + m0(S.base) + '</b>.' : S.from1 >= c2.START ? 'Your last Stage 1 result was <b>' + m0(S.from1) + '</b>. That is your starting cash.' : 'Your last Stage 1 result was ' + m0(S.from1) + '. Mango adds money so you start with <b>' + m0(S.base) + '</b>.'; }
 function introScreen(){
   var c1 = CONFIG.S1, c2 = CONFIG.S2, m = s2Margins(), body = S.stage === 1 ?
     '<h2>Six seasons. One resale business.</h2><p>You start with <b>' + m0(c1.START) + '</b>. Each season you buy product and resell it.</p><p><b>Goal:</b> end with the biggest <b>stake</b> you can. Your stake is what your share of the business is worth.</p><p><b>Each season:</b></p><ol style="margin:.3em 0 .5em;padding-left:1.3em"><li>Read the forecast.</li><li>The business invests ' + c1.SIZE + '× your stake. Pay for the rest with <b>debt</b>, a <b>partner</b>, or both. Or sit the season out.</li><li>Run the season. Results are random, so the forecast can miss.</li></ol><p><b>Debt</b> means credit card debt. It costs ' + c1.RATES.map(p0).join(', then ') + ' a season as you borrow more. You owe it even if you lose. Go broke and the game ends.</p>' :
     '<h2>Six months. One shop.</h2><p>' + startLine() + ' You sell ' + H().item + ' for ' + m0(c2.PRICE) + '. Your supplier gives you ' + c2.STOCK + ' a month: you pay ' + m0(c2.COST) + ' for each one you sell and send back the rest.</p><p><b>Goal:</b> make the most profit in six months.</p><p><b>Each month:</b></p><ol style="margin:.3em 0 .5em;padding-left:1.3em"><li>Read the forecast.</li><li>Choose how to sell: the <b>app</b> (' + m0(c2.APP_FEE) + ' fee a sale, no rent) or a <b>stall</b> (keep ' + m0(m.stall) + ' a sale, pay ' + m0(c2.RENT) + ' rent). Or close: storage still costs ' + m0(c2.SIT_COST) + '.</li><li>Run the month. Buyers are random, so the forecast can miss.</li></ol>';
-  return header() + '<div class="card plain">' + body + '</div>' + mango(FACE.smug, S.stage === 1 ? 'My tips are good, not perfect. They cost a cat toy. Bigger stake, fancier toy.' : 'My tips are good, not perfect. ' + m0(c2.TIP_COST) + ' a month, for a camera feeder.') + '<button class="btn-go" data-act="go" style="width:100%">Open for business</button>' + footer();
+  return header() + '<div class="card plain">' + body + '</div>' + mango(FACE.smug, S.stage === 1 ? 'Want a better forecast? Ask me each season. It costs a cat toy: bigger stake, fancier toy. I\'m usually close, but not always right.' : 'Want a better forecast? Ask me each month. It costs ' + m0(c2.TIP_COST) + '. I\'m usually close, but not always right.') + '<button class="btn-go" data-act="go" style="width:100%">Open for business</button>' + footer();
 }
 
 /* ======================= STAGE 1 ======================= */
@@ -433,11 +433,11 @@ function mixSlider(own, D){
     '<div class="ends"><span>All debt</span><span>All partner</span></div>';
 }
 function chart1(own, D, sit, i, mark){
-  var X0 = -0.6, X1 = 0.6, mu = mu1(i), f = fcast(i), sr = function(d, r){ var v = s1StakeReturn(own, d, r, mu); return v == null ? -1 : v; }, xs = [], k;
+  var X0 = -0.4, X1 = 0.5, mu = mu1(i), f = fcast(i), sr = function(d, r){ var v = s1StakeReturn(own, d, r, mu); return v == null ? -1 : v; }, xs = [], k;
   for (k = 0; k <= 24; k++) xs.push(X0 + (X1 - X0) * k / 24);
   var mine = sit ? xs.map(function(x){ return [x, 0]; }) : xs.map(function(x){ return [x, sr(D, x)]; });
-  return plot({ x0: X0, x1: X1, y0: -1.15, y1: 2.2, band: [f.lo, f.hi], tip: tipped(i), likely: f.base, yt: [-1, 0, 1, 2], xt: [-0.5, -0.25, 0, 0.25, 0.5],
-    yf: function(y){ return pct(y) || '0%'; }, xf: function(x){ return pct(x) || '0%'; }, xl: 'How the business does →', yl: 'How your money does', lab: [['No debt', '#FFF6E0'], [sit ? 'Sitting out' : 'Your mix', '#FF8A1F']],
+  return plot({ x0: X0, x1: X1, y0: -1.15, y1: 2.2, band: [f.lo, f.hi], tip: tipped(i), likely: f.base, yt: [-1, 0, 1, 2], xt: [-0.4, -0.2, 0, 0.2, 0.4],
+    yf: function(y){ return pct(y) || '0%'; }, xf: function(x){ return pct(x) || '0%'; }, xl: 'Business return →', yl: 'Your return', lab: [['No debt', '#FFF6E0'], [sit ? 'Sitting out' : 'Your mix', '#FF8A1F']],
     label: 'Return on your stake against the season return, with no debt and with your mix.',
     lines: [{ pts: xs.map(function(x){ return [x, sr(0, x)]; }), col: '#FFF6E0', title: 'All partner, no debt' }, { pts: mine, col: '#FF8A1F', w: 4, title: sit ? 'Sitting out' : 'Your mix' }],
     mark: mark != null ? [[mark, sr(0, mark), '#FFF6E0'], [mark, sit ? 0 : sr(D, mark), '#FF8A1F']] : null });
@@ -446,14 +446,14 @@ function decide1(){
   var i = S.i, own = S.st.own, c = CONFIG.S1, T = S1T[i], sit = !!S.sit, D = s1D(), mu = mu1(i), f = fcast(i), K = c.SIZE * own, sp = s1PartnerShare(own, D, mu), dfl = s1DFL(own, D, f.base);
   var h = (i === 0 ? mango(FACE.smug, 'Slide to choose debt or partner. Tap ⓘ if you\'re stuck.') : '') +
     '<div class="card" style="--ac:' + T.ac + '"><span class="pill">Season ' + (i + 1) + ' of ' + N() + ' · ' + T.name + '</span><h2>' + esc(T.items[S.hustle]) + '</h2><p>' + T.story + '</p>' + forecastBox(i) + tipBox(i) + (i + 1 < N() ? '' : '<p class="dim" style="margin-top:8px">This is the last season.</p>') + '</div>';
-  h += '<div class="card plain"><h3>The business invests <span style="color:var(--orange)">' + m0(K) + '</span>. You cover ' + m0(K - own) + ' more.' + tip('cost', 'Your ' + m0(own) + ' goes in first. Pay for the rest with debt, a partner, or both. Debt costs ' + c.RATES.map(p0).join(', then ') + ' on each ' + m0(own) + ' you borrow. You owe it, win or lose. A partner expects to get back +' + p0(c.PARTNER_RATE) + ' on average, so they take a share of the business. They share losses too.') + '</h3>' +
+  h += '<div class="card plain"><h3>The business invests <span style="color:var(--orange)">' + m0(K) + '</span>. You need ' + m0(K - own) + ' more.' + tip('cost', 'Your ' + m0(own) + ' goes in first. Pay for the rest with debt, a partner, or both. Debt costs ' + c.RATES.map(p0).join(', then ') + ' on each ' + m0(own) + ' you borrow. You owe it, win or lose. A partner expects to get back +' + p0(c.PARTNER_RATE) + ' on average, so they take a share of the business. They share losses too.') + '</h3>' +
     mixBar(own, D, sit, sp) + mixSlider(own, D) +
     '<button data-act="sit" class="' + (sit ? 'mv on' : 'btn-ghost') + '" aria-pressed="' + sit + '" style="width:100%;margin-bottom:10px">' + (sit ? '✓ Sitting this season out' : 'Sit this season out') + '</button>' +
     (sit ? '<p class="dim" style="margin:0">Your stake stays ' + m0(own) + '. Move the slider to play instead.</p>' :
       '<div class="mets">' + met('Debt', m0(D)) + met('Next dollar', p0(s1NextRate(D, own))) + '</div>' +
-      '<div class="gauge"><b>Degree of financial leverage: ' + (D <= 0 ? '1.00×' : dfl ? dfl.toFixed(1) + '×' : 'very high') + '</b>' + tip('g1', 'How much harder your result moves than the business. With no debt it is 1.00×. More debt, bigger number.') + '</div>') + '</div>';
+      '<div class="gauge"><b>Degree of financial leverage: ' + (D <= 0 ? '1.00×' : dfl ? dfl.toFixed(1) + '×' : 'very high') + '</b>' + tip('g1', 'How much more your result moves than the business. With no debt it is 1.00×. More debt, bigger number.') + '</div>') + '</div>';
   var lo = s1StakeReturn(own, D, f.lo, mu), hi = s1StakeReturn(own, D, f.hi, mu), mid = s1StakeReturn(own, D, f.base, mu);
-  h += '<div class="card plain"><h3>What this season could do to your stake' + tip('c1', 'Across: how the business does. Up: what happens to your money. White: no debt. Orange: your choice. The yellow band is the forecast; the dashed line is the likely result.') + '</h3>' + chart1(own, D, sit, i) +
+  h += '<div class="card plain"><h3>What this season could do to your stake' + tip('c1', 'Across: the business\'s return. Up: your return. White: no debt. Orange: your choice. The yellow band is the forecast; the dashed line is the likely result.') + '</h3>' + chart1(own, D, sit, i) +
     '<p style="margin:.4em 0 0;font-weight:700">' + (sit ? 'Sitting out: your stake stays ' + m0(own) + '.' : sp === null ? 'The partner says no to this mix. Use more debt, or sit out.' : 'Your stake: likely ' + pct(mid) + '. Could be ' + pct(lo) + ' to ' + pct(hi) + '.') + '</p></div>';
   return h + '<p class="err" id="hint" role="alert"></p><button class="btn-go" data-act="run" style="width:100%;font-size:1.1rem">Run the season</button>';
 }
@@ -464,7 +464,7 @@ function bars(mx, a, b){
 function reveal1(){
   var e = S.hist[S.i], i = S.i, T = S1T[i], r = e.ret, mx = Math.max(Math.abs(e.mine), Math.abs(e.cmp), 1), say, face;
   if (e.failed){ say = 'That wiped out the business. You still owe ' + m0(e.owed) + ' on the card. Game over.'; face = FACE.wince; }
-  else if (e.sat){ say = e.cmp < 0 ? 'Smart. You dodged that.' : 'You missed a win this time. Sitting out is safe, not free.'; face = e.cmp < 0 ? FACE.wow : FACE.meh; }
+  else if (e.sat){ say = e.cmp < 0 ? 'Smart. You avoided that loss.' : 'You missed a win this time. Sitting out is safe, but you can miss a win.'; face = e.cmp < 0 ? FACE.wow : FACE.meh; }
   else if (e.D > 0){ say = e.mine >= 0 ? 'Debt made the win bigger.' : 'Debt made the loss bigger.'; face = e.mine >= 0 ? FACE.wow : FACE.wince; }
   else { say = e.mine >= 0 ? 'The partner took a share of the win.' : 'The partner shared the loss.'; face = e.mine >= 0 ? FACE.smug : FACE.meh; }
   var line = e.sat ? '' : '<p>' + (e.D > 0 ? 'Interest: <b>' + m0(cents(e.int)) + '</b>. ' : '') + (e.sp > 0 ? 'The partner took <b>' + Math.round(e.sp * 100) + '%</b>.' : 'No partner.') + '</p>';
@@ -476,22 +476,26 @@ function debrief1(){
   var st = S.st;
   return header() + (st.failed ? mango(FACE.wince, 'Broke in Season ' + st.broke + '. Read this, then try again.') : '') + '<div class="card plain"><span class="pill" style="background:var(--yellow)">What just happened</span>' +
     '<p><b>The rule:</b> use debt while it costs less than the partner\'s ' + p0(CONFIG.S1.PARTNER_RATE) + '. Sit out seasons that look weak.</p>' +
-    terms([['What the whole business earned in a season', 'Return on capital employed (ROCE)'], ['The debt rate on your next dollar', 'Marginal cost of debt'], ['What the partner expects (+' + p0(CONFIG.S1.PARTNER_RATE) + ')', 'Cost of equity'], ['Where more debt stops paying', 'Optimal capital structure'], ['Debt made wins and losses bigger', 'Financial leverage'], ['Your mix of debt and partner money', 'Capital structure'], ['The stake chart', 'EBIT-EPS chart']]) +
+    terms([['What the whole business earned in a season', 'Return on capital employed (ROCE)'], ['The debt rate on your next dollar', 'Marginal cost of debt'], ['What the partner expects (+' + p0(CONFIG.S1.PARTNER_RATE) + ')', 'Cost of equity'], ['Where more debt stops helping', 'Optimal capital structure'], ['Debt made wins and losses bigger', 'Financial leverage'], ['Your mix of debt and partner money', 'Capital structure'], ['The stake chart', 'EBIT-EPS chart']]) +
     '<p class="dim">This game ignores taxes. Interest lowers a tax bill, so real debt costs a little less.</p></div>' +
     '<button class="btn-go" data-act="results" style="width:100%">See your receipt</button>' + footer();
 }
 
 /* ======================= STAGE 2 ======================= */
 function chart2(st, i, way, card, mark){
-  var c = CONFIG.S2, f = fcast(i), cd = i >= c.CARD_FROM && card, xmax = i >= c.CARD_FROM ? 40 : 24, rent = s2Rent(st.lease, way), cap = cd ? c.CARD_STOCK : c.STOCK, sell = way === 'sit' ? null : st.lease > 0 ? 'stall' : way === 'app' ? 'app' : way ? 'stall' : null;
-  function ln(s){ return [[0, s2ProfitAt(0, s, rent, cd)], [cap, s2ProfitAt(cap, s, rent, cd)], [xmax, s2ProfitAt(xmax, s, rent, cd)]]; }
-  var top = Math.max(s2ProfitAt(xmax, 'stall', c.LEASE_RENT, cd), s2ProfitAt(xmax, 'app', 0, cd)), low = Math.min(0, s2ProfitAt(0, 'stall', c.RENT, cd)), raw = (top - low) / 5, mag = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10)), step = [1, 2, 2.5, 5, 10].map(function(x){ return x * mag; }).filter(function(s){ return s >= raw; })[0], yt = [], v;
+  var c = CONFIG.S2, f = fcast(i), opt = i >= c.CARD_FROM, cd = opt && card, xmax = opt ? c.CARD_STOCK : c.STOCK, rent = s2Rent(st.lease, way), sell = way === 'sit' ? null : st.lease > 0 ? 'stall' : way === 'app' ? 'app' : way ? 'stall' : null;
+  /* each line ends where its stock runs out: 20 items, or 40 when borrowing */
+  function ln(s, big){ var cap = big ? c.CARD_STOCK : c.STOCK; return [[0, s2ProfitAt(0, s, rent, big)], [cap, s2ProfitAt(cap, s, rent, big)]]; }
+  var L = [], lab = [], mk = [];
+  function add(s, big, title, col, name, on){ L.push({ title: title, pts: ln(s, big), col: col, w: !sell ? 3 : on ? 4 : 2, dash: sell && !on }); lab.push([name, col]); if (mark != null) mk.push([Math.min(mark, big ? c.CARD_STOCK : c.STOCK), s2ProfitAt(mark, s, rent, big), col]); }
+  if (!(st.lease > 0)) add('app', false, 'App profit', '#FFF6E0', 'App', sell === 'app');   /* on a lease the app is not a choice */
+  add('stall', false, 'Stall profit, 20 items', '#FF8A1F', 'Stall', sell === 'stall' && !cd);
+  if (opt) add('stall', true, 'Stall profit, 40 items (borrowed)', '#C77DFF', 'Stall, 40 items', sell === 'stall' && cd);
+  var top = Math.max(s2ProfitAt(xmax, 'stall', c.LEASE_RENT, opt), s2ProfitAt(c.STOCK, 'app', 0, false)), low = Math.min(0, s2ProfitAt(0, 'stall', c.RENT, opt)), raw = (top - low) / 5, mag = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10)), step = [1, 2, 2.5, 5, 10].map(function(x){ return x * mag; }).filter(function(s){ return s >= raw; })[0], yt = [], v;
   for (v = Math.floor(low / step) * step; v <= top + step / 2; v += step) yt.push(v);
-  return plot({ x0: 0, x1: xmax, y0: yt[0] - step * 0.3, y1: yt[yt.length - 1], band: [Math.max(0, f.lo), f.hi], tip: tipped(i), likely: f.base, yt: yt, xt: xmax === 40 ? [0, 10, 20, 30, 40] : [0, 6, 12, 18, 24],
-    yf: function(y){ return m0(y); }, xf: function(x){ return x; }, xl: 'Buyers this month', lab: [['App', '#FFF6E0'], ['Stall', '#FF8A1F']],
-    label: 'Breakeven chart: profit against buyers for the app and the stall.',
-    lines: [{ title: 'App profit', pts: ln('app'), col: '#FFF6E0', w: !sell ? 3 : sell === 'app' ? 4 : 2, dash: sell && sell !== 'app' }, { title: 'Stall profit', pts: ln('stall'), col: '#FF8A1F', w: !sell ? 3 : sell === 'stall' ? 4 : 2, dash: sell && sell !== 'stall' }],
-    mark: mark != null ? [[mark, s2ProfitAt(mark, 'app', rent, cd), '#FFF6E0'], [mark, s2ProfitAt(mark, 'stall', rent, cd), '#FF8A1F']] : null });
+  return plot({ x0: 0, x1: xmax, y0: yt[0] - step * 0.3, y1: yt[yt.length - 1], band: [Math.max(0, f.lo), f.hi], tip: tipped(i), likely: f.base, yt: yt, xt: xmax === 40 ? [0, 10, 20, 30, 40] : [0, 5, 10, 15, 20],
+    yf: function(y){ return m0(y); }, xf: function(x){ return x; }, xl: 'Buyers this month', lab: lab,
+    label: 'Breakeven chart: profit against buyers for each way of selling.', lines: L, mark: mark != null ? mk : null });
 }
 function guide2(i){
   var c = CONFIG.S2;
@@ -503,18 +507,18 @@ function guide2(i){
 function mvBtn(v, on, title, sub, isNew){ return '<button class="mv' + (on ? ' on' : '') + '" data-act="move" data-v="' + v + '" aria-pressed="' + on + '"><b>' + title + (isNew ? '<span class="new">NEW</span>' : '') + '</b><small>' + sub + '</small></button>'; }
 function decide2(){
   var i = S.i, st = S.st, c = CONFIG.S2, T = S2T[i], m = s2Margins(), opts = s2Options(st.lease, i), way = S.move, sit = way === 'sit', cardOpen = i >= c.CARD_FROM && !sit, card = cardOpen && S.card, rent = s2Rent(st.lease, way), sell = way === 'app' ? 'app' : 'stall', f = fcast(i), g = s2DOL(f.base, sell, rent, card), be = rent / m.stall;
-  var look = c.MONTHS.slice(i + 1).map(function(x){ return n0(caseOf(x).base); }).join(' · ');
-  var h = guide2(i) + '<div class="card" style="--ac:' + T.ac + '"><span class="pill">Month ' + (i + 1) + ' of ' + N() + ' · ' + T.name + '</span><h2>' + T.story + '</h2>' + forecastBox(i) + tipBox(i) + '<p class="dim" style="margin-top:8px">' + (look ? 'Coming up, likely buyers: ' + look : 'This is the last month.') + '</p></div>';
+  var look = c.MONTHS.slice(i, i + c.LEASE_MONTHS).map(function(x){ return n0(caseOf(x).base); }).join(' · '); /* the months a lease signed now would cover */
+  var h = guide2(i) + '<div class="card" style="--ac:' + T.ac + '"><span class="pill">Month ' + (i + 1) + ' of ' + N() + ' · ' + T.name + '</span><h2>' + T.story + '</h2>' + forecastBox(i) + tipBox(i) + (i === N() - 1 ? '<p class="dim" style="margin-top:8px">This is the last month.</p>' : '') + '</div>';
   h += '<div class="card plain"><h3>What this month could earn' + tip('c2', 'The app keeps ' + m0(m.app) + ' a sale. The stall keeps ' + m0(m.stall) + ' a sale, minus ' + m0(rent) + ' rent. Across: buyers. Up: profit. Where the orange stall line crosses $0, you have paid the rent. Where the two lines cross, the stall and the app pay the same. The yellow band is the forecast; the dashed line is the likely number.') + '</h3>' + chart2(st, i, way, card) +
 
-    '<div class="gauge"><b>Stall: pays its rent at ' + Math.ceil(be) + ' sales.</b> Beats the app at ' + Math.ceil(rent / (m.stall - m.app)) + '.</div>' +
-    (sit ? '' : '<div class="gauge"><b>' + (card ? 'Degree of total leverage: ' : 'Degree of operating leverage: ') + (!way ? 'choose how to sell' : sell === 'app' && !card ? '1.00×' : g.dtl ? g.dtl.toFixed(1) + '×' : 'very high') + '</b>' + tip('g2', card ? 'How much harder profit moves than sales, counting rent and card interest. Both are owed no matter what.' : 'How much harder profit moves than sales. Rent is owed no matter what, so it makes the number bigger. With no rent it is 1.00×.') + '</div>') + '</div>';
+    '<div class="gauge"><b>Stall: pays its rent at ' + Math.ceil(be) + ' sales.</b>' + (st.lease > 0 ? '' : ' Beats the app at ' + Math.ceil(rent / (m.stall - m.app)) + '.') + '</div>' +
+    (sit ? '' : '<div class="gauge"><b>' + (card ? 'Degree of total leverage: ' : 'Degree of operating leverage: ') + (!way ? 'choose how to sell' : sell === 'app' && !card ? '1.00×' : g.dtl ? g.dtl.toFixed(1) + '×' : 'very high') + '</b>' + tip('g2', card ? 'How much more profit moves than sales, counting rent and card interest. Both are owed no matter what.' : 'How much more profit moves than sales. Rent is owed no matter what, so it makes the number bigger. With no rent it is 1.00×.') + '</div>') + '</div>';
   h += '<div class="card plain"><h3>How do you sell this month?</h3><div class="moves">';
   if (st.lease > 0) h += mvBtn('leased', way === 'leased', '⛱️ Stall, on your lease', m0(c.LEASE_RENT) + ' rent. ' + st.lease + ' month' + (st.lease === 1 ? '' : 's') + ' left, this one included.');
   else {
     h += mvBtn('app', way === 'app', '📱 The app', m0(c.APP_FEE) + ' fee on each sale. No rent.');
     h += mvBtn('stall', way === 'stall', '⛱️ Stall, this month only', m0(c.RENT) + ' rent' + (i === 0 ? ', owed even if nobody comes.' : '.'));
-    if (opts.indexOf('lease') >= 0) h += mvBtn('lease', way === 'lease', '📝 Stall, sign a ' + c.LEASE_MONTHS + '-month lease', m0(c.LEASE_RENT) + ' a month. You owe all ' + c.LEASE_MONTHS + ' months.', i === c.LEASE_FROM);
+    if (opts.indexOf('lease') >= 0) h += mvBtn('lease', way === 'lease', '📝 Stall, sign a ' + c.LEASE_MONTHS + '-month lease', m0(c.LEASE_RENT) + ' a month. You owe all ' + c.LEASE_MONTHS + ' months. Likely buyers: ' + look + '.', i === c.LEASE_FROM);
   }
   h += mvBtn('sit', sit, '🔒 Close this month', m0(c.SIT_COST) + ' storage' + (st.lease > 0 ? ', plus the lease rent' : '') + '. No sales.');
   h += '</div>';
@@ -527,10 +531,10 @@ function reveal2(){
   else {
     math = e.sell === 'stall' ? sales + ' × ' + m0(m.stall) + ' − ' + m0(e.rent) + ' rent' : sales + ' × ' + m0(m.app);
     if (e.card) math += ' − ' + m0(s2CardCost()) + ' interest';
-    say = e.sell === 'stall' ? (e.profit < 0 ? 'Rent does not check the weather.' : e.profit >= e.alt ? 'Enough buyers to cover the rent, and then ' + m0(m.stall) + ' on each sale.' : 'You covered the rent. The app would still have paid more.') : (e.profit >= e.alt ? 'Slow month, no rent. Good.' : 'The app took ' + m0(c.APP_FEE) + ' from every sale. ' + sales + ' times.');
+    say = e.sell === 'stall' ? (e.profit < 0 ? 'You still paid the full rent.' : e.profit >= e.alt ? 'Enough buyers to cover the rent, and then ' + m0(m.stall) + ' on each sale.' : 'You covered the rent. The app would still have paid more.') : (e.profit >= e.alt ? 'Slow month, no rent. Good.' : 'The app took ' + m0(c.APP_FEE) + ' from every sale. ' + sales + ' times.');
     if (e.card && e.buyers <= c.STOCK) say = 'You bought ' + c.CARD_STOCK + ' items and ' + e.buyers + ' people came. The interest was still due.';
   }
-  var mine = e.sell === 'sit' ? 'Closed' : e.sell === 'stall' ? 'Your stall' : 'Your app sales', other = e.sell === 'app' ? 'The stall instead' : 'The app instead';
+  var mine = e.sell === 'sit' ? 'Closed' : e.sell === 'stall' ? 'Your stall' : 'Your app sales', other = e.altLabel || (e.sell === 'app' ? 'The stall instead' : 'The app instead');
   return '<div class="card" style="--ac:' + T.ac + '"><span class="pill">Month ' + (i + 1) + ' · ' + T.name + '</span><p class="dim" style="text-align:center;margin:0">Buyers who showed up</p><div class="ticker num" id="tick" data-final="' + e.buyers + '">' + e.buyers + '</div>' +
     bars(mx, [mine, e.profit], [other, e.alt]) + (i === 0 ? '<p class="dim">Left: what you made. Right: what the other choice would have made.</p>' : '') + '<p class="num">' + math + ' = <b>' + m0(e.profit) + '</b></p></div>' + mango(e.profit < 0 ? FACE.wince : e.profit >= e.alt ? FACE.wow : FACE.meh, say) +
     '<div class="card plain"><h3>Where the result landed</h3>' + chart2(e.pre, i, e.way, e.card, e.buyers) + '</div>';
@@ -538,8 +542,8 @@ function reveal2(){
 function debrief2(){
   var c = CONFIG.S2, m = s2Margins();
   return header() + '<div class="card plain"><span class="pill" style="background:var(--yellow)">What just happened</span>' +
-    '<p><b>The rule:</b> fixed costs make good months better and slow months worse. Take them on when you expect enough buyers.</p>' +
-    terms([['Rent and storage, owed with 1 buyer or none', 'Fixed cost'], ['The ' + money(m.stall) + ' you keep from each stall sale', 'Contribution margin'], [money(c.RENT) + ' ÷ ' + money(m.stall) + ' = ' + (c.RENT / m.stall) + ' sales to pay the rent', 'Breakeven'], ['Profit swinging harder than sales', 'Operating leverage'], ['Card interest, also owed no matter what', 'Financial leverage'], ['The chart you used each month', 'Breakeven chart']]) + '</div>' +
+    '<p><b>The rule:</b> fixed costs make good months better and slow months worse. Choose them when you expect enough buyers.</p>' +
+    terms([['Rent and storage, owed with 1 buyer or none', 'Fixed cost'], ['The ' + money(m.stall) + ' you keep from each stall sale', 'Contribution margin'], [money(c.RENT) + ' ÷ ' + money(m.stall) + ' = ' + (c.RENT / m.stall) + ' sales to pay the rent', 'Breakeven'], ['Profit moving more than sales', 'Operating leverage'], ['Card interest, also owed no matter what', 'Financial leverage'], ['The chart you used each month', 'Breakeven chart']]) + '</div>' +
     '<button class="btn-go" data-act="results" style="width:100%">See your receipt</button>' + footer();
 }
 
@@ -556,7 +560,8 @@ function animateReveal(e){
   if (REDUCED){ land(); return; }
   if (cashEl) cashEl.textContent = m0(from);
   app.addEventListener('click', land); setTimeout(land, 1500);
-  (function frame(t){ if (done) return; var x = (t - t0) / 1300; if (x >= 1){ land(); return; } if (t - last > 70){ last = t; SFX.tick(); el.textContent = S.stage === 1 ? pct(Math.random() * 0.8 - 0.4) : Math.floor(Math.random() * 30); } requestAnimationFrame(frame); })(t0);
+  var goal = S.stage === 1 ? Math.round(e.ret * 100) : e.buyers, shown = null; /* count up (or down) in order from 0, slowing near the end */
+  (function frame(t){ if (done) return; var x = (t - t0) / 1300; if (x >= 1){ land(); return; } var v = Math.round(goal * (1 - Math.pow(1 - x, 3))); if (v !== shown){ shown = v; if (t - last > 40){ last = t; SFX.tick(); } el.textContent = S.stage === 1 ? pct(v / 100) : v; } requestAnimationFrame(frame); })(t0);
 }
 var ovTimer = null;
 function closeOv(){ ov.innerHTML = ''; clearTimeout(ovTimer); ui.ov = 0; }
@@ -596,7 +601,7 @@ function resultsScreen(){
     '<p style="color:#555;text-align:center;margin:12px 0 0">' + (S.stage === 1 ? 'YOUR STAKE' : 'YOUR PROFIT') + '</p><div class="total num">' + (S.stage === 1 ? money(total) : signed(cents(total - S.base))) + '</div>' + (S.stage === 1 ? '<p style="text-align:center;margin:0;font-weight:800">' + pct((total - CONFIG.S1.START) / CONFIG.S1.START) + ' on your ' + money(CONFIG.S1.START) + '</p>' : '') + '<p style="text-align:center;font-weight:800;font-size:1.2rem">' + label + '</p>' +
     '<p style="border-top:1px dashed #9A957F;padding-top:8px">' + best + '</p><table><thead>' + head + '</thead><tbody>' + rows + '</tbody></table>' +
     '<div class="copy">Take a screenshot of this receipt.</div></div>' +
-    mango(label === 'Legend' ? FACE.wow : FACE.smug, label === 'Legend' ? 'Okay. Legend. Do not get loud about it.' : label === 'Played it safe' ? 'Safe. Nothing wrong with that. But safe did not grow your money.' : 'Everyone gets different luck. Compare your choices with a classmate, not your totals.') + (S.stage === 1 ? '<button class="btn-go" data-act="stage2" style="width:100%;margin-bottom:8px">Go on to Stage 2 with ' + money(Math.max(CONFIG.S2.START, total)) + '</button>' : '') + '<button data-act="again" style="width:100%">Play again</button><button class="btn-ghost" data-act="home" style="width:100%;margin-top:8px">Back to the counter</button>';
+    mango(label === 'Legend' ? FACE.wow : FACE.smug, label === 'Legend' ? 'Okay. Legend. Don\'t brag.' : label === 'Played it safe' ? 'Safe. Nothing wrong with that. But safe did not grow your money.' : 'Everyone gets different luck. Compare your choices with a classmate, not your totals.') + (S.stage === 1 ? '<button class="btn-go" data-act="stage2" style="width:100%;margin-bottom:8px">Go on to Stage 2 with ' + money(Math.max(CONFIG.S2.START, total)) + '</button>' : '') + '<button data-act="again" style="width:100%">Play again</button><button class="btn-ghost" data-act="home" style="width:100%;margin-top:8px">Back to the counter</button>';
 }
 
 /* ======================= RENDER ======================= */
@@ -660,8 +665,9 @@ var acts = {
       var way = S.move, lease = S.st.lease;
       if (!way){ hint('Choose how to sell first.'); return; }
       var cd = i >= CONFIG.S2.CARD_FROM && !!S.card && way !== 'sit', profit = s2Profit(d.buyers, way, lease, cd), sell = way === 'app' ? 'app' : way === 'sit' ? 'sit' : 'stall';
-      var alt = sell === 'app' ? s2ProfitAt(d.buyers, 'stall', CONFIG.S2.RENT, cd) : s2Profit(d.buyers, 'app', 0, cd && sell !== 'sit');
-      e = { buyers: d.buyers, sell: sell, way: way, card: cd, profit: profit, alt: alt, rent: sell === 'stall' ? s2Rent(lease, way) : sell === 'sit' && lease > 0 ? CONFIG.S2.LEASE_RENT : 0, pre: { cash: S.st.cash, lease: lease }, before: S.st.cash, after: cents(S.st.cash + profit), big: profit < 0,
+      var alt = sell === 'app' ? s2ProfitAt(d.buyers, 'stall', CONFIG.S2.RENT, cd) : s2Profit(d.buyers, 'app', 0, cd && sell !== 'sit'), altLabel = null;
+      if (lease > 0){ alt = sell === 'sit' ? s2Profit(d.buyers, 'leased', lease, false) : s2Profit(d.buyers, 'sit', lease, false); altLabel = sell === 'sit' ? 'The stall instead' : 'Closed instead'; } /* on a lease the app is not a choice */
+      e = { buyers: d.buyers, sell: sell, way: way, card: cd, profit: profit, alt: alt, altLabel: altLabel, rent: sell === 'stall' ? s2Rent(lease, way) : sell === 'sit' && lease > 0 ? CONFIG.S2.LEASE_RENT : 0, pre: { cash: S.st.cash, lease: lease }, before: S.st.cash, after: cents(S.st.cash + profit), big: profit < 0,
         label: (sell === 'sit' ? 'Closed' : sell === 'app' ? 'App' : way === 'lease' ? 'Stall, new lease' : way === 'leased' ? 'Stall, lease' : 'Stall') + (cd ? ' + 40 items' : '') };
       S.st = { cash: e.after, lease: s2NextLease(way, lease) };
     }
