@@ -115,40 +115,35 @@ td.r,th.r{text-align:right}
 <script id="core">
 /* ======================= CONSTANTS: tune here ======================= */
 var CONFIG = {
-  REFLECT_SECONDS: 6,          // held screen after the big loss
+  REFLECT_SECONDS: 6,          // held screen after the first big swing
+  Z90: 1.2816,                 // worst case and best case are the 10th and 90th percentiles: base case -/+ 1.2816 sd
+  TIP_NOISE: 0.5,              // Mango's reading = result + noise (sd = this x the round's sd). Her base case moves 80% toward it; her range is 45% as wide
+  BIG_SWING: 0.25,             // the pause screen fires the first time a stake falls (or all debt would have fallen) by this share
   S1: {
     START: 500,                // what the business is worth at the start
-    RATES: [0.06, 0.075, 0.09], // card rate per season (24%, 30%, 36% a year) on each slice of debt, one slice = 1x your stake; borrowing more costs more
-    MIN_MOVE: 50,              // the sliders move in steps of this much
-    SIZE: 4,                   // each season the business invests this many times your stake; you fund the rest with card debt or a partner's money
-    CHART_FROM: 0,             // the stake chart (EBIT-EPS style), shown from this season
-    TIP_COST: 30,              // Mango's tip: a narrower, true forecast range, paid from your stake
-    SEASONS: [                 // forecast range, result, and Mango's tip (never makes a result certain when the forecast does not)
-      { lo: 0.10, hi: 0.30, ret: 0.18, tip: [0.15, 0.25] },
-      { lo: 0.00, hi: 0.12, ret: 0.03, tip: [0.00, 0.08] },
-      { lo: 0.15, hi: 0.40, ret: 0.30, tip: [0.25, 0.35] },
-      { lo: -0.40, hi: 0.20, ret: -0.35, tip: [-0.40, 0.08] },
-      { lo: -0.25, hi: 0.25, ret: 0.07, tip: [-0.05, 0.20] },
-      { lo: 0.10, hi: 0.40, ret: 0.26, tip: [0.20, 0.32] }
+    RATES: [0.06, 0.09, 0.12], // credit card rate per season on each step of debt; one step = 1x your stake
+    PARTNER_RATE: 0.10,        // the partner sizes their share to expect this gain, using the public forecast only
+    SIZE: 4,                   // each season the business invests this many times your stake
+    MIN_MOVE: 50,              // the slider moves in steps of this much
+    TIP_PCT: 0.08,             // Mango's tip costs this share of your stake, every season
+    SEASONS: [                 // worst case (1 in 10 below) and best case (1 in 10 above); the base case is the middle
+      { lo: 0.10, hi: 0.30 }, { lo: 0.00, hi: 0.12 }, { lo: 0.15, hi: 0.40 },
+      { lo: -0.40, hi: 0.20 }, { lo: -0.25, hi: 0.25 }, { lo: 0.10, hi: 0.40 }
     ]
   },
   S2: {
-    START: 500,                // cash for anyone with no Stage 1 result on this device, and the floor for those who have one
-    PRICE: 800, COST: 560, APP_FEE: 120,  // all Stage 2 dollar amounts are 4 times the original 200/140/30/300/270, so Stage 2 swings outweigh the Stage 1 head start
+    START: 500,                // cash with no Stage 1 result on this device, and the floor for those who have one
+    PRICE: 800, COST: 560, APP_FEE: 120,  // Stage 2 dollar amounts are 4 times real ones, so Stage 2 swings outweigh the Stage 1 head start
     RENT: 1200,                // stall rent, one month at a time
-    LEASE_RENT: 1080,          // rent per month if you sign a lease
+    LEASE_RENT: 1080,          // rent per month on a lease
     LEASE_MONTHS: 3,
-    LEASE_FROM: 1,             // the lease option opens in this month (0 = first month)
+    LEASE_FROM: 1,             // the lease opens in this month (0 = first month)
+    SIT_COST: 360,             // storage owed in a month you close (4 x about $90 for a small NYC unit)
     STOCK: 20, CARD_STOCK: 40, CARD_APR: 0.24,
-    CARD_FROM: 4,              // the credit card option opens in this month (0 = first month)
-    TIP_COST: 120,             // Mango's tip, paid from cash
-    MONTHS: [
-      { lo: 8, hi: 18, buyers: 12, tip: [9, 15] },
-      { lo: 4, hi: 12, buyers: 6, tip: [4, 11] },
-      { lo: 0, hi: 16, buyers: 1, tip: [0, 11] },
-      { lo: 12, hi: 24, buyers: 20, tip: [17, 22] },
-      { lo: 6, hi: 16, buyers: 8, tip: [7, 11] },
-      { lo: 5, hi: 40, buyers: 12, tip: [9, 18] }
+    CARD_FROM: 4,              // borrowing for extra stock opens in this month (0 = first month)
+    TIP_COST: 75,              // Mango's tip, paid from cash
+    MONTHS: [                  // worst case and best case buyers (10th and 90th percentiles)
+      { lo: 8, hi: 18 }, { lo: 4, hi: 12 }, { lo: 0, hi: 16 }, { lo: 12, hi: 24 }, { lo: 6, hi: 16 }, { lo: 5, hi: 40 }
     ]
   }
 };
@@ -156,72 +151,130 @@ var CONFIG = {
 function cents(x){ return Math.round(x * 100 + (x < 0 ? -1e-6 : 1e-6)) / 100; }
 function roundCount(stage){ return stage === 2 ? CONFIG.S2.MONTHS.length : CONFIG.S1.SEASONS.length; }
 
-/* ---- Stage 1: one business, six seasons. st = { E: business value, s: your share (0-1), D: debt, failed: 1 once broke, broke: season it happened, owed: what is still owed to the card } ---- */
-function s1Rate(){ return CONFIG.S1.RATES[0]; }
-/* Interest on debt D for an owner with stake own: each slice of debt (1x own) costs the next rate. */
-function s1Interest(D, own){ var R = CONFIG.S1.RATES, t = 0, left = D, k; for (k = 0; k < R.length && left > 0; k++){ var sl = k === R.length - 1 ? left : Math.min(left, own); t += sl * R[k]; left -= sl; } return t; }
-function s1Own(st){ return st.E * st.s; }
-function s1NextRate(D, own){ var R = CONFIG.S1.RATES; return R[Math.min(R.length - 1, own > 0 ? Math.floor(D / own + 1e-9) : 0)]; }
-function s1New(){ return { E: CONFIG.S1.START, s: 1, D: 0, failed: 0 }; }
-function s1Stake(st){ return cents(st.E * st.s); }
-function s1Partner(st){ return cents(st.E * (1 - st.s)); }
-/* Each season the business invests SIZE x your stake. Your money goes in first; debt D pays for part of
-   the rest and a partner's money pays for whatever is left. pre = { E: all owners' money, s: your share, D }.
-   After the season the partner is paid out at value, so you start the next season owning 100%. */
-function s1DebtMax(st){ return cents((CONFIG.S1.SIZE - 1) * s1Stake(st)); }
-function s1Mix(st, D){
-  var own = s1Stake(st), K = CONFIG.S1.SIZE * own, d = Math.max(0, Math.min(s1DebtMax(st), D || 0)), E = cents(K - d);
-  return { E: E, s: E > 0 ? own / E : 1, D: cents(d), failed: st.failed };
+/* ---- randomness: every run draws all six results (and Mango's readings) at the start and saves them ---- */
+function rng(seed){ var a = seed >>> 0; return function(){ a = (a + 0x6D2B79F5) >>> 0; var t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+function gauss(rand){ var u = 0; while (u === 0) u = rand(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * rand()); }
+function caseOf(R){ var base = (R.lo + R.hi) / 2, sd = (R.hi - R.lo) / (2 * CONFIG.Z90); return { base: base, sd: sd, lo: R.lo, hi: R.hi }; }
+/* Mango's tip: the forecast after she sees a noisy reading of the result. Sharper, still not certain. */
+function tipCase(R, sig){ var c = caseOf(R), k = CONFIG.TIP_NOISE, w = 1 / (1 + k * k), base = c.base + w * (sig - c.base), sd = c.sd * k / Math.sqrt(1 + k * k); return { base: base, sd: sd, lo: base - CONFIG.Z90 * sd, hi: base + CONFIG.Z90 * sd }; }
+function drawRun(stage, rand){
+  var L = stage === 1 ? CONFIG.S1.SEASONS : CONFIG.S2.MONTHS;
+  return L.map(function(R){ var c = caseOf(R), x = c.base + c.sd * gauss(rand), sig = x + CONFIG.TIP_NOISE * c.sd * gauss(rand);
+    return stage === 1 ? { ret: x, sig: sig } : { buyers: Math.max(0, Math.round(x)), sig: sig }; });
 }
-function s1Run(st, i){
-  var r = CONFIG.S1.SEASONS[i].ret, K = st.E + st.D, ebit = cents(K * r), interest = cents(s1Interest(st.D, s1Own(st))), net = cents(ebit - interest), E2 = cents(st.E + net), failed = E2 <= 0;
-  return { ret: r, capital: cents(K), ebit: ebit, interest: interest, net: net, failed: failed, mine: cents(failed ? -st.E * st.s : net * st.s), unlev: cents(st.E * st.s * r),
-    st: failed ? { E: 0, s: st.s, D: 0, failed: 1, broke: i + 1, owed: cents(-E2) } : { E: cents(E2 * st.s), s: 1, D: 0, failed: st.failed || 0 } };
-}
-/* path: list of debt amounts, one per season */
-function s1Play(path){ var st = s1New(), i; for (i = 0; i < path.length; i++){ st = s1Run(s1Mix(st, path[i]), i).st; if (st.failed) return st; } return st; }
-/* Best possible follows the rule: keep borrowing while your stake's return beats the rate on the next slice of debt. */
-function s1Best(){
-  var n = CONFIG.S1.SEASONS.length, st = s1New(), path = [], i, k;
-  for (i = 0; i < n; i++){
-    var own = s1Stake(st), mx = s1DebtMax(st), best = 0, bv = -1e9;
-    for (k = 0; k <= CONFIG.S1.SIZE - 1; k++){ var d = Math.min(mx, k * own), v = s1StakeReturn(s1Mix(st, d), CONFIG.S1.SEASONS[i].ret); if (v > bv + 1e-9){ bv = v; best = d; } }
-    path.push(best); st = s1Run(s1Mix(st, best), i).st;
-  }
-  return { v: s1Stake(st), path: path };
-}
-/* Return on your stake for a season return r, with and without the debt. The two lines cross where r equals the card's rate. */
-function s1StakeReturn(st, r){ return ((st.E + st.D) * r - s1Interest(st.D, s1Own(st))) / st.E; }
-function s1DFL(st, r){ var ebit = (st.E + st.D) * r, int = s1Interest(st.D, s1Own(st)); return ebit > int ? ebit / (ebit - int) : null; }
 
-/* ---- Stage 2: one shop, six months. st = { cash, lease: months left on a lease } ---- */
+/* ---- Stage 1: one business, six seasons. State is your stake. ---- */
+function s1Interest(D, own){ var R = CONFIG.S1.RATES, t = 0, left = D, k; for (k = 0; k < R.length && left > 1e-9; k++){ var sl = k === R.length - 1 ? left : Math.min(left, own); t += sl * R[k]; left -= sl; } return t; }
+function s1NextRate(D, own){ var R = CONFIG.S1.RATES; return R[Math.min(R.length - 1, own > 0 ? Math.floor(D / own + 1e-9) : 0)]; }
+function s1DebtMax(own){ return cents((CONFIG.S1.SIZE - 1) * own); }
+/* The partner's share of the business after the season, priced off the public base case mu. null = the partner says no. */
+function s1PartnerShare(own, D, mu){
+  var K = CONFIG.S1.SIZE * own, P = K - own - D; if (P <= 1e-9) return 0;
+  var exp = own + P + K * mu - s1Interest(D, own), need = (1 + CONFIG.S1.PARTNER_RATE) * P;
+  return exp > need ? need / exp : null;
+}
+/* One season. a = 'sit' or a debt amount. r = the season's return. */
+function s1Season(own, a, r, mu){
+  if (a === 'sit') return { stake: own, sit: 1, sp: 0, D: 0, P: 0, int: 0 };
+  var K = CONFIG.S1.SIZE * own, D = Math.max(0, Math.min(s1DebtMax(own), a)), P = K - own - D, sp = s1PartnerShare(own, D, mu);
+  if (sp === null) return null;
+  var int = s1Interest(D, own), end = own + P + K * r - int;
+  if (end <= 0) return { stake: 0, broke: 1, owed: cents(-end), sp: sp, D: D, P: P, int: int };
+  return { stake: cents((1 - sp) * end), sp: sp, D: D, P: P, int: int };
+}
+/* Return on your stake for a season return r (unrounded, for charts). -1 = broke. */
+function s1StakeReturn(own, D, r, mu){ var K = CONFIG.S1.SIZE * own, P = K - own - D, sp = s1PartnerShare(own, D, mu); if (sp === null) return null; var end = own + P + K * r - s1Interest(D, own); return end <= 0 ? -1 : (1 - sp) * end / own - 1; }
+function s1DFL(own, D, m){ var ebit = CONFIG.S1.SIZE * own * m, int = s1Interest(D, own); return ebit > int ? ebit / (ebit - int) : null; }
+function s1Actions(own){ var a = ['sit'], k; for (k = 0; k <= CONFIG.S1.SIZE - 1; k++) a.push(k * own); return a; }
+/* The taught strategy: best expected stake given what you believe (public forecast, or Mango's tip). Payoffs are straight lines in debt, so the best mix sits on a step edge. */
+function s1RuleChoice(own, i, belief){ var mu = caseOf(CONFIG.S1.SEASONS[i]).base, m = belief == null ? mu : belief, best = 'sit', bv = own;
+  s1Actions(own).forEach(function(a){ var r = s1Season(own, a, m, mu), v = r ? r.stake : -1; if (v > bv + 1e-6){ bv = v; best = a; } }); return best; }
+function s1BreakEven(){ var R = CONFIG.S1.RATES; return (R[0] + R[1] + CONFIG.S1.PARTNER_RATE) / CONFIG.S1.SIZE; }
+/* Play a whole run with a policy(own, i, draw) -> { a, tip }. Used for the "best strategy" line and for tests. */
+function s1Sim(draws, policy){
+  var own = CONFIG.S1.START, tips = 0, hist = [];
+  for (var i = 0; i < draws.length; i++){
+    var mu = caseOf(CONFIG.S1.SEASONS[i]).base, p = policy(own, i, draws[i]);
+    if (p.tip){ own = cents(own * (1 - CONFIG.S1.TIP_PCT)); tips++; }
+    var a = p.a === 'sit' ? 'sit' : Math.min(p.a, s1DebtMax(own)), r = s1Season(own, a, draws[i].ret, mu);
+    if (!r) r = s1Season(own, s1DebtMax(own), draws[i].ret, mu);
+    hist.push({ a: a, ret: draws[i].ret, before: own, after: r.stake, broke: r.broke });
+    own = r.stake; if (r.broke) return { stake: 0, broke: i + 1, tips: tips, hist: hist };
+  }
+  return { stake: own, tips: tips, hist: hist };
+}
+var S1P = {
+  rule: function(own, i){ return { a: s1RuleChoice(own, i) }; },
+  hindsight: function(own, i, d){ var mu = caseOf(CONFIG.S1.SEASONS[i]).base, best = 'sit', bv = own; s1Actions(own).forEach(function(a){ var r = s1Season(own, a, d.ret, mu); if (r && r.stake > bv){ bv = r.stake; best = a; } }); return { a: best }; },
+  tipAlways: function(own, i, d){ return { a: s1RuleChoice(own * (1 - CONFIG.S1.TIP_PCT), i, tipCase(CONFIG.S1.SEASONS[i], d.sig).base), tip: 1 }; },
+  tipUnclear: function(own, i, d){ var c = caseOf(CONFIG.S1.SEASONS[i]); return Math.abs(c.base - s1BreakEven()) < c.sd ? S1P.tipAlways(own, i, d) : S1P.rule(own, i); },
+  allDebt: function(own){ return { a: s1DebtMax(own) }; },
+  allPartner: function(){ return { a: 0 }; },
+  sitAll: function(){ return { a: 'sit' }; },
+  twoStepsAlways: function(own){ return { a: 2 * own }; }
+};
+
+/* ---- Stage 2: one shop, six months. State = { cash, lease: months left on a lease } ---- */
 function s2CardCost(){ var c = CONFIG.S2; return cents(c.CARD_APR / 12 * (c.CARD_STOCK - c.STOCK) * c.COST); }
 function s2Margins(){ var c = CONFIG.S2; return { app: c.PRICE - c.COST - c.APP_FEE, stall: c.PRICE - c.COST }; }
-function s2New(base){ return { cash: base == null ? CONFIG.S2.START : base, lease: 0 }; }
-function s2Options(st, i){ if (st.lease > 0) return ['leased']; var o = ['app', 'stall']; if (i >= CONFIG.S2.LEASE_FROM && i + CONFIG.S2.LEASE_MONTHS <= CONFIG.S2.MONTHS.length) o.push('lease'); return o; }
-function s2Rent(st, way){ return st.lease > 0 || way === 'lease' ? CONFIG.S2.LEASE_RENT : CONFIG.S2.RENT; }
+/* way: 'app' | 'stall' (this month only) | 'lease' (sign one, sell at the stall) | 'leased' (stall, lease running) | 'sit' (closed) */
+function s2Options(lease, i){ var c = CONFIG.S2; if (lease > 0) return ['leased', 'sit']; var o = ['app', 'stall']; if (i >= c.LEASE_FROM && i + c.LEASE_MONTHS <= c.MONTHS.length) o.push('lease'); o.push('sit'); return o; }
+function s2Rent(lease, way){ return lease > 0 || way === 'lease' || way === 'leased' ? CONFIG.S2.LEASE_RENT : CONFIG.S2.RENT; }
+/* Profit at a buyer count for a way of selling with a given rent (charts and gauges) */
 function s2ProfitAt(buyers, sell, rent, card){
   var c = CONFIG.S2, m = s2Margins(), sales = Math.min(buyers, card ? c.CARD_STOCK : c.STOCK);
   return (sell === 'app' ? m.app * sales : m.stall * sales - rent) - (card ? s2CardCost() : 0);
 }
-function s2Play(st, i, way, card){
-  var c = CONFIG.S2, M = c.MONTHS[i], sell = (way === 'app' && st.lease <= 0) ? 'app' : 'stall', rent = s2Rent(st, way), cd = i >= c.CARD_FROM && !!card;
-  var profit = s2ProfitAt(M.buyers, sell, rent, cd), alt = s2ProfitAt(M.buyers, sell === 'app' ? 'stall' : 'app', c.RENT, cd);
-  return { buyers: M.buyers, sell: sell, rent: sell === 'stall' ? rent : 0, card: cd, profit: profit, alt: alt, st: { cash: st.cash + profit, lease: way === 'lease' ? c.LEASE_MONTHS - 1 : Math.max(0, st.lease - 1) } };
+function s2Profit(b, way, lease, card){
+  var c = CONFIG.S2;
+  if (way === 'sit') return -c.SIT_COST - (lease > 0 ? c.LEASE_RENT : 0);
+  return s2ProfitAt(b, way === 'app' ? 'app' : 'stall', s2Rent(lease, way), !!card);
 }
-function s2Range(){
-  var n = CONFIG.S2.MONTHS.length, lo = 1e9, hi = -1e9, bestPath = null;
-  (function go(st, i, path){
-    if (i === n){ if (st.cash < lo) lo = st.cash; if (st.cash > hi){ hi = st.cash; bestPath = path.slice(); } return; }
-    s2Options(st, i).forEach(function(w){ (i >= CONFIG.S2.CARD_FROM ? [false, true] : [false]).forEach(function(cd){ path.push(w + (cd ? '+card' : '')); go(s2Play(st, i, w, cd).st, i + 1, path); path.pop(); }); });
-  })(s2New(), 0, []);
-  return { lo: lo, hi: hi, path: bestPath };
-}
+function s2NextLease(way, lease){ return way === 'lease' ? CONFIG.S2.LEASE_MONTHS - 1 : Math.max(0, lease - 1); }
 function s2DOL(buyers, sell, rent, card){
   var m = s2Margins(), c = CONFIG.S2, sales = Math.min(buyers, card ? c.CARD_STOCK : c.STOCK), cm = (sell === 'app' ? m.app : m.stall) * sales, ebit = cm - (sell === 'app' ? 0 : rent), ebt = ebit - (card ? s2CardCost() : 0);
   return { dol: ebit > 0 ? cm / ebit : null, dtl: ebt > 0 ? cm / ebt : null };
 }
-if (typeof module !== 'undefined') module.exports = { CONFIG: CONFIG, cents: cents, s1Rate: s1Rate, s1New: s1New, s1DebtMax: s1DebtMax, s1Mix: s1Mix, s1Interest: s1Interest, s1NextRate: s1NextRate, s1Stake: s1Stake, s1Partner: s1Partner, s1Run: s1Run, s1Play: s1Play, s1Best: s1Best, s1StakeReturn: s1StakeReturn, s1DFL: s1DFL, s2CardCost: s2CardCost, s2Margins: s2Margins, s2New: s2New, s2Options: s2Options, s2Rent: s2Rent, s2ProfitAt: s2ProfitAt, s2Play: s2Play, s2Range: s2Range, s2DOL: s2DOL };
+/* Chance of each whole number of buyers under a forecast (normal, rounded, never below 0) */
+function phi(z){ var t = 1 / (1 + 0.2316419 * Math.abs(z)), d = 0.3989423 * Math.exp(-z * z / 2), p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274)))); return z > 0 ? 1 - p : p; }
+function s2Dist(f){ var out = [], k, hi = Math.ceil(f.base + 6 * f.sd); for (k = 0; k <= Math.max(hi, 0); k++){ var p = k === 0 ? phi((0.5 - f.base) / f.sd) : phi((k + 0.5 - f.base) / f.sd) - phi((k - 0.5 - f.base) / f.sd); if (p > 1e-9) out.push([k, p]); } return out; }
+function s2Expect(f, way, lease, card){ return s2Dist(f).reduce(function(a, kp){ return a + kp[1] * s2Profit(kp[0], way, lease, card); }, 0); }
+/* Best plan for the rest of the game; value(i, way, lease, card) scores one month */
+function s2Search(i, lease, value, memo){
+  var n = CONFIG.S2.MONTHS.length; if (i === n) return { v: 0, path: [] };
+  memo = memo || {}; var key = i + ':' + lease; if (memo[key]) return memo[key];
+  var best = null;
+  s2Options(lease, i).forEach(function(w){ (i >= CONFIG.S2.CARD_FROM && w !== 'sit' ? [false, true] : [false]).forEach(function(cd){
+    var now = value(i, w, lease, cd), rest = s2Search(i + 1, s2NextLease(w, lease), value, memo), v = now + rest.v;
+    if (!best || v > best.v + 1e-6) best = { v: v, path: [w + (cd ? '+card' : '')].concat(rest.path) };
+  }); });
+  return (memo[key] = best);
+}
+function s2Forecast(i){ return caseOf(CONFIG.S2.MONTHS[i]); }
+var s2EC = {};
+function s2ExpPublic(j, w, l, cd){ var k = j + w + l + cd; return k in s2EC ? s2EC[k] : (s2EC[k] = s2Expect(s2Forecast(j), w, l, cd)); }
+/* The taught strategy for month i: plan the rest of the game on expected profit (Mango's forecast for this month if bought) */
+function s2RuleChoice(i, lease, f0){ return s2Search(i, lease, function(j, w, l, cd){ return j === i && f0 ? s2Expect(f0, w, l, cd) : s2ExpPublic(j, w, l, cd); }).path[0]; }
+function s2Sim(draws, policy, base){
+  var c = CONFIG.S2, cash = base == null ? c.START : base, lease = 0, tips = 0, hist = [];
+  for (var i = 0; i < draws.length; i++){
+    var p = policy(i, lease, draws); if (p.tip && cash >= 2 * c.TIP_COST){ cash -= c.TIP_COST; tips++; }
+    var parts = p.a.split('+'), w = parts[0], cd = parts[1] === 'card' && i >= c.CARD_FROM, pr = s2Profit(draws[i].buyers, w, lease, cd);
+    cash = cents(cash + pr); hist.push({ a: p.a, buyers: draws[i].buyers, profit: pr }); lease = s2NextLease(w, lease);
+  }
+  return { cash: cash, profit: cents(cash - (base == null ? c.START : base)), tips: tips, hist: hist };
+}
+function s2TipPolicy(useTip){ return function(i, lease, draws){ var t = useTip && useTip(i); return { a: s2RuleChoice(i, lease, t ? tipCase(CONFIG.S2.MONTHS[i], draws[i].sig) : null), tip: t ? 1 : 0 }; }; }
+var S2P = {
+  rule: s2TipPolicy(null),
+  tipAlways: s2TipPolicy(function(){ return true; }),
+  tipUnclear: s2TipPolicy(function(i){ var f = s2Forecast(i), m = s2Margins(), even = CONFIG.S2.RENT / (m.stall - m.app); return Math.abs(f.base - even) < f.sd; }),
+  hindsight: function(i, lease, draws){ return { a: s2Search(i, lease, function(j, w, l, cd){ return s2Profit(draws[j].buyers, w, l, cd); }).path[0] }; },
+  appAll: function(){ return { a: 'app' }; },
+  stallAll: function(i, lease){ return { a: lease > 0 ? 'leased' : 'stall' }; },
+  sitAll: function(){ return { a: 'sit' }; }
+};
+if (typeof module !== 'undefined') module.exports = { CONFIG: CONFIG, cents: cents, rng: rng, gauss: gauss, caseOf: caseOf, tipCase: tipCase, drawRun: drawRun, s1Interest: s1Interest, s1NextRate: s1NextRate, s1DebtMax: s1DebtMax, s1PartnerShare: s1PartnerShare, s1Season: s1Season, s1StakeReturn: s1StakeReturn, s1DFL: s1DFL, s1RuleChoice: s1RuleChoice, s1BreakEven: s1BreakEven, s1Sim: s1Sim, S1P: S1P, s2CardCost: s2CardCost, s2Margins: s2Margins, s2Options: s2Options, s2Rent: s2Rent, s2ProfitAt: s2ProfitAt, s2Profit: s2Profit, s2NextLease: s2NextLease, s2DOL: s2DOL, s2Expect: s2Expect, s2Search: s2Search, s2Forecast: s2Forecast, s2RuleChoice: s2RuleChoice, s2Sim: s2Sim, S2P: S2P };
 </script>
 
 <script id="ui">
@@ -281,15 +334,12 @@ var SFX = {
 function buzz(p){ if (!muted && navigator.vibrate) try { navigator.vibrate(p); } catch (e){} }
 
 /* ======================= STATE ======================= */
-var S = lsGet('ll3'), ui = { hustle: 'sneakers', name: '', err: '', over: 0, tips: {} };
-if (S && S.v !== 3) S = null;
-function save(){ lsSet('ll3', S); }
+var S = lsGet('ll4'), ui = { hustle: 'sneakers', name: '', err: '', over: 0, tips: {} };
+if (S && S.v !== 4) S = null;
+function save(){ lsSet('ll4', S); }
 function H(){ return HUSTLES[S.hustle] || HUSTLES.sneakers; }
 function N(){ return roundCount(S.stage); }
-var bestCache = {};
-function best1(){ return bestCache.s1 || (bestCache.s1 = s1Best()); }
-function range2(){ return bestCache.s2 || (bestCache.s2 = s2Range()); }
-function headline(){ return S.stage === 1 ? s1Stake(S.st) : S.st.cash; }
+function headline(){ return S.stage === 1 ? S.st.own : S.st.cash; }
 
 /* ======================= SHARED UI ======================= */
 var FACE = { smug: '😼', wow: '😸', meh: '😾', wince: '🙀', quiet: '🐱' };
@@ -297,50 +347,50 @@ function mango(face, html){ return '<div class="mango"><div class="mface" aria-h
 function confetti(){ if (REDUCED) return; var cols = ['#FF8A1F', '#3DDC84', '#FFD23F', '#FFF6E0', '#E63946', '#4DA3FF']; for (var i = 0; i < 44; i++){ (function(i){ var d = document.createElement('div'); d.className = 'confetti'; d.style.left = Math.random() * 100 + 'vw'; d.style.background = cols[i % cols.length]; d.style.animationDelay = Math.random() * 0.6 + 's'; document.body.appendChild(d); setTimeout(function(){ d.remove(); }, 2800); })(i); } }
 function header(){
   var prog = S.phase === 'decide' || S.phase === 'reveal' ? (S.stage === 1 ? 'Season ' : 'Month ') + (S.i + 1) + ' of ' + N() : '';
-  return '<div class="top"><div class="chip"><span aria-hidden="true">' + H().icon + '</span><span class="nm">' + esc(S.name) + '</span></div><span class="prog">' + prog + '</span><div class="cash num" id="cash">' + money(headline()) + '</div><button class="iconbtn" data-act="mute" aria-label="' + (muted ? 'Turn sound on' : 'Turn sound off') + '">' + (muted ? '🔇' : '🔊') + '</button></div>';
+  return '<div class="top"><div class="chip"><span aria-hidden="true">' + H().icon + '</span><span class="nm">' + esc(S.name) + '</span></div><span class="prog">' + prog + '</span><div class="cash num" id="cash">' + m0(headline()) + '</div><button class="iconbtn" data-act="mute" aria-label="' + (muted ? 'Turn sound on' : 'Turn sound off') + '">' + (muted ? '🔇' : '🔊') + '</button></div>';
 }
 function footer(){ return '<p style="text-align:center;margin-top:18px"><button class="btn-ghost" data-act="over" style="min-height:44px;font-size:.85rem;color:var(--dim)">' + (ui.over ? 'Press again to start over' : 'Start over') + '</button></p>'; }
 function tip(id, text){ var open = !!ui.tips[id]; return '<button class="tipbtn" data-act="tip" data-v="' + id + '" aria-expanded="' + open + '" aria-label="' + (open ? 'Hide tip' : 'What does this mean?') + '">ⓘ</button>' + (open ? '<span class="tip" style="display:block" role="note">' + text + '</span>' : ''); }
-function dshare(e){ var K = e.pre.E + e.pre.D; return K > 0 ? Math.round(e.pre.D / K * 100) + '%' : '0%'; }
-var TOYS = ['feather wand', 'laser pointer', 'catnip mouse', 'crinkle ball', 'fancy cardboard box', 'string on a stick'];
-function tipBox(i){
-  var one = S.stage === 1, c = one ? CONFIG.S1 : CONFIG.S2, R = one ? c.SEASONS[i].tip : c.MONTHS[i].tip, cost = c.TIP_COST;
-  if (S.tipped && S.tipped[i]) return '<div class="mango" style="margin:10px 0 0">' + '<div class="mface" aria-hidden="true">' + FACE.smug + '</div><div class="bubble">' + (one ? 'This one lands between <b>' + pct(R[0]) + ' and ' + pct(R[1]) + '</b>.' : '<b>' + R[0] + ' to ' + R[1] + '</b> buyers. Count on it.') + ' You did not hear it from me.</div></div>';
-  var can = headline() >= cost * 2;
-  return '<button data-act="mango" style="width:100%;margin-top:10px"' + (can ? '' : ' disabled') + '>😼 Ask Mango: ' + money(cost) + ' for a ' + TOYS[i % TOYS.length] + '<small style="display:block;font-weight:500">' + (can ? 'A narrower forecast.' : 'Not enough cash for a tip.') + '</small></button>';
-}
-/* Sliders move in MIN_MOVE steps from $0; the last stop is the exact maximum, so Max goes all the way right. */
-function sliderTop(mx){ return Math.max(1, Math.ceil(mx / CONFIG.S1.MIN_MOVE - 1e-9)); }
-function toStop(a, mx){ return a >= mx - 0.005 ? sliderTop(mx) : Math.round(a / CONFIG.S1.MIN_MOVE); }
-function fromStop(i, mx){ return i >= sliderTop(mx) ? mx : Math.min(mx, i * CONFIG.S1.MIN_MOVE); }
-function mixBar(pre){
-  var K = pre.E + pre.D, own = pre.E * pre.s, P = pre.E - own, seg = function(v, col, txt){ return v > 0 ? '<div style="width:' + (v / K * 100) + '%;background:' + col + '">' + (v / K >= 0.18 ? txt + ' ' + m0(v) : '') + '</div>' : ''; };
-  return '<div class="mixbar">' + seg(own, '#3DDC84', 'You') + seg(pre.D, '#FF8A1F', 'Debt') + seg(P, '#6BB6FF', 'Partner') + '</div>' +
-    '<div class="mixleg"><span><i class="dot" style="background:#3DDC84"></i>Your money</span><span><i class="dot" style="background:#FF8A1F"></i>Card debt</span><span><i class="dot" style="background:#6BB6FF"></i>Partner\'s money</span></div>';
-}
-function mixSlider(st, D){
-  var mx = s1DebtMax(st), st50 = CONFIG.S1.MIN_MOVE, top = sliderTop(mx), P = mx - D;
-  return '<input type="range" id="mix" min="0" max="' + top + '" step="1" value="' + (top - toStop(D, mx)) + '" data-max="' + mx + '" aria-label="How to fund the rest: card debt or partner money" aria-valuetext="' + money(D) + ' card debt, ' + money(P) + ' partner money">' +
-    '<div class="ends"><span>All card debt</span><span>All partner</span></div>' +
-    '<div class="mixbtns"><button data-act="mix" data-v="max">All debt</button><button data-act="mix" data-v="0">All partner</button><button data-act="mix" data-v="+">More debt</button><button data-act="mix" data-v="-">More partner</button></div>';
-}
-function s1D(){ var mx = s1DebtMax(S.st); return Math.max(0, Math.min(mx, S.dt == null ? 0 : S.dt)); }
-function midWord(i){ return tipRange(i) ? 'At the middle of Mango\'s range' : 'At the middle of the forecast'; }
-function tipRange(i){ var one = S.stage === 1, c = one ? CONFIG.S1 : CONFIG.S2; return S.tipped && S.tipped[i] ? (one ? c.SEASONS[i] : c.MONTHS[i]).tip : null; }
-/* Dollar amount with its percentage return on what you started with, e.g. "$2,517.96 (+404%)" */
-function withRet(v, base){ return money(v) + ' <span class="dim" style="font-weight:600">(' + pct((v - base) / base) + ')</span>'; }
-function terms(rows){ return '<table><thead><tr><th>What you did</th><th>What it\'s called</th></tr></thead><tbody>' + rows.map(function(r){ return '<tr><td>' + r[0] + '</td><td><b>' + r[1] + '</b></td></tr>'; }).join('') + '</tbody></table>'; }
 function met(l, v){ return '<div class="met"><span>' + l + '</span><b class="num">' + v + '</b></div>'; }
-/* One chart helper for both stages: lines over a shaded forecast band. */
+function terms(rows){ return '<table><thead><tr><th>What you did</th><th>What it\'s called</th></tr></thead><tbody>' + rows.map(function(r){ return '<tr><td>' + r[0] + '</td><td><b>' + r[1] + '</b></td></tr>'; }).join('') + '</tbody></table>'; }
+/* What Mango wants for a tip: a real item at about that price (the condo is the one joke) */
+function toy(cost){ return cost < 40 ? 'a bag of fancy treats' : cost < 100 ? 'a camera feeder' : cost < 250 ? 'a self-cleaning litter box' : cost < 500 ? 'a designer cat tree' : cost < 1000 ? 'a robot litter box' : 'a gold-plated cat condo'; }
+function tipCost(){ return S.stage === 1 ? cents(S.st.own * CONFIG.S1.TIP_PCT) : CONFIG.S2.TIP_COST; }
+function tipped(i){ return !!(S.tipped && S.tipped[i]); }
+/* The forecast the student sees: the public one, or Mango's sharper one once bought */
+function fcast(i){ var R = S.stage === 1 ? CONFIG.S1.SEASONS[i] : CONFIG.S2.MONTHS[i]; return tipped(i) ? tipCase(R, S.draws[i].sig) : caseOf(R); }
+function n0(x){ return Math.max(0, Math.round(x)); }
+function forecastBox(i){
+  var R = S.stage === 1 ? CONFIG.S1.SEASONS[i] : CONFIG.S2.MONTHS[i], c = caseOf(R), one = S.stage === 1;
+  return '<div class="forecast"><span class="dim">' + (one ? 'Likely return' : 'Likely buyers') + (one && i === 0 ? tip('ret', '+20% means $100 of product sells for $120, after fees.') : '') + '</span><b class="num">' + (one ? pct(c.base) : n0(c.base)) + '</b><small style="display:block;color:var(--dim);font-size:.85rem">1 in 10 chance ' + (one ? 'below ' + pct(c.lo) : c.lo <= 0 ? 'of none' : 'below ' + n0(c.lo)) + ', 1 in 10 above ' + (one ? pct(c.hi) : n0(c.hi)) + '</small></div>';
+}
+function tipBox(i){
+  var one = S.stage === 1, cost = tipCost();
+  if (tipped(i)){
+    var f = fcast(i), say;
+    if (one){
+      var a = s1RuleChoice(S.st.own, i, f.base), own = S.st.own, k = a === 'sit' ? -1 : Math.round(a / own);
+      say = 'I checked what these sold for on three resale apps. Likely <b>' + pct(f.base) + '</b>, between <b>' + pct(f.lo) + ' and ' + pct(f.hi) + '</b>. ' +
+        (a === 'sit' ? 'Not enough to pay for the money. Sit this one out.' : k >= 3 ? 'Use all debt. The partner would take too much of a season this good.' : k === 2 ? 'Use debt at 6% and 9%. Use the partner for the rest.' : k === 1 ? 'Use debt at 6% only. Use the partner for the rest.' : 'Use the partner only.');
+    } else {
+      var w = s2RuleChoice(i, S.st.lease, f).split('+');
+      say = 'I counted foot traffic at the market last Saturday. Likely <b>' + n0(f.base) + '</b> buyers, between <b>' + n0(f.lo) + ' and ' + n0(f.hi) + '</b>. ' +
+        (S.st.lease > 0 && w[0] === 'leased' ? 'Your lease is running, so sell at the stall.' : w[0] === 'app' ? 'Use the app.' : w[0] === 'stall' ? 'The stall should pay.' : w[0] === 'lease' ? 'Sign the lease.' : 'Close this month.') + (w[1] ? ' Borrow for 40 items.' : '');
+    }
+    return '<div class="mango" style="margin:10px 0 0"><div class="mface" aria-hidden="true">' + FACE.smug + '</div><div class="bubble">' + say + '</div></div>';
+  }
+  var can = one || S.st.cash >= cost * 2;
+  return '<button data-act="mango" style="width:100%;margin-top:10px"' + (can ? '' : ' disabled') + '>😼 Ask Mango: ' + money(cost) + ' for ' + toy(cost) + (one || !can ? '<small style="display:block;font-weight:500">' + (!can ? 'Not enough cash.' : (CONFIG.S1.TIP_PCT * 100) + '% of your stake') + '</small>' : '') + '</button>';
+}
+/* One chart helper for both stages: lines over a shaded forecast band, with a dashed line at the likely result. */
 function plot(o){
   var W = 320, L = 52, R = 312, T = 10, B = 172, h = '';
-  function px(x){ return L + (x - o.x0) / (o.x1 - o.x0) * (R - L); }
+  function px(x){ return L + (Math.max(o.x0, Math.min(o.x1, x)) - o.x0) / (o.x1 - o.x0) * (R - L); }
   function py(y){ return B - (Math.max(o.y0, Math.min(o.y1, y)) - o.y0) / (o.y1 - o.y0) * (B - T); }
-  h += '<rect x="' + px(o.band[0]) + '" y="' + T + '" width="' + Math.max(2, px(o.band[1]) - px(o.band[0])) + '" height="' + (B - T) + '" fill="#FFD23F" fill-opacity="' + (o.tip ? '.08' : '.22') + '"><title>The forecast range</title></rect>';
-  if (o.tip) h += '<rect x="' + px(o.tip[0]) + '" y="' + T + '" width="' + Math.max(2, px(o.tip[1]) - px(o.tip[0])) + '" height="' + (B - T) + '" fill="#FFD23F" fill-opacity=".35" stroke="#FFD23F" stroke-width="2"><title>Mango\'s tip</title></rect>';
+  h += '<rect x="' + px(o.band[0]) + '" y="' + T + '" width="' + Math.max(2, px(o.band[1]) - px(o.band[0])) + '" height="' + (B - T) + '" fill="#FFD23F" fill-opacity="' + (o.tip ? '.35' : '.22') + '"' + (o.tip ? ' stroke="#FFD23F" stroke-width="2"' : '') + '><title>' + (o.tip ? 'Mango\'s forecast' : 'The forecast') + '</title></rect>';
+  if (o.likely != null) h += '<line x1="' + px(o.likely) + '" y1="' + T + '" x2="' + px(o.likely) + '" y2="' + B + '" stroke="#FFD23F" stroke-dasharray="4 4"/>';
   o.yt.forEach(function(v){ h += '<line x1="' + L + '" y1="' + py(v) + '" x2="' + R + '" y2="' + py(v) + '" stroke="' + (v ? '#2A3760' : '#7C8BBB') + '"/><text x="' + (L - 5) + '" y="' + (py(v) + 4) + '" text-anchor="end" fill="#B9C2DC">' + o.yf(v) + '</text>'; });
   o.xt.forEach(function(v){ h += '<text x="' + px(v) + '" y="' + (B + 16) + '" text-anchor="middle" fill="#B9C2DC">' + o.xf(v) + '</text>'; });
-  if (o.vline != null) h += '<line x1="' + px(o.vline) + '" y1="' + T + '" x2="' + px(o.vline) + '" y2="' + B + '" stroke="#B9C2DC" stroke-dasharray="4 4"/>';
   o.lines.forEach(function(ln){ var pts = ln.pts.map(function(p){ return px(p[0]).toFixed(1) + ',' + py(p[1]).toFixed(1); }).join(' '); h += '<polyline points="' + pts + '" fill="none" stroke="' + ln.col + '" stroke-width="' + (ln.w || 3) + '" stroke-linecap="round" stroke-linejoin="round"' + (ln.dash ? ' stroke-dasharray="6 5"' : '') + '>' + (ln.title ? '<title>' + ln.title + '</title>' : '') + '</polyline>'; });
   if (o.mark) o.mark.forEach(function(mk){ h += '<circle cx="' + px(mk[0]) + '" cy="' + py(mk[1]) + '" r="6" fill="' + mk[2] + '" stroke="#0B1228" stroke-width="2"/>'; });
   h += '<text x="' + ((L + R) / 2) + '" y="' + (B + 34) + '" text-anchor="middle">' + o.xl + '</text>';
@@ -356,123 +406,141 @@ function startScreen(){
     '<div class="card plain"><label class="field"><span>Your name</span><input id="f-name" maxlength="20" autocomplete="off" placeholder="Up to 20 letters" value="' + esc(ui.name) + '"></label><div class="field"><span>What you sell</span><div class="hgrid">' + hs + '</div></div><p class="err" role="alert">' + esc(ui.err) + '</p>' +
     '<div style="display:grid;gap:8px"><button class="btn-go" data-act="start" data-v="1">Stage 1 · Financial leverage and capital structure</button><button class="btn-go" data-act="start" data-v="2">Stage 2 · Adds operating leverage</button></div></div>';
 }
-function startLine(){ var c2 = CONFIG.S2; return S.from1 == null ? 'No Stage 1 result on this device, so you start with <b>' + money(S.base) + '</b>.' : S.from1 >= c2.START ? 'Your best Stage 1 result was <b>' + money(S.from1) + '</b>. That is your starting cash.' : 'Your best Stage 1 result was ' + money(S.from1) + '. Mango tops you up to <b>' + money(S.base) + '</b> to start.'; }
+function startLine(){ var c2 = CONFIG.S2; return S.from1 == null ? 'You start with <b>' + money(S.base) + '</b>.' : S.from1 >= c2.START ? 'Your last Stage 1 result was <b>' + money(S.from1) + '</b>. That is your starting cash.' : 'Your last Stage 1 result was ' + money(S.from1) + '. Mango tops you up to <b>' + money(S.base) + '</b>.'; }
 function introScreen(){
   var c1 = CONFIG.S1, c2 = CONFIG.S2, m = s2Margins(), body = S.stage === 1 ?
-    '<h2>Six seasons. One resale business.</h2><p>Your business starts with <b>' + money(c1.START) + '</b>, all yours. Each season you <b>flip</b> product: buy it and resell it for more.</p><p><b>Goal:</b> end Season 6 with the biggest <b>stake</b> (what your share of the business is worth) you can, without going broke.</p><p><b>Each season:</b></p><ol style="margin:.3em 0 .5em;padding-left:1.3em"><li>Read the forecast: what the flip might earn.</li><li>Your business invests ' + c1.SIZE + '× your stake. Choose how to pay for the part you do not cover: card debt, a partner\'s money, or a mix.</li><li>Run the season and see what happened.</li></ol><p>The card costs ' + p0(s1Rate()) + ' a season, more if you borrow more. Go broke and the game ends.</p>' :
-    '<h2>Six months. One shop.</h2><p>' + startLine() + ' You sell ' + H().item + ' for ' + money(c2.PRICE) + '. Your supplier gives you ' + c2.STOCK + ' a month on credit: you pay ' + money(c2.COST) + ' for each one you sell and send back the rest.</p><p><b>Goal:</b> make the most profit in six months.</p><p><b>Each month:</b></p><ol style="margin:.3em 0 .5em;padding-left:1.3em"><li>Read the forecast: how many buyers might come.</li><li>Choose how to sell: the <b>app</b> (' + money(c2.APP_FEE) + ' fee a sale, no rent) or a market <b>stall</b> (keep ' + money(m.stall) + ' a sale, ' + money(c2.RENT) + ' rent). A lease and borrowing for extra product open later.</li><li>Run the month and see who came.</li></ol><p>Starting cash differs, so compare your <b>profit</b> with classmates.</p>';
-  var cost = (S.stage === 1 ? c1 : c2).TIP_COST;
-  return header() + '<div class="card plain">' + body + '</div>' + mango(FACE.smug, 'You can trust my advice. It costs fancy cat toys: ' + money(cost) + ' a ' + (S.stage === 1 ? 'season' : 'month') + '.') + '<button class="btn-go" data-act="go" style="width:100%">Open for business</button>' + footer();
+    '<h2>Six seasons. One resale business.</h2><p>You start with <b>' + money(c1.START) + '</b>. Each season you buy product and resell it.</p><p><b>Goal:</b> end with the biggest <b>stake</b> you can. Your stake is what your share of the business is worth.</p><p><b>Each season:</b></p><ol style="margin:.3em 0 .5em;padding-left:1.3em"><li>Read the forecast.</li><li>The business invests ' + c1.SIZE + '× your stake. Pay for the rest with <b>debt</b>, a <b>partner</b>, or both. Or sit the season out.</li><li>Run the season. Results are random, so the forecast can miss.</li></ol><p><b>Debt</b> means credit card debt. It costs ' + c1.RATES.map(p0).join(', then ') + ' a season as you borrow more. You owe it even if you lose. Go broke and the game ends.</p>' :
+    '<h2>Six months. One shop.</h2><p>' + startLine() + ' You sell ' + H().item + ' for ' + money(c2.PRICE) + '. Your supplier gives you ' + c2.STOCK + ' a month: you pay ' + money(c2.COST) + ' for each one you sell and send back the rest.</p><p><b>Goal:</b> make the most profit in six months.</p><p><b>Each month:</b></p><ol style="margin:.3em 0 .5em;padding-left:1.3em"><li>Read the forecast.</li><li>Choose how to sell: the <b>app</b> (' + money(c2.APP_FEE) + ' fee a sale, no rent) or a <b>stall</b> (keep ' + money(m.stall) + ' a sale, pay ' + money(c2.RENT) + ' rent). Or close: storage still costs ' + money(c2.SIT_COST) + '.</li><li>Run the month. Buyers are random, so the forecast can miss.</li></ol>';
+  return header() + '<div class="card plain">' + body + '</div>' + mango(FACE.smug, S.stage === 1 ? 'My tips are good, not perfect. They cost a cat toy. Bigger stake, fancier toy.' : 'My tips are good, not perfect. ' + money(c2.TIP_COST) + ' a month, for a camera feeder.') + '<button class="btn-go" data-act="go" style="width:100%">Open for business</button>' + footer();
 }
 
 /* ======================= STAGE 1 ======================= */
-function fcLine(i){ var F = CONFIG.S1.SEASONS[i]; return pct(F.lo) + ' to ' + pct(F.hi); }
-function chart1(st, i, mark){
-  var F = CONFIG.S1.SEASONS[i], X0 = -0.45, X1 = 0.45, a = s1StakeReturn(st, X0), b = s1StakeReturn(st, X1), cap = CONFIG.S1.SIZE - 1, rt = s1Interest(cap, 1) / cap, m = Math.ceil(Math.max(Math.abs(X0 + cap * (X0 - rt)), X1 + cap * (X1 - rt)) * 2 - 1e-9) / 2, avg = st.D > 0 ? s1Interest(st.D, s1Own(st)) / st.D : s1Rate(), step = m > 1.6 ? 1 : m > 0.8 ? 0.5 : 0.25, /* fixed at the widest possible debt so lines can be compared */ yt = [], v;
-  for (v = -Math.floor(m / step) * step; v <= m + 1e-9; v += step) yt.push(Math.round(v * 100) / 100);
-  return plot({ x0: X0, x1: X1, y0: -m, y1: m, band: [F.lo, F.hi], tip: tipRange(i), yt: yt, xt: [-0.4, -0.2, 0, 0.2, 0.4], vline: avg,
-    yf: function(y){ return pct(y) || '0%'; }, xf: function(x){ return pct(x) || '0%'; }, xl: 'How the business does →', yl: 'How your money does', lab: [['No debt', '#FFF6E0'], ['With debt', '#FF8A1F']],
-    label: 'Return on your stake against the season return. The line with debt and the line with no debt cross at 6 percent.',
-    lines: [{ pts: [[X0, X0], [X1, X1]], col: '#FFF6E0', title: 'The same business with no debt' }, { pts: [[X0, a], [X1, b]], col: '#FF8A1F', w: 4, title: 'Your business, with its debt' }],
-    mark: mark != null ? [[mark, mark, '#FFF6E0'], [mark, s1StakeReturn(st, mark), '#FF8A1F']] : null });
+function mu1(i){ return caseOf(CONFIG.S1.SEASONS[i]).base; }
+function s1D(){ var mx = s1DebtMax(S.st.own); return Math.max(0, Math.min(mx, S.dt == null ? 0 : S.dt)); }
+/* Slider stops are MIN_MOVE apart; the last stop is the exact maximum. Left = all debt, right = all partner. */
+function sliderTop(mx){ return Math.max(1, Math.ceil(mx / CONFIG.S1.MIN_MOVE - 1e-9)); }
+function toStop(a, mx){ return a >= mx - 0.005 ? sliderTop(mx) : Math.round(a / CONFIG.S1.MIN_MOVE); }
+function fromStop(i, mx){ return i >= sliderTop(mx) ? mx : Math.min(mx, i * CONFIG.S1.MIN_MOVE); }
+function mixBar(own, D, sit){
+  var K = CONFIG.S1.SIZE * own, P = K - own - D, steps = CONFIG.S1.RATES.map(function(r, k){ var on = !sit && D > k * own + 0.005; return '<div style="width:25%;border-left:2px solid ' + (on ? '#FF8A1F' : '#3A4A7A') + ';padding-left:4px;color:' + (on ? '#FF8A1F' : '#7C8BBB') + ';font-weight:800;font-size:.8rem">' + p0(r) + '</div>'; }).join('');
+  var seg = function(v, col, txt){ return v > 0.005 ? '<div style="width:' + (v / K * 100) + '%;background:' + col + '">' + (v / K >= 0.1 ? txt : '') + '</div>' : ''; };
+  return '<div style="display:flex;margin:10px 0 2px' + (sit ? ';opacity:.4' : '') + '"><div style="width:25%;font-size:.8rem;color:var(--dim)">Debt rate →</div>' + steps + '</div>' +
+    '<div class="mixbar" style="margin-top:0' + (sit ? ';opacity:.4' : '') + '">' + seg(own, '#3DDC84', 'You') + seg(D, '#FF8A1F', 'Debt') + seg(P, '#6BB6FF', 'Partner') + '</div>' +
+    '<div style="text-align:right;font-size:.8rem;font-weight:800;color:#6BB6FF;margin:-2px 0 6px">Partner expects +' + p0(CONFIG.S1.PARTNER_RATE) + '</div>';
 }
-function guide1(i){
-  var c = CONFIG.S1, rate = s1Rate();
-  if (i === 0) return mango(FACE.smug, 'Debt starts at ' + p0(rate) + ' a season and costs more the more you borrow. A partner shares every win and every loss.');
-  return '';
+function mixSlider(own, D){
+  var mx = s1DebtMax(own), top = sliderTop(mx);
+  return '<input type="range" id="mix" min="0" max="' + top + '" step="1" value="' + (top - toStop(D, mx)) + '" data-max="' + mx + '" aria-label="How to pay for the rest: debt or partner" aria-valuetext="' + money(D) + ' debt, ' + money(mx - D) + ' partner">' +
+    '<div class="ends"><span>All debt</span><span>All partner</span></div>';
+}
+function chart1(own, D, sit, i, mark){
+  var X0 = -0.6, X1 = 0.6, mu = mu1(i), f = fcast(i), sr = function(d, r){ var v = s1StakeReturn(own, d, r, mu); return v == null ? -1 : v; }, xs = [], k;
+  for (k = 0; k <= 24; k++) xs.push(X0 + (X1 - X0) * k / 24);
+  var mine = sit ? xs.map(function(x){ return [x, 0]; }) : xs.map(function(x){ return [x, sr(D, x)]; });
+  return plot({ x0: X0, x1: X1, y0: -1.15, y1: 2.2, band: [f.lo, f.hi], tip: tipped(i), likely: f.base, yt: [-1, 0, 1, 2], xt: [-0.5, -0.25, 0, 0.25, 0.5],
+    yf: function(y){ return pct(y) || '0%'; }, xf: function(x){ return pct(x) || '0%'; }, xl: 'How the business does →', yl: 'How your money does', lab: [['No debt', '#FFF6E0'], [sit ? 'Sitting out' : 'Your mix', '#FF8A1F']],
+    label: 'Return on your stake against the season return, with no debt and with your mix.',
+    lines: [{ pts: xs.map(function(x){ return [x, sr(0, x)]; }), col: '#FFF6E0', title: 'All partner, no debt' }, { pts: mine, col: '#FF8A1F', w: 4, title: sit ? 'Sitting out' : 'Your mix' }],
+    mark: mark != null ? [[mark, sr(0, mark), '#FFF6E0'], [mark, sit ? 0 : sr(D, mark), '#FF8A1F']] : null });
 }
 function decide1(){
-  var i = S.i, st = S.st, c = CONFIG.S1, T = S1T[i], D = s1D(), pv = s1Mix(st, D), F = c.SEASONS[i], TR = tipRange(i), lo = TR ? TR[0] : F.lo, hi = TR ? TR[1] : F.hi, mid = (lo + hi) / 2, dfl = s1DFL(pv, mid), rate = s1Rate(), K = pv.E + pv.D, own = s1Stake(st);
-  var nxt = i + 1 < N() ? '' : '<p class="dim" style="margin-top:8px">This is the last season.</p>';
-  var h = guide1(i) + '<div class="card" style="--ac:' + T.ac + '"><span class="pill">Season ' + (i + 1) + ' of ' + N() + ' · ' + T.name + '</span><h2>' + esc(T.items[S.hustle]) + '</h2><p>' + T.story + '</p><div class="forecast"><span class="dim">Forecast: this season\'s return</span><b class="num">' + fcLine(i) + '</b>' + (i === 0 ? '<small>For example, +20% means $100 of product sells for $120 after fees.</small>' : '') + '</div>' + tipBox(i) + nxt + '</div>';
-  h += '<div class="card plain"><h3>This season the business invests <span style="color:var(--orange)">' + money(K) + '</span></h3><p class="dim" style="margin:0">That is ' + c.SIZE + '× your stake. Your ' + money(own) + ' goes in first. Choose how to pay for the other ' + money(K - own) + '.' + tip('cost', 'Card debt costs ' + c.RATES.map(pr).join(', then ') + ' a season on each ' + money(own) + ' you borrow, owed win or lose. A partner costs nothing up front, but takes their share of every win and shares every loss. Keep borrowing while your stake earns more than the rate on your next dollar.') + '</p>' +
-    mixBar(pv) + '<p class="dim" style="margin:0 0 4px;font-size:.85rem">Card rate: ' + c.RATES.map(function(x, k){ return pr(x) + ' on the ' + (k === 0 ? 'first' : k === c.RATES.length - 1 ? 'last' : 'next') + ' ' + money(own); }).join(', ') + '.</p>' + mixSlider(st, D) +
-    '<div class="mets">' + met('Card debt', money(pv.D)) + met('Partner\'s money', money(pv.E - own)) + met('You own', Math.round(pv.s * 100) + '%') + met('Interest this season', money(cents(s1Interest(pv.D, own)))) + met('Rate on your next dollar', pr(s1NextRate(pv.D, own))) + '</div>' +
-    (pv.D > 0 ? '<div class="gauge"><b>Degree of financial leverage (DFL): ' + (dfl ? dfl.toFixed(2) + '×' : 'very high') + '.</b>' + tip('g1', 'How much harder your result moves than the business\'s profit. With no debt it is 1.00×. More debt, bigger number.') + ' ' + (dfl ? midWord(i) + ', a 10% change in the season\'s profit moves your result ' + Math.round(dfl * 10) + '%.' : midWord(i) + ', the season would not even cover your interest.') + '</div>' : '') + '</div>';
-  h += '<div class="card plain"><h3>What this season could do to your stake' + tip('c1', 'Across: how the season goes for the whole business. Up: what happens to your money. The white line is no debt. The orange line is the debt you chose. They cross at the average rate on your debt. The yellow band is the forecast; a brighter band is Mango\'s tip.') + '</h3>' + chart1(pv, i) +
-    '<p style="margin:.4em 0 0;font-weight:700">Your stake could change ' + pct(s1StakeReturn(pv, lo)) + ' to ' + pct(s1StakeReturn(pv, hi)) + ' (' + signed(cents(own * s1StakeReturn(pv, lo))) + ' to ' + signed(cents(own * s1StakeReturn(pv, hi))) + ').</p></div>';
-  return h + '<button class="btn-go" data-act="run" style="width:100%;font-size:1.1rem">Run the season</button>';
+  var i = S.i, own = S.st.own, c = CONFIG.S1, T = S1T[i], sit = !!S.sit, D = s1D(), mu = mu1(i), f = fcast(i), K = c.SIZE * own, sp = s1PartnerShare(own, D, mu), dfl = s1DFL(own, D, f.base);
+  var h = (i === 0 ? mango(FACE.smug, 'Slide to choose debt or partner. Tap ⓘ if you\'re stuck.') : '') +
+    '<div class="card" style="--ac:' + T.ac + '"><span class="pill">Season ' + (i + 1) + ' of ' + N() + ' · ' + T.name + '</span><h2>' + esc(T.items[S.hustle]) + '</h2><p>' + T.story + '</p>' + forecastBox(i) + tipBox(i) + (i + 1 < N() ? '' : '<p class="dim" style="margin-top:8px">This is the last season.</p>') + '</div>';
+  h += '<div class="card plain"><h3>The business invests <span style="color:var(--orange)">' + m0(K) + '</span>. You cover ' + m0(K - own) + ' more.' + tip('cost', 'Your ' + money(own) + ' goes in first. Pay for the rest with debt, a partner, or both. Debt costs ' + c.RATES.map(p0).join(', then ') + ' on each ' + money(own) + ' you borrow. You owe it, win or lose. A partner expects to get back +' + p0(c.PARTNER_RATE) + ' on average, so they take a share of the business. They share losses too.') + '</h3>' +
+    mixBar(own, D, sit) + mixSlider(own, D) +
+    '<button data-act="sit" class="' + (sit ? 'mv on' : 'btn-ghost') + '" aria-pressed="' + sit + '" style="width:100%;margin-bottom:10px">' + (sit ? '✓ Sitting this season out' : 'Sit this season out') + '</button>' +
+    (sit ? '<p class="dim" style="margin:0">Your stake stays ' + money(own) + '. Move the slider to play instead.</p>' :
+      '<div class="mets" style="grid-template-columns:1fr 1fr 1fr">' + met('Debt', money(D)) + met('Partner\'s share', sp === null ? 'Says no' : sp > 0 ? Math.round(sp * 100) + '%' : 'None') + met('Next dollar', p0(s1NextRate(D, own))) + '</div>' +
+      '<div class="gauge"><b>Degree of financial leverage: ' + (D <= 0 ? '1.00×' : dfl ? dfl.toFixed(1) + '×' : 'very high') + '</b>' + tip('g1', 'How much harder your result moves than the business. With no debt it is 1.00×. More debt, bigger number.') + '</div>') + '</div>';
+  var lo = s1StakeReturn(own, D, f.lo, mu), hi = s1StakeReturn(own, D, f.hi, mu), mid = s1StakeReturn(own, D, f.base, mu);
+  h += '<div class="card plain"><h3>What this season could do to your stake' + tip('c1', 'Across: how the business does. Up: what happens to your money. White: no debt. Orange: your choice. The yellow band is the forecast; the dashed line is the likely result.') + '</h3>' + chart1(own, D, sit, i) +
+    '<p style="margin:.4em 0 0;font-weight:700">' + (sit ? 'Sitting out: your stake stays ' + money(own) + '.' : sp === null ? 'The partner says no to this mix. Use more debt, or sit out.' : 'Your stake: likely ' + pct(mid) + '. Could be ' + pct(lo) + ' to ' + pct(hi) + '.') + '</p></div>';
+  return h + '<p class="err" id="hint" role="alert"></p><button class="btn-go" data-act="run" style="width:100%;font-size:1.1rem">Run the season</button>';
+}
+function bars(mx, a, b){
+  function bar(label, v){ var hgt = Math.max(4, Math.round(Math.abs(v) / mx * 76)); return '<div class="bar"><div class="dim">' + label + '</div><div class="col"><div class="fill' + (v < 0 ? ' neg' : '') + '" data-h="' + hgt + '" style="height:' + (REDUCED ? hgt : 4) + 'px"></div></div><b class="num ' + (v < 0 ? 'down' : v > 0 ? 'up' : '') + '">' + signed(v) + '</b></div>'; }
+  return '<div class="bars">' + bar(a[0], a[1]) + bar(b[0], b[1]) + '</div>';
 }
 function reveal1(){
-  var e = S.hist[S.i], i = S.i, T = S1T[i], r = e.ret, rate = e.debt > 0 ? e.interest / e.debt : s1Rate(), mx = Math.max(Math.abs(e.mine), Math.abs(e.unlev), 1);
-  function bar(label, v){ var hgt = Math.max(4, Math.round(Math.abs(v) / mx * 76)); return '<div class="bar"><div class="dim">' + label + '</div><div class="col"><div class="fill' + (v < 0 ? ' neg' : '') + '" data-h="' + hgt + '" style="height:' + (REDUCED ? hgt : 4) + 'px"></div></div><b class="num ' + (v < 0 ? 'down' : 'up') + '">' + signed(v) + '</b></div>'; }
-  var line = 'The business had ' + money(e.capital) + ' of product. It ' + (e.ebit >= 0 ? 'made ' : 'lost ') + '<b>' + money(Math.abs(e.ebit)) + '</b>.' + (e.interest > 0 ? ' Interest took <b>' + money(e.interest) + '</b>.' : ' No interest to pay.') + (e.own < 0.999 && !e.failed ? ' You own ' + Math.round(e.own * 100) + '%, so your part is <b>' + signed(e.mine) + '</b>.' : '');
-  var say, face;
-  if (e.failed){ say = 'That wiped out the business. You still owe the card ' + money(e.owed) + '. Game over.'; face = FACE.wince; }
-  else if (e.debt <= 0){ say = r >= 0 ? 'A clean win. No bill to pay.' : 'Your partner took part of that hit. No interest on top.'; face = r >= 0 ? FACE.smug : FACE.meh; }
-  else if (r > rate){ say = 'The business earned ' + p0(r) + '. Your debt cost ' + pr(rate) + ' on average. Debt made the win bigger.'; face = FACE.wow; }
-  else if (r >= 0){ say = 'The business earned ' + p0(r) + '. Your debt cost ' + pr(rate) + ' on average. It cost more than it earned.'; face = FACE.meh; }
-  else { say = 'Your debt made the loss bigger.'; face = FACE.wince; }
+  var e = S.hist[S.i], i = S.i, T = S1T[i], r = e.ret, mx = Math.max(Math.abs(e.mine), Math.abs(e.cmp), 1), say, face;
+  if (e.failed){ say = 'That wiped out the business. You still owe ' + money(e.owed) + ' on the card. Game over.'; face = FACE.wince; }
+  else if (e.sat){ say = e.cmp < 0 ? 'Smart. You dodged that.' : 'You missed a win this time. Sitting out is safe, not free.'; face = e.cmp < 0 ? FACE.wow : FACE.meh; }
+  else if (e.D > 0){ say = e.mine >= 0 ? 'Debt made the win bigger.' : 'Debt made the loss bigger.'; face = e.mine >= 0 ? FACE.wow : FACE.wince; }
+  else { say = e.mine >= 0 ? 'The partner took a share of the win.' : 'The partner shared the loss.'; face = e.mine >= 0 ? FACE.smug : FACE.meh; }
+  var line = e.sat ? '' : '<p>' + (e.D > 0 ? 'Interest: <b>' + money(cents(e.int)) + '</b>. ' : '') + (e.sp > 0 ? 'The partner took <b>' + Math.round(e.sp * 100) + '%</b>.' : 'No partner.') + '</p>';
   return '<div class="card" style="--ac:' + T.ac + '"><span class="pill">Season ' + (i + 1) + ' · ' + T.name + '</span><p class="dim" style="text-align:center;margin:0">The season returned</p><div class="ticker num ' + (r >= 0 ? 'up' : 'down') + '" id="tick" data-final="' + pct(r) + '">' + pct(r) + '</div>' +
-    '<div class="bars">' + bar('Your stake', e.mine) + bar('With no debt', e.unlev) + '</div>' + (i === 0 ? '<p class="dim">Left: what you made. Right: what you would have made with no debt. The gap is what the debt did.</p>' : '') + '<p>' + line + '</p>' + (e.failed ? '<p><b>You went broke.</b></p>' : '') + '</div>' + mango(face, say) +
-    (i >= CONFIG.S1.CHART_FROM ? '<div class="card plain"><h3>Where the result landed</h3>' + chart1(e.pre, i, r) + '</div>' : '');
+    bars(mx, [e.sat ? 'You sat out' : 'You', e.mine], [e.cmpLabel, e.cmp]) + (i === 0 ? '<p class="dim">Left: what you made. Right: what ' + e.cmpLabel.toLowerCase() + ' would have made.</p>' : '') + line + (e.failed ? '<p><b>You went broke.</b></p>' : '') + '</div>' + mango(face, say) +
+    '<div class="card plain"><h3>Where the result landed</h3>' + chart1(e.before, e.D, e.sat, i, r) + '</div>';
 }
 function debrief1(){
-  var st = S.st, b = best1(), rate = s1Rate(), nd = s1Stake(s1Play([0, 0, 0, 0, 0, 0]));
+  var st = S.st;
   return header() + (st.failed ? mango(FACE.wince, 'Broke in Season ' + st.broke + '. Read this, then try again.') : '') + '<div class="card plain"><span class="pill" style="background:var(--yellow)">What just happened</span>' +
-    '<p><b>The rule:</b> keep borrowing while your stake earns more than the rate on your next dollar of debt (' + CONFIG.S1.RATES.map(pr).join(', ') + '). Use a partner\'s money for the rest. Debt makes wins and losses bigger; a partner shares them.</p>' +
-    '<p><b>Your capital structure</b> (share of the business paid for with debt), season by season: ' + S.hist.map(dshare).join(' → ') + '</p>' +
-    terms([['What the whole business earned in a season', 'Return on capital employed (ROCE)'], ['The card\'s rate on your next dollar', 'Marginal cost of debt'], ['Where borrowing more stops paying', 'Optimal capital structure'], ['Debt made wins and losses bigger', 'Financial leverage'], ['Your mix of card debt and owners\' money', 'Capital structure (debt and equity)'], ['Changing the mix from season to season', 'Capital restructuring'], ['The stake chart, and where its lines cross', 'EBIT-EPS chart, indifference point']]) +
-    '<p class="dim">This game ignores taxes. Interest lowers a tax bill, so real debt costs a little less than its rate.</p></div>' +
-    '<div class="card plain"><h3>Compare</h3><div class="mets">' + met('Your stake', withRet(s1Stake(st), CONFIG.S1.START)) + met('No debt, all six seasons', withRet(nd, CONFIG.S1.START)) + met('Best possible', withRet(b.v, CONFIG.S1.START)) + (st.failed ? met('Went broke in', 'Season ' + st.broke) : '') + '</div></div>' +
+    '<p><b>The rule:</b> use debt while it costs less than the partner\'s ' + p0(CONFIG.S1.PARTNER_RATE) + '. Sit out seasons that look weak.</p>' +
+    terms([['What the whole business earned in a season', 'Return on capital employed (ROCE)'], ['The debt rate on your next dollar', 'Marginal cost of debt'], ['What the partner expects (+' + p0(CONFIG.S1.PARTNER_RATE) + ')', 'Cost of equity'], ['Where more debt stops paying', 'Optimal capital structure'], ['Debt made wins and losses bigger', 'Financial leverage'], ['Your mix of debt and partner money', 'Capital structure'], ['The stake chart', 'EBIT-EPS chart'], ['Mango knew more than the partner', 'Information asymmetry']]) +
+    '<p class="dim">This game ignores taxes. Interest lowers a tax bill, so real debt costs a little less.</p></div>' +
     '<button class="btn-go" data-act="results" style="width:100%">See your receipt</button>' + footer();
 }
 
 /* ======================= STAGE 2 ======================= */
 function chart2(st, i, way, card, mark){
-  var c = CONFIG.S2, M = c.MONTHS[i], cd = i >= c.CARD_FROM && card, xmax = i >= c.CARD_FROM ? 40 : 24, rent = s2Rent(st, way), cap = cd ? c.CARD_STOCK : c.STOCK, sell = st.lease > 0 ? 'stall' : way === 'app' ? 'app' : way ? 'stall' : null;
+  var c = CONFIG.S2, f = fcast(i), cd = i >= c.CARD_FROM && card, xmax = i >= c.CARD_FROM ? 40 : 24, rent = s2Rent(st.lease, way), cap = cd ? c.CARD_STOCK : c.STOCK, sell = way === 'sit' ? null : st.lease > 0 ? 'stall' : way === 'app' ? 'app' : way ? 'stall' : null;
   function ln(s){ return [[0, s2ProfitAt(0, s, rent, cd)], [cap, s2ProfitAt(cap, s, rent, cd)], [xmax, s2ProfitAt(xmax, s, rent, cd)]]; }
-  var top = Math.max(s2ProfitAt(xmax, 'stall', c.LEASE_RENT, cd), s2ProfitAt(xmax, 'app', 0, cd)), low = Math.min(0, s2ProfitAt(0, 'stall', c.RENT, cd)), raw = (top - low) / 5, mag = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10)), step = [1, 2, 2.5, 5, 10].map(function(f){ return f * mag; }).filter(function(s){ return s >= raw; })[0], yt = [], v;
+  var top = Math.max(s2ProfitAt(xmax, 'stall', c.LEASE_RENT, cd), s2ProfitAt(xmax, 'app', 0, cd)), low = Math.min(0, s2ProfitAt(0, 'stall', c.RENT, cd)), raw = (top - low) / 5, mag = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10)), step = [1, 2, 2.5, 5, 10].map(function(x){ return x * mag; }).filter(function(s){ return s >= raw; })[0], yt = [], v;
   for (v = Math.floor(low / step) * step; v <= top + step / 2; v += step) yt.push(v);
-  return plot({ x0: 0, x1: xmax, y0: yt[0] - step * 0.3, y1: yt[yt.length - 1], band: [M.lo, M.hi], tip: tipRange(i), yt: yt, xt: xmax === 40 ? [0, 10, 20, 30, 40] : [0, 6, 12, 18, 24],
+  return plot({ x0: 0, x1: xmax, y0: yt[0] - step * 0.3, y1: yt[yt.length - 1], band: [Math.max(0, f.lo), f.hi], tip: tipped(i), likely: f.base, yt: yt, xt: xmax === 40 ? [0, 10, 20, 30, 40] : [0, 6, 12, 18, 24],
     yf: function(y){ return m0(y); }, xf: function(x){ return x; }, xl: 'Buyers this month',
-    label: 'Breakeven diagram: profit against buyers for the app and the stall.',
+    label: 'Breakeven chart: profit against buyers for the app and the stall.',
     lines: [{ title: 'App profit', pts: ln('app'), col: '#FFF6E0', w: !sell ? 3 : sell === 'app' ? 4 : 2, dash: sell && sell !== 'app' }, { title: 'Stall profit', pts: ln('stall'), col: '#FF8A1F', w: !sell ? 3 : sell === 'stall' ? 4 : 2, dash: sell && sell !== 'stall' }],
     mark: mark != null ? [[mark, s2ProfitAt(mark, 'app', rent, cd), '#FFF6E0'], [mark, s2ProfitAt(mark, 'stall', rent, cd), '#FF8A1F']] : null });
 }
 function guide2(i){
-  var c = CONFIG.S2, m = s2Margins();
-  if (i === 0) return mango(FACE.smug, money(c.RENT) + ' rent at ' + money(m.stall) + ' a sale takes ' + (c.RENT / m.stall) + ' sales just to pay the rent.');
+  var c = CONFIG.S2;
+  if (i === 0) return mango(FACE.smug, 'Pick how to sell. Tap ⓘ if you\'re stuck.');
   if (i === c.LEASE_FROM) return mango(FACE.smug, 'New: a <b>' + c.LEASE_MONTHS + '-month lease</b>. Cheaper rent, owed every month.');
   if (i === c.CARD_FROM) return mango(FACE.smug, 'New: <b>borrow</b> for ' + (c.CARD_STOCK - c.STOCK) + ' more items. Interest is owed even if they do not sell.');
   return '';
 }
+function mvBtn(v, on, title, sub, isNew){ return '<button class="mv' + (on ? ' on' : '') + '" data-act="move" data-v="' + v + '" aria-pressed="' + on + '"><b>' + title + (isNew ? '<span class="new">NEW</span>' : '') + '</b><small>' + sub + '</small></button>'; }
 function decide2(){
-  var i = S.i, st = S.st, c = CONFIG.S2, M = c.MONTHS[i], T = S2T[i], m = s2Margins(), opts = s2Options(st, i), way = S.move, cardOpen = i >= c.CARD_FROM, card = cardOpen && S.card, rent = s2Rent(st, way), sell = (way === 'app' && st.lease <= 0) ? 'app' : 'stall', TR2 = tipRange(i), mid = TR2 ? (TR2[0] + TR2[1]) / 2 : (M.lo + M.hi) / 2, g = s2DOL(mid, sell, rent, card), be = rent / m.stall;
-  var look = c.MONTHS.slice(i + 1).map(function(x, k){ return 'Month ' + (i + 2 + k) + ': ' + x.lo + ' to ' + x.hi; }).join(' · ');
-  var h = guide2(i) + '<div class="card" style="--ac:' + T.ac + '"><span class="pill">Month ' + (i + 1) + ' of ' + N() + ' · ' + T.name + '</span><h2>' + T.story + '</h2><div class="forecast"><span class="dim">Forecast: buyers this month</span><b class="num">' + M.lo + ' to ' + M.hi + '</b></div>' + tipBox(i) + (look ? '<p class="dim" style="margin-top:8px">Coming up. ' + look + '</p>' : '<p class="dim" style="margin-top:8px">This is the last month.</p>') + '</div>';
-  h += ('<div class="card plain"><h3>What this month could earn' + tip('c2', 'Across: buyers this month. Up: profit. Where the orange stall line crosses $0, you have paid the rent. Where the two lines cross, the stall and the app pay the same. The yellow band is the forecast; a brighter band is Mango\'s tip.') + '</h3>' + chart2(st, i, way, card) +
-    '<p class="legend"><i class="sw" style="background:#FFF6E0"></i>App: keep ' + money(m.app) + ' a sale<br><i class="sw" style="background:#FF8A1F"></i>Stall: keep ' + money(m.stall) + ' a sale, pay ' + money(rent) + ' rent</p>' +
-    '<div class="gauge"><b>The stall covers its rent by sale ' + Math.ceil(be) + '.</b> It beats the app after ' + (rent / (m.stall - m.app)) + ' sales.</div>' +
-    (!way && st.lease <= 0 ? '<div class="gauge"><b>Degree of operating leverage (DOL).</b> Choose the app or the stall below to see it.</div>' : '<div class="gauge"><b>' + (card ? 'Degree of total leverage (DTL): ' : 'Degree of operating leverage (DOL): ') + (sell === 'app' && !card ? '1.00×' : g.dtl ? g.dtl.toFixed(2) + '×' : 'very high') + '.</b>' + tip('g2', card ? 'How much harder profit moves than sales, counting both rent and card interest. Both are owed no matter what.' : 'How much harder profit moves than sales. Rent is owed no matter what, so it makes the number bigger. With no rent it is 1.00×.') + ' ' + (sell === 'app' && !card ? 'With no rent, profit moves exactly with sales.' : g.dtl ? midWord(i) + ', 10% fewer buyers means ' + Math.round(g.dtl * 10) + '% less profit.' : midWord(i) + ' you would not cover your fixed costs.') + '</div>') + '</div>');
+  var i = S.i, st = S.st, c = CONFIG.S2, T = S2T[i], m = s2Margins(), opts = s2Options(st.lease, i), way = S.move, sit = way === 'sit', cardOpen = i >= c.CARD_FROM && !sit, card = cardOpen && S.card, rent = s2Rent(st.lease, way), sell = way === 'app' ? 'app' : 'stall', f = fcast(i), g = s2DOL(f.base, sell, rent, card), be = rent / m.stall;
+  var look = c.MONTHS.slice(i + 1).map(function(x){ return n0(caseOf(x).base); }).join(' · ');
+  var h = guide2(i) + '<div class="card" style="--ac:' + T.ac + '"><span class="pill">Month ' + (i + 1) + ' of ' + N() + ' · ' + T.name + '</span><h2>' + T.story + '</h2>' + forecastBox(i) + tipBox(i) + '<p class="dim" style="margin-top:8px">' + (look ? 'Coming up, likely buyers: ' + look : 'This is the last month.') + '</p></div>';
+  h += '<div class="card plain"><h3>What this month could earn' + tip('c2', 'Across: buyers. Up: profit. Where the orange stall line crosses $0, you have paid the rent. Where the two lines cross, the stall and the app pay the same. The yellow band is the forecast; the dashed line is the likely number.') + '</h3>' + chart2(st, i, way, card) +
+    '<p class="legend"><i class="sw" style="background:#FFF6E0"></i>App: ' + money(m.app) + ' a sale<br><i class="sw" style="background:#FF8A1F"></i>Stall: ' + money(m.stall) + ' a sale, minus ' + money(rent) + ' rent</p>' +
+    '<div class="gauge"><b>Stall: pays its rent at ' + Math.ceil(be) + ' sales.</b> Beats the app at ' + Math.ceil(rent / (m.stall - m.app)) + '.</div>' +
+    (sit ? '' : '<div class="gauge"><b>' + (card ? 'Degree of total leverage: ' : 'Degree of operating leverage: ') + (!way ? 'choose how to sell' : sell === 'app' && !card ? '1.00×' : g.dtl ? g.dtl.toFixed(1) + '×' : 'very high') + '</b>' + tip('g2', card ? 'How much harder profit moves than sales, counting rent and card interest. Both are owed no matter what.' : 'How much harder profit moves than sales. Rent is owed no matter what, so it makes the number bigger. With no rent it is 1.00×.') + '</div>') + '</div>';
   h += '<div class="card plain"><h3>How do you sell this month?</h3><div class="moves">';
-  if (st.lease > 0) h += '<button class="mv on" disabled><b>⛱️ Stall, on your lease</b><small>' + money(c.LEASE_RENT) + ' rent is owed. ' + st.lease + ' month' + (st.lease === 1 ? '' : 's') + ' left, this one included.</small></button>';
+  if (st.lease > 0) h += mvBtn('leased', way === 'leased', '⛱️ Stall, on your lease', money(c.LEASE_RENT) + ' rent. ' + st.lease + ' month' + (st.lease === 1 ? '' : 's') + ' left, this one included.');
   else {
-    h += '<button class="mv' + (way === 'app' ? ' on' : '') + '" data-act="move" data-v="app" aria-pressed="' + (way === 'app') + '"><b>📱 The app</b><small>' + money(c.APP_FEE) + ' fee on each sale. No rent.</small></button>';
-    h += '<button class="mv' + (way === 'stall' ? ' on' : '') + '" data-act="move" data-v="stall" aria-pressed="' + (way === 'stall') + '"><b>⛱️ Stall, this month only</b><small>' + money(c.RENT) + ' rent, owed even if nobody comes.</small></button>';
-    if (opts.indexOf('lease') >= 0) h += '<button class="mv' + (way === 'lease' ? ' on' : '') + '" data-act="move" data-v="lease" aria-pressed="' + (way === 'lease') + '"><b>📝 Stall, sign a ' + c.LEASE_MONTHS + '-month lease' + (i === c.LEASE_FROM ? '<span class="new">NEW</span>' : '') + '</b><small>' + money(c.LEASE_RENT) + ' rent a month. You owe it for all ' + c.LEASE_MONTHS + ' months.</small></button>';
+    h += mvBtn('app', way === 'app', '📱 The app', money(c.APP_FEE) + ' fee on each sale. No rent.');
+    h += mvBtn('stall', way === 'stall', '⛱️ Stall, this month only', money(c.RENT) + ' rent, owed even if nobody comes.');
+    if (opts.indexOf('lease') >= 0) h += mvBtn('lease', way === 'lease', '📝 Stall, sign a ' + c.LEASE_MONTHS + '-month lease', money(c.LEASE_RENT) + ' a month. You owe all ' + c.LEASE_MONTHS + ' months.', i === c.LEASE_FROM);
   }
+  h += mvBtn('sit', sit, '🔒 Close this month', money(c.SIT_COST) + ' storage' + (st.lease > 0 ? ', plus the lease rent' : '') + '. No sales.');
   h += '</div>';
   if (cardOpen) h += '<h3 style="margin-top:14px">Product' + (i === c.CARD_FROM ? '<span class="new">NEW</span>' : '') + '</h3><div class="moves"><button class="mv' + (!card ? ' on' : '') + '" data-act="card" data-v="0" aria-pressed="' + !card + '"><b>📦 ' + c.STOCK + ' items</b><small>The usual. No borrowing.</small></button><button class="mv' + (card ? ' on' : '') + '" data-act="card" data-v="1" aria-pressed="' + !!card + '"><b>💳 ' + c.CARD_STOCK + ' items</b><small>Borrow for the extra ' + (c.CARD_STOCK - c.STOCK) + '. ' + money(s2CardCost()) + ' interest, owed no matter how many sell.</small></button></div>';
   return h + '</div><p class="err" id="hint" role="alert"></p><button class="btn-go" data-act="run" style="width:100%;font-size:1.1rem">Run the month</button>';
 }
 function reveal2(){
-  var e = S.hist[S.i], i = S.i, c = CONFIG.S2, T = S2T[i], m = s2Margins(), mx = Math.max(Math.abs(e.profit), Math.abs(e.alt), 1), sales = Math.min(e.buyers, e.card ? c.CARD_STOCK : c.STOCK);
-  function bar(label, v){ var hgt = Math.max(4, Math.round(Math.abs(v) / mx * 76)); return '<div class="bar"><div class="dim">' + label + '</div><div class="col"><div class="fill' + (v < 0 ? ' neg' : '') + '" data-h="' + hgt + '" style="height:' + (REDUCED ? hgt : 4) + 'px"></div></div><b class="num ' + (v < 0 ? 'down' : 'up') + '">' + signed(v) + '</b></div>'; }
-  var math = e.sell === 'stall' ? sales + ' × ' + money(m.stall) + ' − ' + money(e.rent) + ' rent' : sales + ' × ' + money(m.app);
-  if (e.card) math += ' − ' + money(s2CardCost()) + ' interest';
-  var say = e.sell === 'stall' ? (e.profit < 0 ? 'Rent does not check the weather.' : e.profit >= e.alt ? 'Enough buyers to cover the rent, and then ' + money(m.stall) + ' on each sale.' : 'You covered the rent. The app would still have paid more.') : (e.profit >= e.alt ? 'Slow month, no rent. Good.' : 'The app took ' + money(c.APP_FEE) + ' from every sale. ' + sales + ' times.');
-  if (e.card && e.buyers <= c.STOCK) say = 'You bought ' + c.CARD_STOCK + ' items and ' + e.buyers + ' people came. The interest was still due.';
+  var e = S.hist[S.i], i = S.i, c = CONFIG.S2, T = S2T[i], m = s2Margins(), mx = Math.max(Math.abs(e.profit), Math.abs(e.alt), 1), sales = Math.min(e.buyers, e.card ? c.CARD_STOCK : c.STOCK), say, math;
+  if (e.sell === 'sit'){ math = money(c.SIT_COST) + ' storage' + (e.rent ? ' + ' + money(e.rent) + ' lease rent' : ''); say = 'Closed this month. ' + (e.rent ? 'Storage and rent still cost ' + money(-e.profit) + '.' : 'Storage still cost ' + money(c.SIT_COST) + '.'); }
+  else {
+    math = e.sell === 'stall' ? sales + ' × ' + money(m.stall) + ' − ' + money(e.rent) + ' rent' : sales + ' × ' + money(m.app);
+    if (e.card) math += ' − ' + money(s2CardCost()) + ' interest';
+    say = e.sell === 'stall' ? (e.profit < 0 ? 'Rent does not check the weather.' : e.profit >= e.alt ? 'Enough buyers to cover the rent, and then ' + money(m.stall) + ' on each sale.' : 'You covered the rent. The app would still have paid more.') : (e.profit >= e.alt ? 'Slow month, no rent. Good.' : 'The app took ' + money(c.APP_FEE) + ' from every sale. ' + sales + ' times.');
+    if (e.card && e.buyers <= c.STOCK) say = 'You bought ' + c.CARD_STOCK + ' items and ' + e.buyers + ' people came. The interest was still due.';
+  }
+  var mine = e.sell === 'sit' ? 'Closed' : e.sell === 'stall' ? 'Your stall' : 'Your app sales', other = e.sell === 'app' ? 'The stall instead' : 'The app instead';
   return '<div class="card" style="--ac:' + T.ac + '"><span class="pill">Month ' + (i + 1) + ' · ' + T.name + '</span><p class="dim" style="text-align:center;margin:0">Buyers who showed up</p><div class="ticker num" id="tick" data-final="' + e.buyers + '">' + e.buyers + '</div>' +
-    '<div class="bars">' + bar(e.sell === 'stall' ? 'Your stall' : 'Your app sales', e.profit) + bar(e.sell === 'stall' ? 'The app instead' : 'The stall instead', e.alt) + '</div>' + (i === 0 ? '<p class="dim">Left: what you made. Right: what the other choice would have made.</p>' : '') + '<p class="num">' + math + ' = <b>' + money(e.profit) + '</b></p></div>' + mango(e.profit < 0 ? FACE.wince : e.profit >= e.alt ? FACE.wow : FACE.meh, say) +
-    ('<div class="card plain"><h3>Where the result landed</h3>' + chart2(e.pre, i, e.way, e.card, e.buyers) + '</div>');
+    bars(mx, [mine, e.profit], [other, e.alt]) + (i === 0 ? '<p class="dim">Left: what you made. Right: what the other choice would have made.</p>' : '') + '<p class="num">' + math + ' = <b>' + money(e.profit) + '</b></p></div>' + mango(e.profit < 0 ? FACE.wince : e.profit >= e.alt ? FACE.wow : FACE.meh, say) +
+    '<div class="card plain"><h3>Where the result landed</h3>' + chart2(e.pre, i, e.way, e.card, e.buyers) + '</div>';
 }
 function debrief2(){
-  var c = CONFIG.S2, m = s2Margins(), r = range2();
+  var c = CONFIG.S2, m = s2Margins();
   return header() + '<div class="card plain"><span class="pill" style="background:var(--yellow)">What just happened</span>' +
     '<p><b>The rule:</b> fixed costs make good months better and slow months worse. Take them on when you expect enough buyers.</p>' +
-    terms([['Rent, owed with 1 buyer or 20', 'Fixed cost'], ['The ' + money(m.stall) + ' you keep from each stall sale', 'Contribution margin'], [money(c.RENT) + ' ÷ ' + money(m.stall) + ' = ' + (c.RENT / m.stall) + ' sales to pay the rent', 'Breakeven'], ['Profit swinging harder than sales', 'Operating leverage'], ['Card interest, also owed no matter what', 'Financial leverage'], ['The chart you used each month', 'Breakeven diagram']]) + '</div>' +
-    '<div class="card plain"><h3>Compare</h3><div class="mets">' + met('Your profit', signed(S.st.cash - S.base)) + met('The app every month', signed(c.MONTHS.reduce(function(a, M){ return a + s2ProfitAt(M.buyers, 'app', 0, false); }, 0))) + met('Best possible', signed(r.hi - c.START)) + met('Lowest possible', signed(r.lo - c.START)) + '</div></div>' +
+    terms([['Rent and storage, owed with 1 buyer or none', 'Fixed cost'], ['The ' + money(m.stall) + ' you keep from each stall sale', 'Contribution margin'], [money(c.RENT) + ' ÷ ' + money(m.stall) + ' = ' + (c.RENT / m.stall) + ' sales to pay the rent', 'Breakeven'], ['Profit swinging harder than sales', 'Operating leverage'], ['Card interest, also owed no matter what', 'Financial leverage'], ['The chart you used each month', 'Breakeven chart']]) + '</div>' +
     '<button class="btn-go" data-act="results" style="width:100%">See your receipt</button>' + footer();
 }
 
@@ -481,48 +549,55 @@ function animateReveal(e){
   var el = $('#tick'), cashEl = $('#cash'); if (!el) return;
   var fin = el.getAttribute('data-final'), from = e.before, to = e.after, t0 = performance.now(), done = false, last = 0;
   function land(){
-    if (done) return; done = true; el.textContent = fin; el.classList.add('pop'); if (cashEl) cashEl.textContent = money(headline());
+    if (done) return; done = true; el.textContent = fin; el.classList.add('pop'); if (cashEl) cashEl.textContent = m0(headline());
     document.querySelectorAll('.bar .fill').forEach(function(f){ f.style.height = f.getAttribute('data-h') + 'px'; });
     if (e.failed){ SFX.bust(); buzz([80, 60, 200]); } else if (to > from){ SFX.win(); buzz(40); } else if (to < from){ SFX.loss(); buzz([60, 40, 60]); }
     app.removeEventListener('click', land);
   }
   if (REDUCED){ land(); return; }
-  if (cashEl) cashEl.textContent = money(from);
+  if (cashEl) cashEl.textContent = m0(from);
   app.addEventListener('click', land); setTimeout(land, 1500);
   (function frame(t){ if (done) return; var x = (t - t0) / 1300; if (x >= 1){ land(); return; } if (t - last > 70){ last = t; SFX.tick(); el.textContent = S.stage === 1 ? pct(Math.random() * 0.8 - 0.4) : Math.floor(Math.random() * 30); } requestAnimationFrame(frame); })(t0);
 }
 var ovTimer = null;
 function closeOv(){ ov.innerHTML = ''; clearTimeout(ovTimer); ui.ov = 0; }
 function showReflect(e){
-  var txt = S.stage === 1 ? (e.failed ? 'Your stake went from ' + money(e.before) + ' to nothing.' : 'Your stake fell from ' + money(e.before) + ' to ' + money(e.after) + '.') + '<br>' + (e.debt > 0 ? 'With no debt it would have fallen to ' + money(cents(e.before + e.unlev)) + '.' : 'You had no debt, so the loss stopped there.') : 'You paid ' + money(e.rent) + ' rent.<br>' + (e.buyers === 1 ? 'One person came.' : e.buyers + ' people came.');
+  var txt, sub;
+  if (S.stage === 1){
+    txt = e.sat ? 'You sat out.<br>All debt would have turned ' + money(e.before) + ' into ' + money(cents(Math.max(0, e.before + e.cmp))) + '.' : e.failed ? 'Your stake went from ' + money(e.before) + ' to nothing.' : 'Your stake fell from ' + money(e.before) + ' to ' + money(e.after) + '.';
+    sub = 'Debt makes losses bigger.';
+  } else { txt = 'You lost ' + money(-e.profit) + ' this month.'; sub = e.sell === 'sit' ? 'Storage is owed even when you close.' : 'Rent is owed whether anyone shows up or not.'; }
   ui.ov = 1;
-  ov.innerHTML = '<div class="overlay" role="alertdialog" aria-live="assertive"><div class="big">' + txt + '</div><p class="dim" style="margin-top:14px">' + (S.stage === 1 ? 'Debt changes the size of the loss.' : 'A fixed cost is owed whether anyone shows up or not.') + '</p><div class="hold"><i id="holdbar"></i></div><div id="rc" style="margin-top:20px;min-height:48px"></div></div>';
+  ov.innerHTML = '<div class="overlay" role="alertdialog" aria-live="assertive"><div class="big">' + txt + '</div><p class="dim" style="margin-top:14px">' + sub + '</p><div class="hold"><i id="holdbar"></i></div><div id="rc" style="margin-top:20px;min-height:48px"></div></div>';
   var hb = $('#holdbar'); if (REDUCED) hb.style.width = '100%'; else { hb.style.transition = 'width ' + CONFIG.REFLECT_SECONDS + 's linear'; requestAnimationFrame(function(){ requestAnimationFrame(function(){ hb.style.width = '100%'; }); }); }
   ovTimer = setTimeout(function(){ S.seen.reflect = 1; save(); var r = $('#rc'); if (r) r.innerHTML = '<button class="btn-go" data-act="closeov">Keep going</button>'; }, CONFIG.REFLECT_SECONDS * 1000);
 }
 
 /* ======================= RECEIPT ======================= */
-/* Compared with the safe choice: never borrowing (Stage 1) or the app every month (Stage 2). */
-function labelVsSafe(v, safe){ return v > safe + 1 ? 'Hustler' : v >= safe - 1 ? 'Played it safe' : 'Learned the hard way'; }
+/* Labels compare with the safe choice (sitting out every season; the app every month) and with the best strategy in the same seasons. */
+function labelFor(v, safe, smart){ return v >= smart - Math.abs(smart) * 0.05 && v > safe + 1 ? 'Legend' : v > safe + 1 ? 'Rising star' : v >= safe - 1 ? 'Played it safe' : 'Learned the hard way'; }
 function resultsScreen(){
-  var L = function(k, v){ return '<div class="line"><span>' + k + '</span><b>' + v + '</b></div>'; }, rows, head, extra, total = headline(), label;
+  var L = function(k, v){ return '<div class="line"><span>' + k + '</span><b>' + v + '</b></div>'; }, rows, head, extra, total = headline(), label, smart, best;
   if (S.stage === 1){
-    var b = best1().v, st = S.st;
-    var safe = s1Stake(s1Play([0, 0, 0, 0, 0, 0]));
-    label = st.failed ? 'Learned the hard way' : total >= b * 0.75 ? 'Legend' : labelVsSafe(total, safe);
-    head = '<tr><th>#</th><th>Move</th><th class="r">Return</th><th class="r">Debt share</th><th class="r">Stake</th></tr>';
-    rows = S.hist.map(function(e, i){ return '<tr><td>' + (i + 1) + '</td><td>' + e.label + '</td><td class="r num">' + pct(e.ret) + '</td><td class="r num">' + dshare(e) + '</td><td class="r num">' + (e.failed ? 'broke' : m0(e.after)) + '</td></tr>'; }).join('');
-    extra = (S.tipSpent ? L('Mango\'s tips', money(S.tipSpent)) : '') + (st.failed ? L('Went broke in', 'Season ' + st.broke) + L('Still owed to the card', money(st.owed)) : '');
+    var st = S.st; smart = s1Sim(S.draws, S1P.rule).stake;
+    label = st.failed ? 'Learned the hard way' : labelFor(total, CONFIG.S1.START, smart);
+    best = '<b>Best strategy:</b> borrow only while debt costs less than the partner\'s ' + p0(CONFIG.S1.PARTNER_RATE) + '. Sit out seasons that look weak.<br>In your seasons, that would have made <b>' + money(smart) + '</b>.';
+    head = '<tr><th>#</th><th>Move</th><th class="r">Return</th><th class="r">Stake</th></tr>';
+    rows = S.hist.map(function(e, i){ return '<tr><td>' + (i + 1) + '</td><td>' + e.label + '</td><td class="r num">' + pct(e.ret) + '</td><td class="r num">' + (e.failed ? 'broke' : m0(e.after)) + '</td></tr>'; }).join('');
+    extra = (S.tipSpent ? L('Mango\'s tips', money(S.tipSpent)) : '') + (st.failed ? L('Went broke in', 'Season ' + st.broke) + L('Still owed on the card', money(st.owed)) : '');
   } else {
-    var r = range2(), base = S.base == null ? CONFIG.S2.START : S.base, prof = total - base, plo = r.lo - CONFIG.S2.START, phi = r.hi - CONFIG.S2.START; safe = CONFIG.S2.MONTHS.reduce(function(a, M){ return a + s2ProfitAt(M.buyers, 'app', 0, false); }, 0); label = prof >= phi - (phi - plo) / 3 ? 'Legend' : labelVsSafe(prof, safe);
-    head = '<tr><th>#</th><th>Sold</th><th class="r">Buyers</th><th class="r">Profit</th><th class="r">Cash</th></tr>';
-    rows = S.hist.map(function(e, i){ return '<tr><td>' + (i + 1) + '</td><td>' + e.label + '</td><td class="r num">' + e.buyers + '</td><td class="r num">' + m0(e.profit) + '</td><td class="r num">' + m0(e.after) + '</td></tr>'; }).join('');
-    extra = L('Started with', money(base)) + (S.tipSpent ? L('Mango\'s tips', money(S.tipSpent)) : '') + L('Profit over six months', signed(prof)) + L('Months at the stall', S.hist.filter(function(e){ return e.sell === 'stall'; }).length + ' of ' + N()) + L('Months you lost money', S.hist.filter(function(e){ return e.profit < 0; }).length);
+    var base = S.base == null ? CONFIG.S2.START : S.base, prof = cents(total - base), safe = s2Sim(S.draws, S2P.appAll, base).profit; smart = s2Sim(S.draws, S2P.rule, base).profit;
+    label = labelFor(prof, safe, smart);
+    best = '<b>Best strategy:</b> use the stall when you expect more than ' + (CONFIG.S2.RENT / (s2Margins().stall - s2Margins().app)) + ' buyers, the app when you expect fewer.<br>In your months, that would have made <b>' + signed(smart) + '</b>.';
+    head = '<tr><th>#</th><th>Sold</th><th class="r">Buyers</th><th class="r">Profit</th></tr>';
+    rows = S.hist.map(function(e, i){ return '<tr><td>' + (i + 1) + '</td><td>' + e.label + '</td><td class="r num">' + e.buyers + '</td><td class="r num">' + m0(e.profit) + '</td></tr>'; }).join('');
+    extra = L('Started with', money(base)) + (S.tipSpent ? L('Mango\'s tips', money(S.tipSpent)) : '');
   }
   return '<div class="awning"></div><div class="receipt"><h2>' + esc(S.name.toUpperCase()) + '\'S RESALE CO.</h2><p style="text-align:center;margin:-6px 0 8px;font-size:.8rem;letter-spacing:1px">LEVERAGE LEGENDS</p>' + L('Name', H().icon + ' ' + esc(S.name)) + L('Stage', S.stage === 2 ? '2 · Operating leverage' : '1 · Financial leverage') + L('Played', new Date(S.doneAt || Date.now()).toLocaleDateString() + ' · try ' + (S.attempt || 1)) + extra +
-    '<p style="color:#555;text-align:center;margin:12px 0 0">' + (S.stage === 1 ? 'YOUR STAKE' : 'YOUR CASH') + '</p><div class="total num">' + money(total) + '</div><p style="text-align:center;margin:0;font-weight:800">' + (S.stage === 1 ? pct((total - CONFIG.S1.START) / CONFIG.S1.START) + ' on your ' + money(CONFIG.S1.START) : 'Profit: ' + signed(total - S.base)) + '</p><p style="text-align:center;font-weight:800">' + label + '</p><table><thead>' + head + '</thead><tbody>' + rows + '</tbody></table>' +
-    '<div class="copy">Compare with a classmate: same market, different choices. Then copy this receipt onto your handout, or take a screenshot.</div></div>' +
-    mango(label === 'Legend' ? FACE.wow : FACE.smug, label === 'Legend' ? 'Okay. Legend. Do not get loud about it.' : label === 'Played it safe' ? 'Safe. Nothing wrong with that. Now find someone who took a smart risk and ask how they knew.' : 'Find someone who ended higher. Ask what they did in ' + (S.stage === 1 ? 'season 4.' : 'month 3.')) + (S.stage === 1 ? '<button class="btn-go" data-act="stage2" style="width:100%;margin-bottom:8px">Go on to Stage 2 with ' + money(Math.max(CONFIG.S2.START, total, lsGet('ll3_s1_' + S.name.toLowerCase()) || 0)) + '</button>' : '') + '<button data-act="again" style="width:100%">Play again</button><button class="btn-ghost" data-act="home" style="width:100%;margin-top:8px">Back to the counter</button>';
+    '<p style="color:#555;text-align:center;margin:12px 0 0">' + (S.stage === 1 ? 'YOUR STAKE' : 'YOUR PROFIT') + '</p><div class="total num">' + (S.stage === 1 ? money(total) : signed(cents(total - S.base))) + '</div>' + (S.stage === 1 ? '<p style="text-align:center;margin:0;font-weight:800">' + pct((total - CONFIG.S1.START) / CONFIG.S1.START) + ' on your ' + money(CONFIG.S1.START) + '</p>' : '') + '<p style="text-align:center;font-weight:800;font-size:1.2rem">' + label + '</p>' +
+    '<p style="border-top:1px dashed #9A957F;padding-top:8px">' + best + '</p><table><thead>' + head + '</thead><tbody>' + rows + '</tbody></table>' +
+    '<div class="copy">Take a screenshot of this receipt.</div></div>' +
+    mango(label === 'Legend' ? FACE.wow : FACE.smug, label === 'Legend' ? 'Okay. Legend. Do not get loud about it.' : label === 'Played it safe' ? 'Safe. Nothing wrong with that. But safe did not grow your money.' : 'Everyone gets different luck. Compare your choices with a classmate, not your totals.') + (S.stage === 1 ? '<button class="btn-go" data-act="stage2" style="width:100%;margin-bottom:8px">Go on to Stage 2 with ' + money(Math.max(CONFIG.S2.START, total)) + '</button>' : '') + '<button data-act="again" style="width:100%">Play again</button><button class="btn-ghost" data-act="home" style="width:100%;margin-top:8px">Back to the counter</button>';
 }
 
 /* ======================= RENDER ======================= */
@@ -543,65 +618,66 @@ function render(){
   if (S.phase === 'reveal'){
     var e = S.hist[S.i], k = 'a' + S.i;
     if (!S.seen[k]){ S.seen[k] = 1; save(); animateReveal(e); } else document.querySelectorAll('.bar .fill').forEach(function(f){ f.style.height = f.getAttribute('data-h') + 'px'; });
-    var bad = S.stage === 1 ? (S.i === 3 && e.after < e.before) : (S.i === 2 && e.profit < 0);
-    if (bad && !S.seen.reflect && !ui.ov){ ui.ov = 1; ovTimer = setTimeout(function(){ if (ui.ov && S && S.phase === 'reveal') showReflect(e); }, REDUCED || S.seen.rw ? 50 : 2300); S.seen.rw = 1; save(); }
+    if (e.big && !S.seen.reflect && !ui.ov){ ui.ov = 1; ovTimer = setTimeout(function(){ if (ui.ov && S && S.phase === 'reveal') showReflect(e); }, REDUCED || S.seen.rw ? 50 : 2300); S.seen.rw = 1; save(); }
   }
   if (S.phase === 'results' && !ui.printed){ ui.printed = 1; confetti(); SFX.win(); }
 }
 
 /* ======================= ACTIONS ======================= */
 function begin(stage, name, hustle){
-  var k = 'll3_n' + stage + '_' + name.toLowerCase(), n = (lsGet(k) || 0) + 1; lsSet(k, n);
-  var from1 = stage === 2 ? lsGet('ll3_s1_' + name.toLowerCase()) : null, base = stage === 2 ? Math.max(CONFIG.S2.START, from1 || 0) : null;
-  S = { v: 3, name: name, hustle: hustle, stage: stage, from1: from1, base: base, i: 0, phase: 'intro', st: stage === 1 ? s1New() : s2New(base), move: stage === 1 ? 'hold' : null, card: false, hist: [], seen: {}, attempt: n };
+  var k = 'll4_n' + stage + '_' + name.toLowerCase(), n = (lsGet(k) || 0) + 1; lsSet(k, n);
+  var from1 = stage === 2 ? lsGet('ll4_s1_' + name.toLowerCase()) : null, base = stage === 2 ? Math.max(CONFIG.S2.START, from1 || 0) : null;
+  var seed = Math.floor(Math.random() * 4294967296);
+  S = { v: 4, name: name, hustle: hustle, stage: stage, from1: from1, base: base, i: 0, phase: 'intro', draws: drawRun(stage, rng(seed)), st: stage === 1 ? { own: CONFIG.S1.START, failed: 0 } : { cash: base, lease: 0 }, move: null, sit: false, card: false, hist: [], seen: {}, attempt: n };
   ui.printed = 0; ui.over = 0; save(); render();
 }
+function hint(t){ var h = $('#hint'); if (h) h.textContent = t; }
 var acts = {
   mute: function(){ muted = !muted; lsSet('ll_mute', muted); render(); },
   hustle: function(v){ ui.hustle = v; ui.name = $('#f-name').value; render(); },
   start: function(v){ var n = cleanName($('#f-name').value); ui.name = n; if (!n){ ui.err = 'Type your name first.'; render(); return; } ui.err = ''; begin(+v, n, ui.hustle); },
   go: function(){ S.phase = 'decide'; save(); render(); },
   move: function(v){ if (S.phase !== 'decide' || S.stage !== 2) return; S.move = v; save(); SFX.pick(); render(); },
-  mix: function(v){
-    if (S.phase !== 'decide' || S.stage !== 1) return; var mx = s1DebtMax(S.st), st = CONFIG.S1.MIN_MOVE, a = s1D();
-    a = v === 'max' ? mx : v === '0' ? 0 : v === '+' ? Math.min(mx, Math.floor(a / st + 1e-9) * st + st) : Math.max(0, Math.ceil(a / st - 1e-9) * st - st);
-    S.dt = a; save(); SFX.pick(); render();
-  },
+  sit: function(){ if (S.phase !== 'decide' || S.stage !== 1) return; S.sit = !S.sit; save(); SFX.pick(); render(); },
   mango: function(){
-    if (S.phase !== 'decide') return; S.tipped = S.tipped || {}; if (S.tipped[S.i]) return;
-    var one = S.stage === 1, cost = (one ? CONFIG.S1 : CONFIG.S2).TIP_COST; if (headline() < cost * 2) return;
-    if (one){ S.st = { E: cents(s1Stake(S.st) - cost), s: 1, D: 0, failed: S.st.failed }; }
-    else S.st = { cash: cents(S.st.cash - cost), lease: S.st.lease };
-    S.tipped[S.i] = 1; S.tipSpent = (S.tipSpent || 0) + cost; save(); SFX.pick(); render();
+    if (S.phase !== 'decide' || tipped(S.i)) return; var cost = tipCost();
+    if (S.stage === 1) S.st.own = cents(S.st.own - cost); else { if (S.st.cash < cost * 2) return; S.st.cash = cents(S.st.cash - cost); }
+    S.tipped = S.tipped || {}; S.tipped[S.i] = 1; S.tipSpent = cents((S.tipSpent || 0) + cost); save(); SFX.pick(); render();
   },
   tip: function(v){ ui.tips[v] = !ui.tips[v]; render(); },
   card: function(v){ if (S.phase !== 'decide') return; S.card = v === '1'; save(); SFX.pick(); render(); },
   run: function(){
-    if (S.phase !== 'decide') return; var i = S.i, e;
+    if (S.phase !== 'decide') return; var i = S.i, e, d = S.draws[i];
     if (S.stage === 1){
-      var pre = s1Mix(S.st, s1D()), r = s1Run(pre, i), Pp = s1Partner(pre);
-      e = { ret: r.ret, capital: r.capital, ebit: r.ebit, interest: r.interest, net: r.net, mine: r.mine, unlev: r.unlev, failed: r.failed, owed: r.failed ? r.st.owed : 0, pre: pre, own: pre.s, debt: pre.D, before: s1Stake(pre), after: r.failed ? 0 : s1Stake(r.st), label: 'Debt ' + m0(pre.D) + ' · partner ' + m0(Pp) };
-      S.st = r.st;
+      var own = S.st.own, mu = mu1(i), a = S.sit ? 'sit' : s1D(), r = s1Season(own, a, d.ret, mu);
+      if (!r){ hint('The partner says no to this mix. Use more debt, or sit out.'); return; }
+      var cmpAll = !S.sit && a >= s1DebtMax(own) - 0.005, cmp = s1Season(own, cmpAll ? 0 : s1DebtMax(own), d.ret, mu) || { stake: own };
+      e = { ret: d.ret, sat: !!S.sit, D: r.D, sp: r.sp, int: r.int, failed: !!r.broke, owed: r.owed || 0, before: own, after: r.stake, mine: cents(r.stake - own), cmp: cents(cmp.stake - own), cmpLabel: cmpAll ? 'All partner' : 'All debt',
+        label: S.sit ? 'Sat out' : (r.D > 0 ? 'Debt ' + m0(r.D) : 'No debt') + (r.P > 0 ? ' · partner ' + m0(r.P) : '') };
+      e.big = e.sat ? cmp.stake <= own * (1 - CONFIG.BIG_SWING) : r.stake <= own * (1 - CONFIG.BIG_SWING);
+      S.st = r.broke ? { own: 0, failed: 1, broke: i + 1, owed: r.owed } : { own: r.stake, failed: 0 };
     } else {
-      var way = S.st.lease > 0 ? 'leased' : S.move;
-      if (!way){ var h = $('#hint'); if (h) h.textContent = 'Choose the app or the stall first.'; return; }
-      var p = s2Play(S.st, i, way, S.card);
-      e = { buyers: p.buyers, sell: p.sell, rent: p.rent, card: p.card, profit: p.profit, alt: p.alt, way: way, pre: { cash: S.st.cash, lease: S.st.lease }, before: S.st.cash, after: p.st.cash, label: (p.sell === 'app' ? 'App' : way === 'lease' ? 'Stall, new lease' : way === 'leased' ? 'Stall, lease' : 'Stall') + (p.card ? ' + card' : '') };
-      S.st = p.st;
+      var way = S.move, lease = S.st.lease;
+      if (!way){ hint('Choose how to sell first.'); return; }
+      var cd = i >= CONFIG.S2.CARD_FROM && !!S.card && way !== 'sit', profit = s2Profit(d.buyers, way, lease, cd), sell = way === 'app' ? 'app' : way === 'sit' ? 'sit' : 'stall';
+      var alt = sell === 'app' ? s2ProfitAt(d.buyers, 'stall', CONFIG.S2.RENT, cd) : s2Profit(d.buyers, 'app', 0, cd && sell !== 'sit');
+      e = { buyers: d.buyers, sell: sell, way: way, card: cd, profit: profit, alt: alt, rent: sell === 'stall' ? s2Rent(lease, way) : sell === 'sit' && lease > 0 ? CONFIG.S2.LEASE_RENT : 0, pre: { cash: S.st.cash, lease: lease }, before: S.st.cash, after: cents(S.st.cash + profit), big: profit < 0,
+        label: (sell === 'sit' ? 'Closed' : sell === 'app' ? 'App' : way === 'lease' ? 'Stall, new lease' : way === 'leased' ? 'Stall, lease' : 'Stall') + (cd ? ' + 40 items' : '') };
+      S.st = { cash: e.after, lease: s2NextLease(way, lease) };
     }
     S.hist[i] = e; S.phase = 'reveal'; save(); render();
   },
-  next: function(){ if (S.phase !== 'reveal') return; if (ui.ov){ if (!ov.innerHTML){ clearTimeout(ovTimer); showReflect(S.hist[S.i]); } return; } closeOv(); if (S.i + 1 < N() && !(S.stage === 1 && S.hist[S.i].failed)){ S.i++; S.phase = 'decide'; S.dt = null; S.move = S.stage === 1 ? 'hold' : null; S.card = false; } else S.phase = 'debrief'; save(); render(); },
+  next: function(){ if (S.phase !== 'reveal') return; if (ui.ov){ if (!ov.innerHTML){ clearTimeout(ovTimer); showReflect(S.hist[S.i]); } return; } closeOv(); if (S.i + 1 < N() && !(S.stage === 1 && S.hist[S.i].failed)){ S.i++; S.phase = 'decide'; S.dt = null; S.sit = false; S.move = null; S.card = false; } else S.phase = 'debrief'; save(); render(); },
   closeov: function(){ closeOv(); },
-  results: function(){ S.phase = 'results'; S.doneAt = Date.now(); if (S.stage === 1){ var k1 = 'll3_s1_' + S.name.toLowerCase(), prev = lsGet(k1); lsSet(k1, Math.max(prev || 0, s1Stake(S.st))); } save(); render(); },
+  results: function(){ S.phase = 'results'; S.doneAt = Date.now(); if (S.stage === 1) lsSet('ll4_s1_' + S.name.toLowerCase(), S.st.own); save(); render(); },
   stage2: function(){ begin(2, S.name, S.hustle); },
   again: function(){ begin(S.stage, S.name, S.hustle); },
   home: function(){ ui.name = S.name; ui.hustle = S.hustle; S = null; save(); render(); },
   over: function(){ if (!ui.over){ ui.over = 1; render(); setTimeout(function(){ if (ui.over){ ui.over = 0; if (!ui.ov) render(); } }, 4000); return; } ui.over = 0; if (S){ ui.name = S.name; ui.hustle = S.hustle; } S = null; save(); closeOv(); render(); }
 };
 document.addEventListener('click', function(e){ var b = e.target.closest('[data-act]'); if (!b || b.disabled) return; var h = acts[b.getAttribute('data-act')]; if (h) h(b.getAttribute('data-v'), b); });
-document.addEventListener('input', function(e){ if (e.target.id === 'mix'){ var mx = +e.target.getAttribute('data-max'), d = fromStop(+e.target.max - +e.target.value, mx); e.target.setAttribute('aria-valuetext', money(d) + ' card debt'); } });
-document.addEventListener('change', function(e){ if (e.target.id === 'mix' && S && S.phase === 'decide' && S.stage === 1){ S.dt = fromStop(+e.target.max - +e.target.value, +e.target.getAttribute('data-max')); save(); render(); } });
+document.addEventListener('input', function(e){ if (e.target.id === 'mix'){ var mx = +e.target.getAttribute('data-max'), d = fromStop(+e.target.max - +e.target.value, mx); e.target.setAttribute('aria-valuetext', money(d) + ' debt, ' + money(mx - d) + ' partner'); } });
+document.addEventListener('change', function(e){ if (e.target.id === 'mix' && S && S.phase === 'decide' && S.stage === 1){ S.dt = fromStop(+e.target.max - +e.target.value, +e.target.getAttribute('data-max')); S.sit = false; save(); render(); } });
 render();
 window.__LL = { acts: acts, state: function(){ return S; } };
 })();
