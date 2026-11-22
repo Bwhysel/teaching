@@ -636,7 +636,7 @@ var acts = {
   start: function(v){ var n = cleanName($('#f-name').value); ui.name = n; if (!n){ ui.err = 'Type your name first.'; render(); return; } ui.err = ''; begin(+v, n, ui.hustle); },
   go: function(){ S.phase = 'decide'; save(); render(); },
   move: function(v){ if (S.phase !== 'decide' || S.stage !== 2) return; S.move = v; save(); SFX.pick(); render(); },
-  sit: function(){ if (S.phase !== 'decide' || S.stage !== 1) return; S.sit = !S.sit; save(); SFX.pick(); render(); },
+  sit: function(){ if (S.phase !== 'decide' || S.stage !== 1) return; S.sit = !S.sit; S.picked = 1; save(); SFX.pick(); render(); },
   mango: function(){
     if (S.phase !== 'decide' || tipped(S.i)) return; var cost = tipCost();
     if (S.stage === 1) S.st.own = cents(S.st.own - cost); else { if (S.st.cash < cost * 2) return; S.st.cash = cents(S.st.cash - cost); }
@@ -647,6 +647,7 @@ var acts = {
   run: function(){
     if (S.phase !== 'decide') return; var i = S.i, e, d = S.draws[i];
     if (S.stage === 1){
+      if (!S.picked){ hint('Choose your mix first.'); return; }
       var own = S.st.own, mu = mu1(i), a = S.sit ? 'sit' : s1D(), r = s1Season(own, a, d.ret, mu);
       if (!r){ hint('The partner says no to this mix. Use more debt, or sit out.'); return; }
       var cmpAll = !S.sit && a >= s1DebtMax(own) - 0.005, cmp = s1Season(own, cmpAll ? 0 : s1DebtMax(own), d.ret, mu) || { stake: own };
@@ -665,7 +666,7 @@ var acts = {
     }
     S.hist[i] = e; S.phase = 'reveal'; save(); render();
   },
-  next: function(){ if (S.phase !== 'reveal') return; if (ui.ov){ if (!ov.innerHTML){ clearTimeout(ovTimer); showReflect(S.hist[S.i]); } return; } closeOv(); if (S.i + 1 < N() && !(S.stage === 1 && S.hist[S.i].failed)){ S.i++; S.phase = 'decide'; S.dt = null; S.sit = false; S.move = null; S.card = false; } else S.phase = 'debrief'; save(); render(); },
+  next: function(){ if (S.phase !== 'reveal') return; if (ui.ov){ if (!ov.innerHTML){ clearTimeout(ovTimer); showReflect(S.hist[S.i]); } return; } closeOv(); if (S.i + 1 < N() && !(S.stage === 1 && S.hist[S.i].failed)){ S.i++; S.phase = 'decide'; S.dt = null; S.sit = false; S.picked = 0; S.move = null; S.card = false; } else S.phase = 'debrief'; save(); render(); },
   closeov: function(){ closeOv(); },
   results: function(){ S.phase = 'results'; S.doneAt = Date.now(); if (S.stage === 1) lsSet('ll4_s1_' + S.name.toLowerCase(), S.st.own); save(); render(); },
   stage2: function(){ begin(2, S.name, S.hustle); },
@@ -675,7 +676,7 @@ var acts = {
 };
 document.addEventListener('click', function(e){ var b = e.target.closest('[data-act]'); if (!b || b.disabled) return; var h = acts[b.getAttribute('data-act')]; if (h) h(b.getAttribute('data-v'), b); });
 document.addEventListener('input', function(e){ if (e.target.id === 'mix'){ var mx = +e.target.getAttribute('data-max'), d = fromStop(+e.target.max - +e.target.value, mx); e.target.setAttribute('aria-valuetext', money(d) + ' debt, ' + money(mx - d) + ' partner'); } });
-document.addEventListener('change', function(e){ if (e.target.id === 'mix' && S && S.phase === 'decide' && S.stage === 1){ S.dt = fromStop(+e.target.max - +e.target.value, +e.target.getAttribute('data-max')); S.sit = false; save(); render(); } });
+document.addEventListener('change', function(e){ if (e.target.id === 'mix' && S && S.phase === 'decide' && S.stage === 1){ S.dt = fromStop(+e.target.max - +e.target.value, +e.target.getAttribute('data-max')); S.sit = false; S.picked = 1; save(); render(); } });
 render();
 window.__LL = { acts: acts, state: function(){ return S; } };
 })();
