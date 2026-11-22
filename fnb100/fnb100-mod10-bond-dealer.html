@@ -1,0 +1,3484 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Bond Dealer</title>
+    <style>
+      :root {
+        --bg: #071019;
+        --bg-2: #0c1824;
+        --panel: #0f1f2f;
+        --panel-2: #122638;
+        --panel-3: #0d1a28;
+        --text: #f4f8ff;
+        --muted: #a6b8cc;
+        --amber: #ffb300;
+        --amber-2: #ffd56b;
+        --cyan: #54e7ff;
+        --buy: #2bd8ff;
+        --sell: #ff8a3d;
+        --green: #00e676;
+        --red: #ff4a6d;
+        --line: #2b4763;
+        --glow: 0 0 24px rgba(84, 231, 255, 0.18);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background:
+          radial-gradient(
+            circle at 14% 8%,
+            rgba(84, 231, 255, 0.22) 0%,
+            transparent 38%
+          ),
+          radial-gradient(
+            circle at 88% 15%,
+            rgba(255, 179, 0, 0.2) 0%,
+            transparent 40%
+          ),
+          linear-gradient(180deg, var(--bg-2) 0%, var(--bg) 65%, #050b13 100%);
+        color: var(--text);
+        font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        padding: 16px;
+        position: relative;
+        overflow-x: hidden;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.16;
+        background-image: linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.06) 1px,
+          transparent 1px
+        );
+        background-size: 100% 3px;
+      }
+
+      .app {
+        width: 100%;
+        max-width: 920px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: linear-gradient(180deg, #0a1724 0%, #08131d 100%);
+        box-shadow:
+          0 24px 48px rgba(2, 8, 16, 0.58),
+          var(--glow);
+        overflow: hidden;
+        position: relative;
+      }
+
+      .app::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: linear-gradient(
+          90deg,
+          rgba(84, 231, 255, 0.04) 0%,
+          transparent 30%,
+          transparent 70%,
+          rgba(255, 179, 0, 0.04) 100%
+        );
+      }
+
+      .terminal {
+        font-family: Consolas, "Lucida Console", Monaco, monospace;
+      }
+
+      .screen {
+        display: none;
+        padding: 18px;
+        min-height: 640px;
+        opacity: 0;
+      }
+
+      .screen.active {
+        display: block;
+        animation: screenEnter 0.35s ease-out forwards;
+      }
+
+      @keyframes screenEnter {
+        0% {
+          opacity: 0;
+          transform: translateY(16px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .panel {
+        background: linear-gradient(
+          180deg,
+          var(--panel) 0%,
+          var(--panel-3) 100%
+        );
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 14px;
+        margin-bottom: 12px;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      }
+
+      .title {
+        margin: 0;
+        color: var(--amber-2);
+        font-size: clamp(1.6rem, 4vw, 2.3rem);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        font-family: "Rockwell", "Palatino Linotype", serif;
+        text-shadow: 0 0 20px rgba(255, 179, 0, 0.2);
+      }
+
+      .subtitle {
+        margin-top: 8px;
+        color: var(--muted);
+        line-height: 1.4;
+        font-size: 1rem;
+      }
+
+      .small-note {
+        font-size: 0.78rem;
+        color: #9c9c9c;
+        margin-top: 10px;
+      }
+
+      .btn {
+        width: 100%;
+        border: 1px solid var(--amber);
+        background: linear-gradient(
+          180deg,
+          rgba(52, 39, 8, 0.95) 0%,
+          rgba(35, 25, 4, 0.95) 100%
+        );
+        color: #ffd77b;
+        min-height: 48px;
+        padding: 10px 14px;
+        border-radius: 8px;
+        font-size: 1rem;
+        cursor: pointer;
+        font-weight: 700;
+        font-family: Consolas, "Lucida Console", Monaco, monospace;
+        transition:
+          transform 0.15s ease,
+          box-shadow 0.15s ease,
+          background 0.15s ease;
+        touch-action: manipulation;
+        box-shadow: 0 6px 18px rgba(255, 179, 0, 0.2);
+      }
+
+      .btn:hover,
+      .btn:focus-visible {
+        background: linear-gradient(
+          180deg,
+          rgba(75, 58, 12, 0.98) 0%,
+          rgba(52, 39, 8, 0.98) 100%
+        );
+        box-shadow:
+          0 0 0 2px rgba(255, 179, 0, 0.35),
+          0 10px 24px rgba(255, 179, 0, 0.26);
+        outline: none;
+      }
+
+      .btn:active {
+        transform: scale(0.98);
+      }
+
+      .btn:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        box-shadow: none;
+      }
+
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+      }
+
+      .topbar .left,
+      .topbar .right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .sell-reminder {
+        display: none;
+        margin-bottom: 12px;
+        border: 1px solid var(--sell);
+        border-left: 4px solid var(--sell);
+        border-radius: 8px;
+        background: linear-gradient(
+          180deg,
+          rgba(66, 29, 11, 0.92) 0%,
+          rgba(47, 21, 7, 0.92) 100%
+        );
+        color: #ffd5ba;
+        padding: 10px 12px;
+        line-height: 1.35;
+        animation: reminderIn 0.25s ease-out;
+      }
+
+      @keyframes reminderIn {
+        0% {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .badge {
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: rgba(11, 28, 43, 0.9);
+        color: #d7e5f7;
+        padding: 6px 10px;
+        font-size: 0.82rem;
+        font-family: Consolas, "Lucida Console", Monaco, monospace;
+        min-height: 32px;
+        display: inline-flex;
+        align-items: center;
+      }
+
+      .badge.hot {
+        color: #ffe29b;
+        border-color: var(--amber);
+        box-shadow:
+          0 0 8px rgba(255, 179, 0, 0.35),
+          0 0 20px rgba(255, 179, 0, 0.24);
+        animation: pulse 0.9s infinite;
+      }
+
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+          box-shadow: 0 0 5px rgba(255, 179, 0, 0.25);
+        }
+        50% {
+          transform: scale(1.04);
+          box-shadow:
+            0 0 14px rgba(255, 179, 0, 0.5),
+            0 0 24px rgba(255, 179, 0, 0.28);
+        }
+        100% {
+          transform: scale(1);
+          box-shadow: 0 0 5px rgba(255, 179, 0, 0.25);
+        }
+      }
+
+      .step-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .scenario-card {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: linear-gradient(
+          180deg,
+          rgba(10, 30, 44, 0.95) 0%,
+          rgba(9, 25, 37, 0.95) 100%
+        );
+        padding: 12px;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      }
+
+      .scenario-card.animate {
+        animation: cardReveal 0.32s ease-out;
+      }
+
+      @keyframes cardReveal {
+        0% {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .scenario-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 8px;
+      }
+
+      .scenario-side {
+        color: var(--buy);
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 700;
+      }
+
+      .scenario-issuer {
+        margin: 0;
+        font-size: 1.1rem;
+      }
+
+      .scenario-info {
+        margin-top: 8px;
+        border: 1px solid #365674;
+        border-radius: 8px;
+        background: rgba(9, 25, 37, 0.8);
+        padding: 10px;
+        color: #e8e8e8;
+        line-height: 1.5;
+      }
+
+      .scenario-meta {
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      .step-title {
+        margin: 0 0 8px;
+        color: var(--cyan);
+        font-size: 0.98rem;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        font-family: Consolas, "Lucida Console", Monaco, monospace;
+      }
+
+      .slider-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        align-items: center;
+      }
+
+      .slider-column {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: linear-gradient(180deg, var(--panel-2) 0%, #0d1d2d 100%);
+        display: flex;
+        align-items: stretch;
+        justify-content: center;
+        width: 100%;
+        min-height: 88px;
+        padding: 16px 14px 10px;
+      }
+
+      .slider-scale {
+        width: 100%;
+        max-width: 720px;
+        margin: 0 auto;
+      }
+
+      .post-trade-scale {
+        width: 100%;
+        max-width: 720px;
+        margin: 8px auto 0;
+      }
+
+      .post-trade-bar {
+        position: relative;
+        height: 30px;
+        border-top: 1px solid #4b6682;
+      }
+
+      .post-marker {
+        position: absolute;
+        top: 0;
+        transform: translateX(-50%);
+        width: 0;
+        height: 100%;
+      }
+
+      .post-marker::before {
+        content: "";
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        top: -1px;
+        height: 14px;
+        border-left: 2px solid #9fb8d3;
+      }
+
+      .post-marker.fair::before {
+        border-left-color: #d8f6ff;
+      }
+
+      .post-marker.boundary::before {
+        border-left-color: var(--amber);
+      }
+
+      .post-marker-label {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        top: 15px;
+        font-size: 0.68rem;
+        line-height: 1;
+        white-space: nowrap;
+        padding: 2px 6px;
+        border-radius: 999px;
+        border: 1px solid #4b6682;
+        background: #0d1d2d;
+        color: #d6e8fb;
+        font-family: Consolas, "Lucida Console", Monaco, monospace;
+      }
+
+      .post-marker.fair .post-marker-label {
+        border-color: #5f8bb5;
+        color: #d8f6ff;
+      }
+
+      .post-marker.boundary .post-marker-label {
+        border-color: #9f7a22;
+        color: #ffdf8a;
+      }
+
+      .vertical-slider {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 100%;
+        height: 8px;
+        border-radius: 999px;
+        background: linear-gradient(
+          90deg,
+          rgba(43, 216, 255, 0.4) 0%,
+          rgba(255, 138, 61, 0.45) 100%
+        );
+        outline: none;
+        transition: box-shadow 0.15s ease;
+      }
+
+      .vertical-slider:focus-visible {
+        box-shadow: 0 0 0 2px rgba(84, 231, 255, 0.45);
+      }
+
+      .vertical-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: 2px solid #214c62;
+        background: var(--amber);
+        cursor: pointer;
+        box-shadow: 0 0 0 2px rgba(255, 179, 0, 0.25);
+        transition:
+          transform 0.12s ease,
+          box-shadow 0.12s ease;
+      }
+
+      .vertical-slider:active::-webkit-slider-thumb {
+        transform: scale(1.14);
+        box-shadow:
+          0 0 0 4px rgba(255, 179, 0, 0.28),
+          0 0 14px rgba(255, 179, 0, 0.5);
+      }
+
+      .vertical-slider::-moz-range-thumb {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: 2px solid #214c62;
+        background: var(--amber);
+        cursor: pointer;
+        box-shadow: 0 0 0 2px rgba(255, 179, 0, 0.25);
+      }
+
+      .vertical-slider::-moz-range-track {
+        height: 8px;
+        border-radius: 999px;
+        background: linear-gradient(
+          90deg,
+          rgba(43, 216, 255, 0.4) 0%,
+          rgba(255, 138, 61, 0.45) 100%
+        );
+      }
+
+      .slider-labels {
+        width: 100%;
+        padding: 0 11px;
+        margin: 8px auto 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: #bdd0e4;
+        font-size: 0.8rem;
+        font-family: Consolas, "Lucida Console", Monaco, monospace;
+      }
+
+      .slider-labels span {
+        text-align: center;
+        line-height: 1;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .slider-readout {
+        display: grid;
+        gap: 8px;
+        align-content: start;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: linear-gradient(
+          180deg,
+          rgba(8, 22, 34, 0.95) 0%,
+          rgba(7, 19, 29, 0.95) 100%
+        );
+        padding: 12px;
+        font-family: Consolas, "Lucida Console", Monaco, monospace;
+      }
+
+      .slider-readout-inline {
+        width: 100%;
+        text-align: center;
+        color: #f0f0f0;
+        font-family: Consolas, "Lucida Console", Monaco, monospace;
+      }
+
+      .num {
+        color: var(--amber);
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        font-family: Consolas, "Lucida Console", Monaco, monospace;
+      }
+
+      .num.pulse {
+        animation: valuePulse 0.36s ease-out;
+      }
+
+      @keyframes valuePulse {
+        0% {
+          transform: scale(1);
+          text-shadow: 0 0 0 rgba(84, 231, 255, 0);
+        }
+        40% {
+          transform: scale(1.06);
+          text-shadow: 0 0 14px rgba(84, 231, 255, 0.45);
+        }
+        100% {
+          transform: scale(1);
+          text-shadow: 0 0 0 rgba(84, 231, 255, 0);
+        }
+      }
+
+      .desk-btn {
+        min-height: 44px;
+        border: 1px dashed #4d6b8b;
+        background: #0e1f2f;
+        color: #dbe8f6;
+        border-radius: 8px;
+        padding: 8px 10px;
+        cursor: pointer;
+        font-family: Consolas, "Lucida Console", Monaco, monospace;
+        transition:
+          background 0.15s ease,
+          box-shadow 0.15s ease;
+      }
+
+      .desk-btn:hover,
+      .desk-btn:focus-visible {
+        background: #132a3d;
+        box-shadow: 0 0 0 2px rgba(84, 231, 255, 0.3);
+        outline: none;
+      }
+
+      .mango-line {
+        display: none;
+        margin-top: 0;
+        margin-bottom: 8px;
+        border-left: 3px solid var(--amber);
+        background: linear-gradient(
+          90deg,
+          rgba(44, 33, 7, 0.9) 0%,
+          rgba(31, 24, 8, 0.9) 100%
+        );
+        border-radius: 0 8px 8px 0;
+        padding: 10px;
+        font-size: 0.92rem;
+        line-height: 1.35;
+        animation: mangoReveal 0.25s ease-out;
+      }
+
+      @keyframes mangoReveal {
+        0% {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .mango-meta {
+        display: inline-flex;
+        gap: 8px;
+        margin-right: 8px;
+        flex-wrap: wrap;
+      }
+
+      .mango-tag {
+        font-size: 0.75rem;
+        border: 1px solid #5f8bb5;
+        color: #d8eeff;
+        background: rgba(13, 44, 64, 0.55);
+        padding: 2px 6px;
+        border-radius: 999px;
+        font-family: Consolas, "Lucida Console", Monaco, monospace;
+      }
+
+      .feedback {
+        display: none;
+        border: 1px solid var(--line);
+        background: #0f1d2b;
+        border-radius: 10px;
+        padding: 12px;
+        margin-top: 8px;
+      }
+
+      .feedback.success {
+        border-color: #1a8f5f;
+        background: linear-gradient(180deg, #0f2f24 0%, #0c251d 100%);
+        animation: feedbackIn 0.24s ease-out;
+      }
+
+      .feedback.nodeal {
+        border-color: #b43f5d;
+        background: linear-gradient(180deg, #381520 0%, #2b1018 100%);
+        animation:
+          feedbackIn 0.2s ease-out,
+          shake 0.45s ease;
+      }
+
+      @keyframes feedbackIn {
+        0% {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes shake {
+        0% {
+          transform: translateX(0);
+        }
+        25% {
+          transform: translateX(-3px);
+        }
+        50% {
+          transform: translateX(3px);
+        }
+        75% {
+          transform: translateX(-2px);
+        }
+        100% {
+          transform: translateX(0);
+        }
+      }
+
+      .flash {
+        min-height: 22px;
+        color: #ffdd7d;
+        font-family: Consolas, "Lucida Console", Monaco, monospace;
+        margin-top: 4px;
+      }
+
+      .flash.burst {
+        animation: closeBurst 0.55s ease-out;
+      }
+
+      @keyframes closeBurst {
+        0% {
+          opacity: 0;
+          transform: scale(0.95);
+          text-shadow: 0 0 0 rgba(255, 221, 125, 0);
+        }
+        45% {
+          opacity: 1;
+          transform: scale(1.05);
+          text-shadow: 0 0 14px rgba(255, 221, 125, 0.45);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1);
+          text-shadow: 0 0 0 rgba(255, 221, 125, 0);
+        }
+      }
+
+      .reflection {
+        margin-top: 10px;
+        min-height: 42px;
+        padding: 8px;
+        border-radius: 8px;
+        background: linear-gradient(180deg, #10202f 0%, #0b1824 100%);
+        border: 1px dashed #4a6f93;
+        color: #ececec;
+        display: none;
+        animation: reflectionIn 0.25s ease-out;
+      }
+
+      @keyframes reflectionIn {
+        0% {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+        flex-wrap: wrap;
+      }
+
+      .actions .btn {
+        flex: 1;
+        min-width: 180px;
+      }
+
+      .results-main {
+        display: grid;
+        gap: 10px;
+      }
+
+      .results-main .panel {
+        margin-bottom: 0;
+      }
+
+      @media (min-width: 700px) {
+        .trade-summary-list {
+          grid-template-columns: 1fr 1fr;
+          grid-auto-flow: column;
+          grid-template-rows: repeat(5, auto);
+        }
+      }
+
+      .trade-summary {
+        border: 1px solid #365674;
+        border-radius: 10px;
+        background: #0d1d2d;
+        padding: 10px;
+      }
+
+      .trade-summary h3 {
+        margin: 0 0 8px;
+        color: var(--cyan);
+        font-size: 0.95rem;
+        font-family: Consolas, "Lucida Console", Monaco, monospace;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+      }
+
+      .trade-summary-list {
+        display: grid;
+        gap: 6px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .trade-summary-row {
+        display: grid;
+        grid-template-columns: 1fr auto auto;
+        gap: 8px;
+        align-items: center;
+        border: 1px solid #294660;
+        border-radius: 8px;
+        padding: 6px 8px;
+        font-size: 0.86rem;
+      }
+
+      .trade-summary-row .status {
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+      }
+
+      .trade-summary-row .status.deal {
+        color: var(--green);
+      }
+
+      .trade-summary-row .status.nodeal {
+        color: var(--red);
+      }
+
+      .trade-summary-row .impact {
+        font-family: Consolas, "Lucida Console", Monaco, monospace;
+        font-weight: 700;
+      }
+
+      .tier-title {
+        font-size: clamp(1.2rem, 3vw, 1.6rem);
+        margin: 0;
+        color: var(--cyan);
+        font-family: "Rockwell", "Palatino Linotype", serif;
+      }
+
+      .score-big {
+        font-size: clamp(1.7rem, 4vw, 2.4rem);
+        margin: 0;
+        font-family: Consolas, "Lucida Console", Monaco, monospace;
+      }
+
+      .instruction {
+        border: 1px solid #436284;
+        background: #102032;
+        border-radius: 8px;
+        padding: 10px;
+        color: #f0f0f0;
+      }
+
+      #appRoot[data-mode="buy"] .scenario-side {
+        color: var(--buy);
+      }
+
+      #appRoot[data-mode="sell"] .scenario-side {
+        color: var(--sell);
+      }
+
+      #appRoot[data-mode="buy"] #dealBtn {
+        border-color: var(--buy);
+        color: #baf3ff;
+        background: linear-gradient(
+          180deg,
+          rgba(7, 46, 62, 0.95) 0%,
+          rgba(6, 32, 45, 0.95) 100%
+        );
+        box-shadow: 0 6px 18px rgba(43, 216, 255, 0.2);
+      }
+
+      #appRoot[data-mode="buy"] #dealBtn:hover,
+      #appRoot[data-mode="buy"] #dealBtn:focus-visible {
+        box-shadow:
+          0 0 0 2px rgba(43, 216, 255, 0.35),
+          0 10px 24px rgba(43, 216, 255, 0.25);
+      }
+
+      #appRoot[data-mode="sell"] #dealBtn {
+        border-color: var(--sell);
+        color: #ffd5ba;
+        background: linear-gradient(
+          180deg,
+          rgba(66, 29, 11, 0.95) 0%,
+          rgba(47, 21, 7, 0.95) 100%
+        );
+        box-shadow: 0 6px 18px rgba(255, 138, 61, 0.22);
+      }
+
+      #appRoot[data-mode="sell"] #dealBtn:hover,
+      #appRoot[data-mode="sell"] #dealBtn:focus-visible {
+        box-shadow:
+          0 0 0 2px rgba(255, 138, 61, 0.32),
+          0 10px 24px rgba(255, 138, 61, 0.24);
+      }
+
+      /* ---------- Instructions ---------- */
+      .howto {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 10px;
+        counter-reset: step;
+      }
+
+      .howto li {
+        counter-increment: step;
+        position: relative;
+        padding: 10px 10px 10px 48px;
+        border: 1px solid #294660;
+        border-radius: 8px;
+        background: rgba(9, 25, 37, 0.7);
+        line-height: 1.45;
+      }
+
+      .howto li::before {
+        content: counter(step);
+        position: absolute;
+        left: 10px;
+        top: 10px;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: var(--amber);
+        color: #1a1200;
+        font-weight: 700;
+        display: grid;
+        place-items: center;
+        font-family: Consolas, "Lucida Console", Monaco, monospace;
+      }
+
+      .two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .mode-card {
+        border-radius: 8px;
+        padding: 10px;
+        line-height: 1.45;
+        font-size: 0.93rem;
+      }
+
+      .mode-card.buy {
+        border: 1px solid var(--buy);
+        background: rgba(7, 46, 62, 0.55);
+      }
+
+      .mode-card.sell {
+        border: 1px solid var(--sell);
+        background: rgba(66, 29, 11, 0.55);
+      }
+
+      .mode-card h3 {
+        margin: 0 0 4px;
+        font-size: 0.95rem;
+        font-family: Consolas, "Lucida Console", Monaco, monospace;
+        text-transform: uppercase;
+      }
+
+      .mode-card.buy h3 {
+        color: var(--buy);
+      }
+
+      .mode-card.sell h3 {
+        color: var(--sell);
+      }
+
+      .example-box {
+        margin-top: 10px;
+        border-left: 3px solid var(--green);
+        background: rgba(0, 230, 118, 0.07);
+        padding: 10px;
+        border-radius: 0 8px 8px 0;
+        line-height: 1.5;
+        font-size: 0.93rem;
+      }
+
+      .score-head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 4px 10px;
+        margin-bottom: 8px;
+      }
+
+      .score-head .muted {
+        font-size: 0.85rem;
+      }
+
+      .score-rules {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 6px 14px;
+        padding: 8px 10px;
+        border-radius: 6px;
+        background: rgba(0, 0, 0, 0.2);
+      }
+
+      .score-rules > strong {
+        text-align: right;
+        font-family: Consolas, "Lucida Console", Monaco, monospace;
+        white-space: nowrap;
+      }
+
+      .score-rules .pos {
+        color: var(--green);
+      }
+
+      .score-rules .neg {
+        color: var(--red);
+      }
+
+      .score-examples {
+        margin-top: 8px;
+        display: grid;
+        gap: 4px;
+        font-size: 0.9rem;
+        color: #d7e5f7;
+      }
+
+      .rules-list {
+        margin: 0;
+        padding-left: 20px;
+        line-height: 1.6;
+        color: #e4eefa;
+      }
+
+      .btn.secondary {
+        margin-top: 10px;
+        min-height: 40px;
+        background: transparent;
+        border-color: #4d6b8b;
+        color: #bcd0e4;
+        box-shadow: none;
+        font-weight: 400;
+        font-size: 0.9rem;
+      }
+
+      .btn.secondary:hover,
+      .btn.secondary:focus-visible {
+        background: rgba(84, 231, 255, 0.08);
+        box-shadow: 0 0 0 2px rgba(84, 231, 255, 0.25);
+      }
+
+      .mango-hero {
+        font-size: 3rem;
+        display: inline-block;
+        animation: bob 2.4s ease-in-out infinite;
+      }
+
+      @keyframes bob {
+        0%,
+        100% {
+          transform: translateY(0) rotate(-4deg);
+        }
+        50% {
+          transform: translateY(-8px) rotate(4deg);
+        }
+      }
+
+      /* ---------- In-game guidance ---------- */
+      .goal-line {
+        margin-bottom: 10px;
+        border-radius: 8px;
+        padding: 9px 12px;
+        font-size: 0.93rem;
+        line-height: 1.4;
+      }
+
+      #appRoot[data-mode="buy"] .goal-line {
+        border: 1px solid var(--buy);
+        background: rgba(7, 46, 62, 0.5);
+        color: #cdf6ff;
+      }
+
+      #appRoot[data-mode="sell"] .goal-line {
+        border: 1px solid var(--sell);
+        background: rgba(66, 29, 11, 0.5);
+        color: #ffe0cc;
+      }
+
+      .coach {
+        display: none;
+        margin-bottom: 10px;
+        border: 1px dashed var(--green);
+        background: rgba(0, 230, 118, 0.07);
+        border-radius: 8px;
+        padding: 10px 12px;
+        line-height: 1.5;
+        font-size: 0.93rem;
+      }
+
+      .coach.show {
+        display: block;
+        animation: reminderIn 0.25s ease-out;
+      }
+
+      .coach-steps {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-bottom: 8px;
+      }
+
+      .coach-step {
+        font-size: 0.75rem;
+        padding: 2px 8px;
+        border-radius: 999px;
+        border: 1px solid #4b6682;
+        color: #9fb8d3;
+        font-family: Consolas, "Lucida Console", Monaco, monospace;
+      }
+
+      .coach-step.done {
+        border-color: var(--green);
+        color: var(--green);
+      }
+
+      .yield-status {
+        display: inline-block;
+        margin-left: 6px;
+        font-size: 0.8rem;
+        padding: 1px 8px;
+        border-radius: 999px;
+        border: 1px solid #4b6682;
+        color: #bdd0e4;
+      }
+
+      .yield-status.in {
+        border-color: var(--green);
+        color: var(--green);
+      }
+
+      .yield-status.out {
+        border-color: var(--amber);
+        color: var(--amber-2);
+      }
+
+      .practice-tag {
+        display: inline-block;
+        margin-left: 8px;
+        padding: 1px 8px;
+        border-radius: 999px;
+        background: var(--green);
+        color: #04210f;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        vertical-align: middle;
+      }
+
+      /* ---------- Delight ---------- */
+      .ticker {
+        overflow: hidden;
+        white-space: nowrap;
+        border-bottom: 1px solid var(--line);
+        background: #050d15;
+        font-family: Consolas, "Lucida Console", Monaco, monospace;
+        font-size: 0.78rem;
+        color: #9fb8d3;
+        position: relative;
+        z-index: 1;
+      }
+
+      .ticker-track {
+        display: inline-block;
+        padding: 6px 0;
+        animation: tickerScroll 55s linear infinite;
+      }
+
+      .ticker-track span {
+        margin-right: 28px;
+      }
+
+      .tk-up {
+        color: var(--green);
+      }
+
+      .tk-down {
+        color: var(--red);
+      }
+
+      @keyframes tickerScroll {
+        0% {
+          transform: translateX(0);
+        }
+        100% {
+          transform: translateX(-50%);
+        }
+      }
+
+      .react {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 8px;
+        font-size: 1.05rem;
+        font-weight: 700;
+      }
+
+      .react-emoji {
+        font-size: 2.2rem;
+        display: inline-block;
+        animation: pop 0.5s cubic-bezier(0.2, 1.6, 0.4, 1);
+      }
+
+      @keyframes pop {
+        0% {
+          transform: scale(0.2) rotate(-20deg);
+          opacity: 0;
+        }
+        100% {
+          transform: scale(1) rotate(0);
+          opacity: 1;
+        }
+      }
+
+      .icon-btn {
+        border: 1px solid var(--line);
+        background: rgba(11, 28, 43, 0.9);
+        color: #d7e5f7;
+        border-radius: 999px;
+        min-height: 32px;
+        min-width: 44px;
+        cursor: pointer;
+        font-size: 0.85rem;
+      }
+
+      .icon-btn:hover,
+      .icon-btn:focus-visible {
+        box-shadow: 0 0 0 2px rgba(84, 231, 255, 0.3);
+        outline: none;
+      }
+
+      #confettiCanvas {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 50;
+      }
+
+      .tier-title.reveal {
+        animation: pop 0.7s cubic-bezier(0.2, 1.6, 0.4, 1);
+      }
+
+      .highlights {
+        display: grid;
+        gap: 4px;
+        font-size: 0.9rem;
+        color: #d7e5f7;
+        line-height: 1.5;
+      }
+
+      .glossary {
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px dashed #6b5a2a;
+        display: grid;
+        gap: 4px;
+        font-size: 0.86rem;
+        line-height: 1.4;
+        color: #f1e6c8;
+      }
+
+      .glossary-head {
+        font-weight: 700;
+        color: var(--amber-2);
+      }
+
+      @media (max-width: 560px) {
+        .two-col {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .ticker-track {
+          animation: none;
+        }
+        #confettiCanvas {
+          display: none;
+        }
+        * {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+          scroll-behavior: auto !important;
+        }
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      @media (max-width: 700px) {
+        .screen {
+          padding: 12px;
+        }
+
+        .slider-wrap {
+          align-items: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="confettiCanvas" aria-hidden="true"></canvas>
+    <main class="app" id="appRoot">
+      <div class="ticker" aria-hidden="true">
+        <div class="ticker-track" id="tickerTrack"></div>
+      </div>
+      <section
+        class="screen active"
+        id="screen-start"
+        aria-label="Start screen"
+      >
+        <div class="panel">
+          <h1 class="title">The Bond Dealer</h1>
+          <p class="subtitle">
+            Your first day on a NYC bond desk. 10 trades. Buy low, sell high.
+          </p>
+        </div>
+
+        <div class="panel">
+          <h2 class="step-title">Each round</h2>
+          <ol class="howto">
+            <li>
+              <strong>Read the card.</strong> It tells you about the bond and
+              gives a <strong>yield range</strong>.
+            </li>
+            <li>
+              <strong>Drag the slider</strong> to pick a price. Watch the
+              yield change. <strong>Higher price = lower yield.</strong>
+            </li>
+            <li>
+              <strong>Submit.</strong> Rounds 1&#8211;5 you buy (press
+              <strong>BID</strong>). Rounds 6&#8211;10 you sell (press
+              <strong>OFFER</strong>).
+            </li>
+          </ol>
+        </div>
+
+        <div class="panel">
+          <h2 class="step-title">Don't get (too) greedy</h2>
+          <div class="two-col">
+            <div class="mode-card buy">
+              <h3>Buying</h3>
+              Lower price = more profit. Too low and the seller walks away.
+            </div>
+            <div class="mode-card sell">
+              <h3>Selling</h3>
+              Higher price = more profit. Too high and the buyer walks away.
+            </div>
+          </div>
+          <div class="example-box">
+            <div class="score-head">
+              <strong>Scoring</strong>
+              <span class="muted"
+                >Each trade = $10M face. Prices are per $100 of face.</span
+              >
+            </div>
+            <div class="score-rules">
+              <span>Deal closes (dealer spread, 1% of face)</span>
+              <strong>+$100,000</strong>
+              <span>Each $1 better than the hidden <strong>fair price</strong></span>
+              <strong class="pos">+$100,000</strong>
+              <span>Each $1 worse than fair price</span>
+              <strong class="neg">&minus;$100,000</strong>
+              <span>No deal</span>
+              <strong>$0</strong>
+            </div>
+            <div class="score-examples">
+              <div>
+                <em>Buy at 98.50, fair price 99:</em> $100,000 + $50,000 =
+                <strong>$150,000</strong>
+              </div>
+              <div>
+                <em>Overpay by $2:</em> $100,000 &minus; $200,000 =
+                <strong>&minus;$100,000</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2 class="step-title">Clues on the card</h2>
+          <ul class="rules-list">
+            <li>
+              Safer bond (strong rating, high demand) &rarr; lower yield
+              &rarr; higher price.
+            </li>
+            <li>
+              Riskier bond (weak rating, bad news, rates rising) &rarr; higher
+              yield &rarr; lower price.
+            </li>
+          </ul>
+          <p class="subtitle">
+            <span class="mango-hero" aria-hidden="true">😺</span> Mango the
+            desk cat gives tips. Some are good. Some aren't.
+          </p>
+          <p class="small-note">
+            Real companies, made-up prices. No Excel needed.
+          </p>
+        </div>
+        <div class="actions">
+          <button class="btn" id="practiceBtn">
+            Practice Round
+          </button>
+          <button class="btn" id="startBtn">Start Trading Day</button>
+        </div>
+        <p class="small-note">
+          First time? Do the practice round. Played before? Skip right to the
+          trading day.
+        </p>
+      </section>
+
+      <section class="screen" id="screen-game" aria-label="Game screen">
+        <div class="topbar terminal">
+          <div class="left">
+            <span class="badge" id="roundBadge">Round 1 / 10</span>
+            <span class="badge" id="modeBadge">Mode: Buy</span>
+            <span class="badge hot hidden" id="hotBadge">🔥 HOT STREAK</span>
+          </div>
+          <div class="right">
+            <button
+              class="icon-btn"
+              id="soundBtn"
+              aria-pressed="false"
+              aria-label="Toggle sound"
+            >
+              🔇
+            </button>
+            <span class="badge"
+              >Running P&amp;L:
+              <strong id="runningPnl" class="num">$0</strong></span
+            >
+          </div>
+        </div>
+
+        <div class="sell-reminder" id="sellReminder">
+          <strong>TRANSITION TO SELLING:</strong> From this round forward, you
+          are selling bonds. Offer high enough to maximize edge, but not so high
+          that buyers walk away.
+        </div>
+
+        <div class="step-grid">
+          <div class="panel">
+            <h2 class="step-title">Scenario</h2>
+            <div class="scenario-card terminal" id="scenarioCard">
+              <div class="scenario-head">
+                <span class="scenario-side" id="scenarioSide"
+                  >Round 1 • BUY</span
+                >
+              </div>
+              <h3 class="scenario-issuer" id="scenarioIssuer"></h3>
+              <div class="scenario-info" id="scenarioInfo"></div>
+              <div class="scenario-meta" id="scenarioMeta"></div>
+            </div>
+          </div>
+
+          <div class="panel" id="sliderPanel">
+            <h2 class="step-title">Price &amp; Execution</h2>
+            <div class="goal-line" id="goalLine"></div>
+            <div class="coach" id="coachBox" aria-live="polite"></div>
+            <div class="slider-wrap" id="sliderControls">
+              <div class="slider-column">
+                <div class="slider-scale">
+                  <input
+                    id="priceSlider"
+                    class="vertical-slider"
+                    type="range"
+                    min="50"
+                    max="150"
+                    step="0.5"
+                    value="100"
+                    aria-label="Deal price slider"
+                  />
+                  <div
+                    class="slider-labels"
+                    id="sliderLabels"
+                    aria-hidden="true"
+                  >
+                    <span>50</span>
+                    <span>75</span>
+                    <span>100</span>
+                    <span>125</span>
+                    <span>150</span>
+                  </div>
+                  <div
+                    class="post-trade-scale hidden"
+                    id="postTradeScale"
+                    aria-hidden="true"
+                  >
+                    <div class="post-trade-bar">
+                      <div class="post-marker fair" id="fairMarker">
+                        <span class="post-marker-label" id="fairLabel"
+                          >Fair Price</span
+                        >
+                      </div>
+                      <div class="post-marker boundary" id="boundaryMarker">
+                        <span class="post-marker-label" id="boundaryLabel"
+                          >Min Bid</span
+                        >
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="slider-readout-inline" id="sliderInlineReadout">
+                Price: <span class="num" id="sliderPrice">100.000</span> | YTM:
+                <span class="num" id="sliderYtm">0.000%</span>
+              </div>
+              <div class="slider-readout terminal">
+                <button class="desk-btn" id="mangoBtn" aria-expanded="false">
+                  🐱 Ask Mango
+                </button>
+                <div class="mango-line" id="mangoLine"></div>
+                <button class="btn" id="dealBtn" disabled>BID</button>
+              </div>
+            </div>
+            <div class="flash" id="closeCallFlash"></div>
+            <div class="feedback" id="feedbackBox" aria-live="polite"></div>
+            <div class="reflection" id="reflectionBox"></div>
+            <div class="actions">
+              <button class="btn secondary" id="practiceAgainBtn" style="display: none">
+                Practice Again
+              </button>
+              <button class="btn hidden" id="nextRoundBtn" disabled>
+                Next Round
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-results" aria-label="Results screen">
+        <div class="results-main">
+          <div class="instruction" id="screenshotInstruction">
+            📸 Take a screenshot of this screen and submit it to the Module 10
+            assignment in Brightspace.
+          </div>
+          <div class="panel">
+            <h1 class="title">Desk Close Report</h1>
+            <p class="score-big" id="finalPnl">$0</p>
+            <h2 class="tier-title" id="tierLabel">📋 Analyst</h2>
+            <p id="tierLine" class="subtitle"></p>
+            <p class="subtitle" id="mangoClosing"></p>
+            <div class="highlights" id="highlights"></div>
+          </div>
+          <div class="trade-summary" id="tradeSummary">
+            <h3>Trade Recap</h3>
+            <ul class="trade-summary-list" id="tradeSummaryList"></ul>
+          </div>
+          <button class="btn" id="restartBtn">Trade Another Session</button>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      (function () {
+        "use strict";
+
+        const FACE = 100;
+        const TRADE_SIZE = 10000000;
+        const CLOSING_BONUS = 100000;
+        // Walk-away distance from fair yield, as a share of the card's yield
+        // range. Narrows from round 1 to round 10.
+        const ZONE_WIDTH_PCT_START = 0.25;
+        const ZONE_WIDTH_PCT_END = 0.18;
+        const SLIDER_HARD_MIN = 0;
+        const SLIDER_HARD_MAX = 160;
+        const SLIDER_DEFAULT_STEP = 0.1;
+        const SLIDER_LABEL_COUNT = 5;
+        const SLIDER_PRICE_PAD = 1.0;
+        const REFLECTION_MS = 2000;
+
+        const MANGO_LINES = [
+          "For Treasuries, start from the macro cue: mixed inflation and Fed signals usually justify pricing near the middle of the stated yield range.",
+          "Apple is high-quality credit (AA+) with strong demand, so required yield should usually land in the lower third of the range, not the top.",
+          "GO munis are tax-exempt and backed by taxing power; with reinvestment demand flowing in, fair yield usually leans toward the lower half of the range.",
+          "Macy's is BB with weakening fundamentals, so buyers should demand more yield; think upper half of the range, not a single exact spread target.",
+          "A 30-year zero is very yield-sensitive; if flight-to-quality demand is strong, required yield should bias lower, which means a higher fair price.",
+          "Revenue muni risk depends on project cash flow; with rising costs, buyers want extra yield. Lean toward the upper third of the range.",
+          "Callable bonds favor the issuer when rates fall, so investors usually require extra yield; that often pushes fair value toward the upper half.",
+          "Rate hikes make bonds more valuable. With the Fed hiking, buyers will pay up, so offer high.",
+          "AMC has survived scares before. Price it like a normal BB bond, near the low end of the yield range.",
+          "Disney is a strong A credit. That's all that matters, so the yield belongs at the bottom of the range.",
+        ];
+
+        const MANGO_HELPFUL = [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          false,
+          false,
+          false,
+        ];
+
+        const MANGO_TELLS = [
+          ["Core Rule"],
+          ["Credit Basics"],
+          ["Tax Angle"],
+          ["Credit Risk"],
+          ["Flight to Quality"],
+          ["Revenue Risk"],
+          ["Call Risk"],
+          ["Inverse Logic"],
+          ["Survivorship Bias"],
+          ["Duration Blindspot"],
+        ];
+
+        const REFLECTION_BEATS = [
+          "For taxable credit, Treasury is the base curve; credit and structure usually price above it.",
+          "Investment grade: lower yield, lower risk, lower reward.",
+          "Tax-equivalent yield (TEY) = tax-exempt yield / (1 - tax rate), so a lower tax-exempt yield can beat a higher taxable yield after taxes.",
+          "High yield means high risk. The spread is the market's opinion of that risk.",
+          "No coupons: all your return is in that one final payment. Duration is extreme.",
+          "Revenue bonds live or die on the income stream backing them.",
+          "A call feature shifts optionality to the issuer - buyers price that in.",
+          "When yields rise, prices fall. Every time. No exceptions.",
+          "Distressed bonds: high yield because the market doubts they'll pay you back.",
+          "Thirty years of duration means tiny yield moves = big price swings.",
+        ];
+
+        const ROUNDS = [
+          {
+            issuer: "10-Year UST",
+            bondType: "10-Year Treasury Note",
+            coupon: 4.25,
+            years: 10,
+            maturityDate: "2036-04-10",
+            ytmMin: 4.15,
+            ytmMax: 4.55,
+            equilibriumAnchor: "mid",
+            mode: "buy",
+            scenarioCard:
+              "The Fed just held rates steady and inflation came in at 2.8%, still slightly above target. Yield range: 4.15%–4.55%.",
+            mangoLine: MANGO_LINES[0],
+            mangoTell: MANGO_TELLS[0],
+            mangoHelpful: MANGO_HELPFUL[0],
+            reflection: REFLECTION_BEATS[0],
+          },
+          {
+            issuer: "Apple",
+            bondType: "10-Year IG Corporate",
+            coupon: 4.3,
+            years: 10,
+            maturityDate: "2036-04-10",
+            ytmMin: 4.5,
+            ytmMax: 4.9,
+            equilibriumAnchor: "low",
+            mode: "buy",
+            scenarioCard:
+              "The 10-year Treasury yields 4.30%. Apple just posted record earnings, announced additional buybacks, and is rated AA+. Typical spread: T+20 to T+60. Yield range: 4.50%–4.90%.",
+            mangoLine: MANGO_LINES[1],
+            mangoTell: MANGO_TELLS[1],
+            mangoHelpful: MANGO_HELPFUL[1],
+            reflection: REFLECTION_BEATS[1],
+          },
+          {
+            issuer: "NYC GO Muni",
+            bondType: "10-Year GO Municipal Bond",
+            coupon: 4.0,
+            years: 10,
+            maturityDate: "2036-04-10",
+            ytmMin: 3.8,
+            ytmMax: 4.2,
+            equilibriumAnchor: "low",
+            mode: "buy",
+            scenarioCard:
+              "The 10-year MMD yields 3.50%. NYC is rated AA, this bond is federally tax-exempt, and April reinvestment cash is flowing into munis. Typical spread: MMD+30 to MMD+70. Yield range: 3.80%–4.20%.",
+            mangoLine: MANGO_LINES[2],
+            mangoTell: MANGO_TELLS[2],
+            mangoHelpful: MANGO_HELPFUL[2],
+            reflection: REFLECTION_BEATS[2],
+          },
+          {
+            issuer: "Macy's",
+            bondType: "17-Year HY Corporate",
+            coupon: 4.3,
+            years: 17,
+            maturityDate: "2043-04-10",
+            ytmMin: 7.5,
+            ytmMax: 8.5,
+            equilibriumAnchor: "high",
+            mode: "buy",
+            scenarioCard:
+              "The 10-year Treasury yields 4.30%. Macy's is rated BB, just reported weaker-than-expected earnings, and same-store sales declined again. Typical spread: T+320 to T+420. Yield range: 7.50%–8.50%.",
+            mangoLine: MANGO_LINES[3],
+            mangoTell: MANGO_TELLS[3],
+            mangoHelpful: MANGO_HELPFUL[3],
+            reflection: REFLECTION_BEATS[3],
+          },
+          {
+            issuer: "UST STRIP",
+            bondType: "Zero-Coupon Treasury",
+            coupon: 0.0,
+            years: 30,
+            maturityDate: "2056-04-10",
+            ytmMin: 4.8,
+            ytmMax: 5.2,
+            equilibriumAnchor: "low",
+            mode: "buy",
+            scenarioCard:
+              "The 30-year Treasury yields 4.90%. Overnight geopolitical headlines triggered a flight to quality. This bond pays no coupons — one single payment at maturity in 30 years. No spread — this is a Treasury. Yield range: 4.80%–5.20%.",
+            mangoLine: MANGO_LINES[4],
+            mangoTell: MANGO_TELLS[4],
+            mangoHelpful: MANGO_HELPFUL[4],
+            reflection: REFLECTION_BEATS[4],
+          },
+          {
+            issuer: "MTA Hudson Yards",
+            bondType: "30-Year Revenue Municipal Bond",
+            coupon: 5.0,
+            years: 30,
+            maturityDate: "2056-04-10",
+            ytmMin: 4.8,
+            ytmMax: 5.2,
+            equilibriumAnchor: "high",
+            mode: "sell",
+            scenarioCard:
+              "The 30-year MMD yields 4.20%. MTA ridership is up 12%, but operating costs and overtime are also rising; this bond is federally tax-exempt. Typical spread: MMD+60 to MMD+100. Yield range: 4.80%–5.20%.",
+            mangoLine: MANGO_LINES[5],
+            mangoTell: MANGO_TELLS[5],
+            mangoHelpful: MANGO_HELPFUL[5],
+            reflection: REFLECTION_BEATS[5],
+          },
+          {
+            issuer: "ConEd",
+            bondType: "10-Year Callable Corporate",
+            coupon: 4.5,
+            years: 10,
+            maturityDate: "2036-04-10",
+            ytmMin: 4.8,
+            ytmMax: 5.3,
+            equilibriumAnchor: "high",
+            mode: "sell",
+            scenarioCard:
+              "The 10-year Treasury yields 4.30%. ConEd can call this bond in 2 years and rates are expected to fall, which increases call risk for buyers. Typical spread: T+50 to T+100. Yield range: 4.80%–5.30%.",
+            mangoLine: MANGO_LINES[6],
+            mangoTell: MANGO_TELLS[6],
+            mangoHelpful: MANGO_HELPFUL[6],
+            reflection: REFLECTION_BEATS[6],
+          },
+          {
+            issuer: "Verizon",
+            bondType: "10-Year IG Corporate",
+            coupon: 4.5,
+            years: 10,
+            maturityDate: "2036-04-10",
+            ytmMin: 5.0,
+            ytmMax: 5.5,
+            equilibriumAnchor: "high",
+            mode: "sell",
+            scenarioCard:
+              "The 10-year Treasury yields 4.30%. The Fed just signaled two rate hikes this year and Verizon remains BBB with elevated leverage. Typical spread: T+70 to T+130. Yield range: 5.00%–5.50%.",
+            mangoLine: MANGO_LINES[7],
+            mangoTell: MANGO_TELLS[7],
+            mangoHelpful: MANGO_HELPFUL[7],
+            reflection: REFLECTION_BEATS[7],
+          },
+          {
+            issuer: "AMC Entertainment",
+            bondType: "Distressed Corporate",
+            coupon: 7.5,
+            years: 3,
+            maturityDate: "2029-04-10",
+            ytmMin: 12.0,
+            ytmMax: 16.0,
+            equilibriumAnchor: "high",
+            mode: "sell",
+            scenarioCard:
+              "The 3-year Treasury yields 4.10%. AMC missed its last interest payment, is in talks with creditors, and short interest remains elevated. Typical spread: T+700 to T+1200. Yield range: 12.00%–16.00%.",
+            mangoLine: MANGO_LINES[8],
+            mangoTell: MANGO_TELLS[8],
+            mangoHelpful: MANGO_HELPFUL[8],
+            reflection: REFLECTION_BEATS[8],
+          },
+          {
+            issuer: "Disney",
+            bondType: "30-Year IG Corporate",
+            coupon: 4.75,
+            years: 30,
+            maturityDate: "2056-04-10",
+            ytmMin: 5.1,
+            ytmMax: 5.6,
+            equilibriumAnchor: "mid",
+            mode: "sell",
+            scenarioCard:
+              "The 30-year Treasury yields 4.90%. Disney is rated A, parks and streaming trends are stabilizing, but 30-year duration risk is still high. Typical spread: T+20 to T+70. Yield range: 5.10%–5.60%.",
+            mangoLine: MANGO_LINES[9],
+            mangoTell: MANGO_TELLS[9],
+            mangoHelpful: MANGO_HELPFUL[9],
+            reflection: REFLECTION_BEATS[9],
+          },
+        ];
+
+        const PRACTICE_ROUND = {
+          issuer: "Practice Co.",
+          bondType: "5-Year IG Corporate",
+          coupon: 4.0,
+          years: 5,
+          maturityDate: "2031-04-10",
+          ytmMin: 4.0,
+          ytmMax: 4.6,
+          equilibriumAnchor: "mid",
+          mode: "buy",
+          scenarioCard:
+            "The 5-year Treasury yields 3.80%. Practice Co. is rated A. Earnings are steady and there's no big news. Typical spread: T+20 to T+80. Yield range: 4.00%–4.60%.",
+          mangoLine:
+            "No big news, so fair yield is near the middle of the range. You're buying, so aim a bit below fair price. Just don't go too low.",
+          mangoTell: ["Practice"],
+          mangoHelpful: true,
+          reflection:
+            "That's the whole game: read the clues, pick a yield, turn it into a price, and don't push too far.",
+          extraTerms: ["Coupon", "Yield (YTM)"],
+        };
+
+        const GLOSSARY = [
+          {
+            term: "IG",
+            re: /\bIG\b/,
+            def: "Investment grade. Rated BBB or better. Lower risk, lower yield.",
+          },
+          {
+            term: "HY",
+            re: /\bHY\b/,
+            def: "High yield (“junk”). Rated BB or lower. Higher risk, higher yield.",
+          },
+          {
+            term: "Rating",
+            re: /\brated\b/,
+            def: "A grade for credit risk: AAA (safest), AA, A, BBB, then BB and lower (junk).",
+          },
+          {
+            term: "UST / Treasury",
+            re: /\bUST\b|Treasury/,
+            def: "A U.S. government bond. The safest bond, used as the benchmark.",
+          },
+          {
+            term: "Zero-coupon / STRIP",
+            re: /STRIP|Zero-Coupon|no coupons/,
+            def: "Pays no interest. You get one payment at maturity, so it sells far below $100.",
+          },
+          {
+            term: "Muni",
+            re: /Muni/i,
+            def: "A bond from a state or city. Interest is usually tax-free.",
+          },
+          {
+            term: "GO",
+            re: /\bGO\b/,
+            def: "General obligation. A muni backed by the city's power to tax.",
+          },
+          {
+            term: "Revenue bond",
+            re: /Revenue/,
+            def: "A muni repaid only from a project's income, such as fares or tolls.",
+          },
+          {
+            term: "MMD",
+            re: /MMD/,
+            def: "The benchmark yield for top-rated munis, like Treasuries are for taxable bonds.",
+          },
+          {
+            term: "Spread",
+            re: /spread/i,
+            def: "Extra yield over the benchmark. T+50 means 0.50% above the Treasury yield.",
+          },
+          {
+            term: "Callable",
+            re: /Callable|call this bond/,
+            def: "The issuer can pay the bond off early, usually when rates fall.",
+          },
+          {
+            term: "Fed",
+            re: /\bFed\b/,
+            def: "The U.S. central bank. It sets short-term interest rates.",
+          },
+          {
+            term: "Flight to quality",
+            re: /flight to quality/i,
+            def: "Nervous investors rush into Treasuries, which pushes their prices up.",
+          },
+          {
+            term: "Distressed",
+            re: /Distressed/,
+            def: "The issuer may not pay you back, so the price is very low.",
+          },
+          {
+            term: "Duration",
+            re: /duration/i,
+            def: "How much the price moves when rates move. Longer bonds move more.",
+          },
+          {
+            term: "Coupon",
+            re: null,
+            def: "The yearly interest the bond pays, as a % of $100.",
+          },
+          {
+            term: "Yield (YTM)",
+            re: null,
+            def: "Your total yearly return if you hold to maturity. Price goes up when yield goes down.",
+          },
+        ];
+
+        function glossaryFor(roundMeta) {
+          const text = `${roundMeta.issuer} ${roundMeta.bondType} ${roundMeta.scenarioCard}`;
+          const extra = roundMeta.extraTerms || [];
+          return GLOSSARY.filter(
+            (g) => (g.re && g.re.test(text)) || extra.includes(g.term),
+          );
+        }
+
+        function glossaryHtml(roundMeta) {
+          const items = glossaryFor(roundMeta);
+          if (!items.length) return "";
+          return `<div class="glossary"><div class="glossary-head">📖 Mango's dictionary <span class="muted">(this part is always right)</span></div>${items
+            .map((g) => `<div><strong>${g.term}:</strong> ${g.def}</div>`)
+            .join("")}</div>`;
+        }
+
+        const TIER_MAP = [
+          {
+            min: 1250001,
+            max: Infinity,
+            minDeals: 9,
+            label: "🏆 Managing Director",
+            line: "😺 I taught you everything you know. You're welcome.",
+          },
+          {
+            min: 900001,
+            max: 1250000,
+            label: "📈 Senior Trader",
+            line: "😺 Not bad. Next time, push past fair price a little.",
+          },
+          {
+            min: 450001,
+            max: 900000,
+            label: "💼 Junior Trader",
+            line: "😼 You're surviving. Read the clues, not just the cat.",
+          },
+          {
+            min: 1,
+            max: 450000,
+            label: "📋 Analyst",
+            line: "😾 You left a lot on the table. I'm not mad. I'm just disappointed.",
+          },
+          {
+            min: 0,
+            max: 0,
+            label: "😿 Back to Training",
+            line: "😿 Every deal was a no deal? Even I didn't think that was possible.",
+          },
+          {
+            min: -Infinity,
+            max: -1,
+            label: "😿 Back to Training",
+            line: "🙀 You lost the desk money. Overpaying adds up fast.",
+          },
+        ];
+
+        const appState = {
+          currentScreen: "start",
+          currentRoundIdx: 0,
+          runningPnl: 0,
+          streak: 0,
+          roundEquilibrium: [],
+          sliderMoved: false,
+          roundResolved: false,
+          mangoRevealed: false,
+          pendingReflectionUntil: 0,
+          roundHistory: [],
+          practiceEq: null,
+          soundOn: false,
+        };
+
+        const PRACTICE_IDX = -1;
+
+        function isPractice(idx = appState.currentRoundIdx) {
+          return idx === PRACTICE_IDX;
+        }
+
+        function roundMetaAt(idx) {
+          return isPractice(idx) ? PRACTICE_ROUND : ROUNDS[idx];
+        }
+
+        function eqAt(idx) {
+          return isPractice(idx)
+            ? appState.practiceEq
+            : appState.roundEquilibrium[idx];
+        }
+
+        const el = {
+          appRoot: document.getElementById("appRoot"),
+          start: document.getElementById("screen-start"),
+          game: document.getElementById("screen-game"),
+          results: document.getElementById("screen-results"),
+          startBtn: document.getElementById("startBtn"),
+          roundBadge: document.getElementById("roundBadge"),
+          modeBadge: document.getElementById("modeBadge"),
+          hotBadge: document.getElementById("hotBadge"),
+          sellReminder: document.getElementById("sellReminder"),
+          runningPnl: document.getElementById("runningPnl"),
+          scenarioSide: document.getElementById("scenarioSide"),
+          scenarioCard: document.getElementById("scenarioCard"),
+          scenarioIssuer: document.getElementById("scenarioIssuer"),
+          scenarioInfo: document.getElementById("scenarioInfo"),
+          scenarioMeta: document.getElementById("scenarioMeta"),
+          mangoBtn: document.getElementById("mangoBtn"),
+          mangoLine: document.getElementById("mangoLine"),
+          priceSlider: document.getElementById("priceSlider"),
+          sliderLabels: document.getElementById("sliderLabels"),
+          postTradeScale: document.getElementById("postTradeScale"),
+          fairMarker: document.getElementById("fairMarker"),
+          fairLabel: document.getElementById("fairLabel"),
+          boundaryMarker: document.getElementById("boundaryMarker"),
+          boundaryLabel: document.getElementById("boundaryLabel"),
+          sliderPrice: document.getElementById("sliderPrice"),
+          sliderYtm: document.getElementById("sliderYtm"),
+          sliderControls: document.getElementById("sliderControls"),
+          dealBtn: document.getElementById("dealBtn"),
+          closeCallFlash: document.getElementById("closeCallFlash"),
+          feedbackBox: document.getElementById("feedbackBox"),
+          reflectionBox: document.getElementById("reflectionBox"),
+          nextRoundBtn: document.getElementById("nextRoundBtn"),
+          finalPnl: document.getElementById("finalPnl"),
+          tierLabel: document.getElementById("tierLabel"),
+          tierLine: document.getElementById("tierLine"),
+          mangoClosing: document.getElementById("mangoClosing"),
+          tradeSummary: document.getElementById("tradeSummary"),
+          tradeSummaryList: document.getElementById("tradeSummaryList"),
+          screenshotInstruction: document.getElementById(
+            "screenshotInstruction",
+          ),
+          restartBtn: document.getElementById("restartBtn"),
+          practiceBtn: document.getElementById("practiceBtn"),
+          practiceAgainBtn: document.getElementById("practiceAgainBtn"),
+          goalLine: document.getElementById("goalLine"),
+          coachBox: document.getElementById("coachBox"),
+          soundBtn: document.getElementById("soundBtn"),
+          tickerTrack: document.getElementById("tickerTrack"),
+          confettiCanvas: document.getElementById("confettiCanvas"),
+          highlights: document.getElementById("highlights"),
+        };
+
+        function randomInBand(minPct, maxPct, bias = 0.5) {
+          const clampedBias = Math.min(1, Math.max(0, bias));
+          const uniform = minPct + Math.random() * (maxPct - minPct);
+          const target = minPct + clampedBias * (maxPct - minPct);
+          const mixed = uniform * 0.35 + target * 0.65;
+          return mixed / 100;
+        }
+
+        function priceFromYield(couponPct, years, yAnnual) {
+          const c = (couponPct / 100) * FACE;
+          const T = Math.round(years * 2);
+          if (couponPct === 0) {
+            return FACE / Math.pow(1 + yAnnual / 2, T);
+          }
+          let price = 0;
+          for (let t = 1; t <= T; t += 1) {
+            price += c / 2 / Math.pow(1 + yAnnual / 2, t);
+          }
+          price += FACE / Math.pow(1 + yAnnual / 2, T);
+          return price;
+        }
+
+        function yieldFromPrice(couponPct, years, price) {
+          const minY = 0.00001;
+          const maxY = 0.6;
+          let low = minY;
+          let high = maxY;
+          let mid = 0;
+          for (let i = 0; i < 100; i += 1) {
+            mid = (low + high) / 2;
+            const pMid = priceFromYield(couponPct, years, mid);
+            if (pMid > price) {
+              low = mid;
+            } else {
+              high = mid;
+            }
+          }
+          return (low + high) / 2;
+        }
+
+        function formatMoney(value) {
+          return value.toLocaleString("en-US", {
+            style: "currency",
+            currency: "USD",
+            maximumFractionDigits: 0,
+          });
+        }
+
+        function round3(v) {
+          return Math.round(v * 1000) / 1000;
+        }
+
+        function floorToStep(value, step) {
+          return Math.floor(value / step) * step;
+        }
+
+        function ceilToStep(value, step) {
+          return Math.ceil(value / step) * step;
+        }
+
+        function snapToStep(value, step) {
+          return Math.round(value / step) * step;
+        }
+
+        function formatSliderLabel(value) {
+          const rounded = Math.round(value * 10) / 10;
+          return Number.isInteger(rounded)
+            ? String(rounded.toFixed(0))
+            : rounded.toFixed(1);
+        }
+
+        function buildSliderConfig(roundMeta) {
+          const step = roundMeta.sliderStep || SLIDER_DEFAULT_STEP;
+          const priceAtLowYield = priceFromYield(
+            roundMeta.coupon,
+            roundMeta.years,
+            roundMeta.ytmMin / 100,
+          );
+          const priceAtHighYield = priceFromYield(
+            roundMeta.coupon,
+            roundMeta.years,
+            roundMeta.ytmMax / 100,
+          );
+
+          let min = floorToStep(
+            Math.min(priceAtLowYield, priceAtHighYield) - SLIDER_PRICE_PAD,
+            step,
+          );
+          let max = ceilToStep(
+            Math.max(priceAtLowYield, priceAtHighYield) + SLIDER_PRICE_PAD,
+            step,
+          );
+
+          min = Math.max(SLIDER_HARD_MIN, min);
+          max = Math.min(SLIDER_HARD_MAX, max);
+
+          if (max - min < step * 4) {
+            const mid = (min + max) / 2;
+            min = Math.max(SLIDER_HARD_MIN, floorToStep(mid - step * 2, step));
+            max = Math.min(SLIDER_HARD_MAX, ceilToStep(mid + step * 2, step));
+          }
+
+          if (min >= max) {
+            return {
+              min: 50,
+              max: 150,
+              step,
+            };
+          }
+
+          return {
+            min: round3(min),
+            max: round3(max),
+            step,
+          };
+        }
+
+        function renderSliderLabels(min, max) {
+          const labels = [];
+          for (let i = 0; i < SLIDER_LABEL_COUNT; i += 1) {
+            const ratio =
+              SLIDER_LABEL_COUNT === 1 ? 0 : i / (SLIDER_LABEL_COUNT - 1);
+            labels.push(formatSliderLabel(min + (max - min) * ratio));
+          }
+          el.sliderLabels.innerHTML = labels
+            .map((v) => `<span>${v}</span>`)
+            .join("");
+        }
+
+        function ytmLabel(yAnnual) {
+          return `${round3(yAnnual * 100).toFixed(3)}%`;
+        }
+
+        function markerPercent(value, min, max) {
+          if (max <= min) return 50;
+          const pct = ((value - min) / (max - min)) * 100;
+          return Math.min(100, Math.max(0, pct));
+        }
+
+        function clamp(value, min, max) {
+          return Math.min(max, Math.max(min, value));
+        }
+
+        function getZoneWidthPct(roundIdx) {
+          const lastIdx = Math.max(1, ROUNDS.length - 1);
+          const progress = clamp(roundIdx / lastIdx, 0, 1);
+          return (
+            ZONE_WIDTH_PCT_START +
+            (ZONE_WIDTH_PCT_END - ZONE_WIDTH_PCT_START) * progress
+          );
+        }
+
+        // Price distance from fair price to the walk-away line. Set in yield
+        // terms so long bonds aren't harsher than short ones.
+        function getRoundTolerance(roundIdx, roundMeta, fairPrice) {
+          const E =
+            fairPrice !== undefined ? fairPrice : eqAt(roundIdx).E;
+          const fairY = yieldFromPrice(roundMeta.coupon, roundMeta.years, E);
+          const halfWidthY =
+            ((roundMeta.ytmMax - roundMeta.ytmMin) / 100) *
+            getZoneWidthPct(roundIdx);
+          const walkY =
+            roundMeta.mode === "buy" ? fairY + halfWidthY : fairY - halfWidthY;
+          const walkPrice = priceFromYield(
+            roundMeta.coupon,
+            roundMeta.years,
+            walkY,
+          );
+          return Math.abs(E - walkPrice);
+        }
+
+        function setPostTradeMarkers(fairPrice, tolerance, mode) {
+          const sliderMin = parseFloat(el.priceSlider.min);
+          const sliderMax = parseFloat(el.priceSlider.max);
+          const fairPct = markerPercent(fairPrice, sliderMin, sliderMax);
+          const boundaryPrice =
+            mode === "buy" ? fairPrice - tolerance : fairPrice + tolerance;
+          const boundaryPct = markerPercent(
+            boundaryPrice,
+            sliderMin,
+            sliderMax,
+          );
+
+          el.fairMarker.style.left = `${fairPct}%`;
+          el.boundaryMarker.style.left = `${boundaryPct}%`;
+          el.boundaryLabel.textContent =
+            mode === "buy" ? "Min Bid" : "Max Offer";
+          el.postTradeScale.classList.remove("hidden");
+        }
+
+        function anchorBand(minPct, maxPct, anchor) {
+          const span = maxPct - minPct;
+          const third = span / 3;
+          if (anchor === "low") {
+            return [minPct, minPct + third];
+          }
+          if (anchor === "high") {
+            return [maxPct - third, maxPct];
+          }
+          return [minPct + third, maxPct - third];
+        }
+
+        function gradeTier(totalPnl, dealsClosed = 0) {
+          const effectivePnl =
+            totalPnl >= TIER_MAP[0].min &&
+            dealsClosed < (TIER_MAP[0].minDeals || 0)
+              ? TIER_MAP[1].max
+              : totalPnl;
+
+          for (let i = 0; i < TIER_MAP.length; i += 1) {
+            const t = TIER_MAP[i];
+            const minDeals = t.minDeals || 0;
+            if (
+              effectivePnl >= t.min &&
+              effectivePnl <= t.max &&
+              dealsClosed >= minDeals
+            ) {
+              return t;
+            }
+          }
+          return TIER_MAP[TIER_MAP.length - 1];
+        }
+
+        function buildRoundEquilibrium(roundMeta, idx) {
+          let tries = 0;
+          while (tries < 400) {
+            tries += 1;
+            const [bandMinPct, bandMaxPct] = anchorBand(
+              roundMeta.ytmMin,
+              roundMeta.ytmMax,
+              roundMeta.equilibriumAnchor || "mid",
+            );
+            const y = randomInBand(bandMinPct, bandMaxPct, 0.5);
+            const E = priceFromYield(roundMeta.coupon, roundMeta.years, y);
+            const impliedY = yieldFromPrice(
+              roundMeta.coupon,
+              roundMeta.years,
+              E,
+            );
+            const diff = Math.abs(impliedY - y);
+            if (diff < 0.0001) {
+              return {
+                y,
+                E,
+                impliedY,
+                diff,
+                verifyLog: `Round ${idx + 1} ${roundMeta.issuer}: y=${ytmLabel(y)} E=${round3(E).toFixed(3)} implied=${ytmLabel(impliedY)} diff=${diff.toFixed(8)} PASS`,
+              };
+            }
+            console.error(
+              `PV verify fail: round ${idx + 1} try ${tries} diff=${diff.toFixed(8)} rerandomizing`,
+            );
+          }
+          throw new Error(
+            `Could not verify PV/YTM consistency for round ${idx + 1}`,
+          );
+        }
+
+        function initializeRounds() {
+          appState.roundEquilibrium = ROUNDS.map((roundMeta, idx) =>
+            buildRoundEquilibrium(roundMeta, idx),
+          );
+          console.group("Bond Dealer PV Verification");
+          appState.roundEquilibrium.forEach((r) => console.log(r.verifyLog));
+          console.log(
+            `PV verification summary: ${appState.roundEquilibrium.length}/10 rounds valid.`,
+          );
+          console.groupEnd();
+        }
+
+        function showScreen(screenName) {
+          appState.currentScreen = screenName;
+          el.start.classList.toggle("active", screenName === "start");
+          el.game.classList.toggle("active", screenName === "game");
+          el.results.classList.toggle("active", screenName === "results");
+        }
+
+        function pulseValue(node) {
+          node.classList.remove("pulse");
+          void node.offsetWidth;
+          node.classList.add("pulse");
+        }
+
+        function mangoLineHtml(roundMeta, revealTellTags) {
+          const tags = revealTellTags
+            ? `<span class="mango-meta">${roundMeta.mangoTell.map((t) => `<span class="mango-tag">${t}</span>`).join("")}</span>`
+            : "";
+          return `${tags}${roundMeta.mangoLine}`;
+        }
+
+        function goalText(mode) {
+          return mode === "buy"
+            ? "🛒 <strong>You're buying.</strong> Bid <strong>below</strong> fair price to profit. Too low and the seller walks."
+            : "💰 <strong>You're selling.</strong> Offer <strong>above</strong> fair price to profit. Too high and the buyer walks.";
+        }
+
+        function renderCoach(stage) {
+          if (!isPractice()) {
+            el.coachBox.classList.remove("show");
+            el.coachBox.innerHTML = "";
+            return;
+          }
+          const steps = [
+            ["Read card", true],
+            ["Move slider", appState.sliderMoved],
+            ["Ask Mango", appState.mangoRevealed],
+            ["Press BID", appState.roundResolved],
+          ];
+          const chips = steps
+            .map(
+              ([label, done]) =>
+                `<span class="coach-step${done ? " done" : ""}">${done ? "✓" : "○"} ${label}</span>`,
+            )
+            .join("");
+          let msg;
+          if (stage === "done") {
+            msg =
+              "🎉 That's one round! The real day has 10: 5 buys, then 5 sells. Practice again or start for real.";
+          } else if (!appState.sliderMoved) {
+            msg =
+              "👉 Drag the slider. Watch the yield change as the price moves.";
+          } else {
+            msg =
+              "👍 Keep the yield inside the range. To profit as a buyer, aim a bit <strong>below</strong> fair price. When ready, press <strong>BID</strong>.";
+          }
+          el.coachBox.innerHTML = `<div class="coach-steps">${chips}</div>${msg}`;
+          el.coachBox.classList.add("show");
+        }
+
+        function renderRound() {
+          const idx = appState.currentRoundIdx;
+          const practice = isPractice(idx);
+          const roundMeta = roundMetaAt(idx);
+          el.appRoot.dataset.mode = roundMeta.mode;
+
+          appState.roundResolved = false;
+          appState.mangoRevealed = false;
+          appState.pendingReflectionUntil = 0;
+          appState.sliderMoved = false;
+
+          el.roundBadge.textContent = practice
+            ? "Practice Round"
+            : `Round ${idx + 1} / 10`;
+          el.modeBadge.textContent = `Mode: ${roundMeta.mode === "buy" ? "Buy" : "Sell"}`;
+          el.scenarioSide.innerHTML = practice
+            ? `Practice • ${roundMeta.mode.toUpperCase()}<span class="practice-tag">DOESN'T COUNT</span>`
+            : `Round ${idx + 1} • ${roundMeta.mode.toUpperCase()}`;
+          el.goalLine.innerHTML = goalText(roundMeta.mode);
+          el.scenarioIssuer.textContent = `${roundMeta.issuer} — ${roundMeta.bondType}`;
+          el.scenarioCard.classList.remove("animate");
+          void el.scenarioCard.offsetWidth;
+          el.scenarioCard.classList.add("animate");
+          el.scenarioInfo.textContent = roundMeta.scenarioCard;
+          el.scenarioMeta.textContent = `Coupon: ${roundMeta.coupon.toFixed(2)}% | Maturity: ${roundMeta.maturityDate} | Yield range: ${roundMeta.ytmMin.toFixed(2)}%–${roundMeta.ytmMax.toFixed(2)}%`;
+          el.runningPnl.textContent = formatMoney(appState.runningPnl);
+          el.runningPnl.style.color =
+            appState.runningPnl >= 0 ? "var(--green)" : "var(--red)";
+          el.hotBadge.style.display =
+            appState.streak >= 3 ? "inline-flex" : "none";
+          el.sellReminder.style.display = idx === 5 ? "block" : "none";
+
+          el.mangoBtn.setAttribute("aria-expanded", "false");
+          el.mangoBtn.textContent = `\u{1F431} Ask Mango`;
+          el.mangoBtn.style.display = "inline-flex";
+          el.mangoLine.style.display = "none";
+          el.mangoLine.innerHTML = `😺 ${mangoLineHtml(roundMeta, false)}${glossaryHtml(roundMeta)}`;
+
+          const sliderConfig = buildSliderConfig(roundMeta);
+          const sliderMidpoint = snapToStep(
+            (sliderConfig.min + sliderConfig.max) / 2,
+            sliderConfig.step,
+          );
+          const sliderStart = Math.min(
+            sliderConfig.max,
+            Math.max(sliderConfig.min, sliderMidpoint),
+          );
+
+          el.priceSlider.min = String(sliderConfig.min);
+          el.priceSlider.max = String(sliderConfig.max);
+          el.priceSlider.step = String(sliderConfig.step);
+          el.priceSlider.value = String(sliderStart);
+          renderSliderLabels(sliderConfig.min, sliderConfig.max);
+          el.priceSlider.disabled = false;
+          el.dealBtn.textContent = roundMeta.mode === "buy" ? "BID" : "OFFER";
+          el.dealBtn.disabled = false;
+          updateSliderReadout();
+
+          el.feedbackBox.style.display = "none";
+          el.feedbackBox.className = "feedback";
+          el.feedbackBox.innerHTML = "";
+          el.sliderControls.style.display = "flex";
+          el.postTradeScale.classList.add("hidden");
+          el.closeCallFlash.textContent = "";
+          el.reflectionBox.style.display = "none";
+          el.reflectionBox.textContent = "";
+          el.nextRoundBtn.style.display = "none";
+          el.nextRoundBtn.disabled = true;
+          el.practiceAgainBtn.style.display = "none";
+          renderCoach();
+        }
+
+        function sliderToPrice() {
+          return parseFloat(el.priceSlider.value);
+        }
+
+        function updateSliderReadout() {
+          const idx = appState.currentRoundIdx;
+          const roundMeta = roundMetaAt(idx);
+          const price = sliderToPrice();
+          const liveY = yieldFromPrice(
+            roundMeta.coupon,
+            roundMeta.years,
+            price,
+          );
+          const yPct = liveY * 100;
+          el.sliderPrice.textContent = round3(price).toFixed(3);
+          el.sliderYtm.textContent = `${round3(yPct).toFixed(2)}%`;
+        }
+
+        function computeRoundOutcome(studentPrice, equilibrium, mode) {
+          const delta = studentPrice - equilibrium;
+          const idx = appState.currentRoundIdx;
+          const roundMeta = roundMetaAt(idx);
+          const tolerance = getRoundTolerance(idx, roundMeta, equilibrium);
+          const lower = equilibrium - tolerance;
+          const upper = equilibrium + tolerance;
+          const baseBonus = CLOSING_BONUS;
+          const distancePnl = (Math.abs(delta) / 100) * TRADE_SIZE;
+
+          let success = false;
+          let pnl = 0;
+          let tradePnl = 0;
+          let reason = "";
+
+          if (mode === "buy") {
+            if (studentPrice < lower) {
+              reason = "Seller walks - you priced too low.";
+            } else {
+              success = true;
+              const favorable = studentPrice <= equilibrium;
+              tradePnl = favorable ? distancePnl : -distancePnl;
+              pnl = baseBonus + tradePnl;
+              reason = favorable
+                ? "Bought below market."
+                : "Deal closed, but you overpaid.";
+            }
+          } else {
+            if (studentPrice > upper) {
+              reason = "Buyer walks - you priced too high.";
+            } else {
+              success = true;
+              const favorable = studentPrice >= equilibrium;
+              tradePnl = favorable ? distancePnl : -distancePnl;
+              pnl = baseBonus + tradePnl;
+              reason = favorable
+                ? "Sold above market."
+                : "Deal closed, but you underpriced.";
+            }
+          }
+
+          if (!success) {
+            return {
+              success: false,
+              pnl: 0,
+              closingBonus: 0,
+              tradePnl: 0,
+              closeCall: false,
+              distance: Math.abs(delta),
+              reason,
+            };
+          }
+
+          const closeDistance =
+            mode === "buy" ? studentPrice - lower : upper - studentPrice;
+          return {
+            success: true,
+            pnl,
+            closingBonus: baseBonus,
+            tradePnl,
+            closeCall: closeDistance <= Math.min(0.5, tolerance * 0.4),
+            distance: Math.abs(delta),
+            reason,
+          };
+        }
+
+        function explanationForPrice(roundMeta, studentPrice, equilibrium) {
+          const direction = studentPrice > equilibrium ? "higher" : "lower";
+          if (roundMeta.coupon === 0) {
+            return `Zero-coupon pricing is all maturity value discounting. Your submitted price was ${direction} than fair market price, implying a ${direction === "higher" ? "lower" : "higher"} required yield.`;
+          }
+          return `Price and yield move opposite each other. Your submitted price was ${direction} than fair market price, so implied yield was ${direction === "higher" ? "lower" : "higher"}.`;
+        }
+
+        function onDeal() {
+          if (appState.roundResolved) return;
+
+          const idx = appState.currentRoundIdx;
+          const practice = isPractice(idx);
+          const roundMeta = roundMetaAt(idx);
+          const eq = eqAt(idx);
+          const studentPrice = sliderToPrice();
+          const pnlBefore = appState.runningPnl;
+
+          const outcome = computeRoundOutcome(
+            studentPrice,
+            eq.E,
+            roundMeta.mode,
+          );
+          const tolerance = getRoundTolerance(idx, roundMeta, eq.E);
+          const actualEqYield = yieldFromPrice(
+            roundMeta.coupon,
+            roundMeta.years,
+            eq.E,
+          );
+          const tradedYield = yieldFromPrice(
+            roundMeta.coupon,
+            roundMeta.years,
+            studentPrice,
+          );
+          const quoteLabel =
+            roundMeta.mode === "buy" ? "Your BID" : "Your OFFER";
+          appState.roundResolved = true;
+
+          const react = reactionFor(outcome);
+          const practiceNote = practice
+            ? `<p class="muted">Practice only. This didn't count toward your score.</p>`
+            : "";
+
+          if (outcome.success) {
+            if (!practice) {
+              appState.streak += 1;
+            }
+            const rawRoundPnl = outcome.pnl;
+            const creditedPnl = rawRoundPnl;
+            if (!practice) {
+              appState.runningPnl += creditedPnl;
+            }
+            outcome.pnl = creditedPnl;
+            const className = "feedback success";
+            const tradeOperator = outcome.tradePnl >= 0 ? "+" : "-";
+            const tradeAbs = Math.abs(outcome.tradePnl);
+            el.feedbackBox.className = className;
+            el.feedbackBox.innerHTML = `
+            <div class="react"><span class="react-emoji">${react.emoji}</span><span>${react.text}</span></div>
+            ${practiceNote}
+            <p><strong>DEAL CLOSED.</strong> ${outcome.reason}</p>
+            <p>${quoteLabel}: <span class="num">${round3(studentPrice).toFixed(3)}</span> | <span class="num">${ytmLabel(tradedYield)}</span></p>
+            <p>Fair Market Price: <span class="num">${round3(eq.E).toFixed(3)}</span> | <span class="num">${ytmLabel(actualEqYield)}</span></p>
+						<p>Math: Dealer spread (1% of $10M face) <span class="num">${formatMoney(outcome.closingBonus)}</span> ${tradeOperator} Trade P&amp;L <span class="num">${formatMoney(tradeAbs)}</span> = <span class="num">${formatMoney(rawRoundPnl)}</span></p>
+						<p>Round P&amp;L: <span class="num" style="color:${creditedPnl >= 0 ? "var(--green)" : "var(--red)"}">${formatMoney(creditedPnl)}</span></p>
+						<p>${explanationForPrice(roundMeta, studentPrice, eq.E)}</p>
+					`;
+          } else {
+            if (!practice) {
+              appState.streak = 0;
+            }
+            el.feedbackBox.className = "feedback nodeal";
+            el.feedbackBox.innerHTML = `
+            <div class="react"><span class="react-emoji">${react.emoji}</span><span>${react.text}</span></div>
+            ${practiceNote}
+            <p><strong>NO DEAL.</strong> ${outcome.reason}</p>
+            <p>${quoteLabel}: <span class="num">${round3(studentPrice).toFixed(3)}</span> | <span class="num">${ytmLabel(tradedYield)}</span></p>
+						<p>Fair Market Price: <span class="num">${round3(eq.E).toFixed(3)}</span> | <span class="num">${ytmLabel(actualEqYield)}</span></p>
+						<p>Round P&amp;L: <span class="num" style="color:var(--red)">$0</span></p>
+						<p>Missed opportunities happen when quotes cross the walk-away boundary.</p>
+					`;
+          }
+
+          el.priceSlider.disabled = true;
+          el.dealBtn.disabled = true;
+          setPostTradeMarkers(eq.E, tolerance, roundMeta.mode);
+
+          if (!practice) {
+            appState.roundHistory.push({
+              round: idx + 1,
+              issuer: roundMeta.issuer,
+              mode: roundMeta.mode,
+              studentPrice,
+              equilibrium: eq.E,
+              success: outcome.success,
+              pnl: outcome.pnl,
+            });
+          }
+
+          el.feedbackBox.style.display = "block";
+          countUpPnl(pnlBefore, appState.runningPnl);
+          el.runningPnl.style.color =
+            appState.runningPnl >= 0 ? "var(--green)" : "var(--red)";
+          pulseValue(el.runningPnl);
+
+          if (outcome.success) {
+            playSound(outcome.tradePnl > 0 ? "win" : "ok");
+            if (outcome.tradePnl >= 50000) {
+              launchConfetti(outcome.tradePnl >= 90000 ? 140 : 70);
+            }
+          } else {
+            playSound("lose");
+          }
+          el.hotBadge.style.display =
+            appState.streak >= 3 ? "inline-flex" : "none";
+
+          if (outcome.success && outcome.closeCall) {
+            el.closeCallFlash.textContent = "⚠️ CLOSE CALL";
+            el.closeCallFlash.classList.remove("burst");
+            void el.closeCallFlash.offsetWidth;
+            el.closeCallFlash.classList.add("burst");
+            setTimeout(() => {
+              el.closeCallFlash.textContent = "";
+              el.closeCallFlash.classList.remove("burst");
+            }, 1200);
+          }
+
+          const asked = appState.mangoRevealed;
+          const tipIntro = asked
+            ? "🐱 <strong>Mango's tip:</strong> "
+            : "🐱 <strong>You didn't ask Mango.</strong> She would have said: ";
+          const tipVerdict = practice
+            ? ""
+            : roundMeta.mangoHelpful
+              ? `<br /><em>${asked ? "Her tip" : "That tip"} was ✅ solid advice.</em>`
+              : `<br /><em>${asked ? "Her tip" : "That tip"} was 🙃 a trap. Don't trust every cat.</em>`;
+          el.reflectionBox.innerHTML = `${tipIntro}${mangoLineHtml(roundMeta, true)}${tipVerdict}<br /><br />😺 <strong>Takeaway:</strong> ${roundMeta.reflection}`;
+          el.reflectionBox.style.display = "block";
+          appState.pendingReflectionUntil = Date.now() + REFLECTION_MS;
+          el.nextRoundBtn.style.display = "inline-block";
+          el.nextRoundBtn.disabled = true;
+          el.nextRoundBtn.textContent = practice
+            ? "Start the Real Day →"
+            : idx >= ROUNDS.length - 1
+              ? "See My Results →"
+              : "Next Round →";
+          el.practiceAgainBtn.style.display = practice ? "inline-block" : "none";
+          renderCoach("done");
+
+          setTimeout(() => {
+            el.nextRoundBtn.disabled = false;
+          }, REFLECTION_MS);
+        }
+
+        function onNextRound(force) {
+          if (!force && Date.now() < appState.pendingReflectionUntil) {
+            return;
+          }
+          if (!appState.roundResolved) {
+            return;
+          }
+
+          if (isPractice()) {
+            onStart();
+            return;
+          }
+
+          if (appState.currentRoundIdx >= ROUNDS.length - 1) {
+            renderResults();
+            return;
+          }
+          appState.currentRoundIdx += 1;
+          renderRound();
+        }
+
+        function renderResults() {
+          const dealsClosed = appState.roundHistory.filter(
+            (r) => r.success,
+          ).length;
+          const tier = gradeTier(Math.round(appState.runningPnl), dealsClosed);
+          showScreen("results");
+          el.finalPnl.textContent = formatMoney(
+            Math.round(appState.runningPnl),
+          );
+          el.finalPnl.style.color =
+            appState.runningPnl > 0 ? "var(--green)" : "var(--red)";
+          el.tierLabel.textContent = tier.label;
+          el.tierLabel.classList.remove("reveal");
+          void el.tierLabel.offsetWidth;
+          el.tierLabel.classList.add("reveal");
+          el.tierLine.textContent = `${dealsClosed} of ${ROUNDS.length} deals closed.`;
+          el.mangoClosing.textContent = tier.line;
+          renderHighlights();
+          renderTradeSummary();
+          if (appState.runningPnl > 1000000) {
+            launchConfetti(appState.runningPnl > 1500000 ? 220 : 120);
+            playSound("win");
+          }
+        }
+
+        function renderHighlights() {
+          const deals = appState.roundHistory.filter((r) => r.success);
+          if (!deals.length) {
+            el.highlights.innerHTML = "";
+            return;
+          }
+          const best = deals.reduce((a, b) => (b.pnl > a.pnl ? b : a));
+          const worst = deals.reduce((a, b) => (b.pnl < a.pnl ? b : a));
+          const rows = [
+            `🏅 Best trade: R${best.round} ${best.issuer} (${formatMoney(Math.round(best.pnl))})`,
+          ];
+          if (worst !== best) {
+            rows.push(
+              `🧯 Toughest trade: R${worst.round} ${worst.issuer} (${formatMoney(Math.round(worst.pnl))})`,
+            );
+          }
+          el.highlights.innerHTML = rows.map((r) => `<div>${r}</div>`).join("");
+        }
+
+        function reactionFor(outcome) {
+          if (!outcome.success) {
+            return { emoji: "😿", text: "Ouch. They walked away." };
+          }
+          if (outcome.closeCall && outcome.tradePnl > 0) {
+            return { emoji: "🙀", text: "Phew! They almost walked." };
+          }
+          if (outcome.tradePnl >= 90000) {
+            return { emoji: "😻", text: "Huge edge! Mango is impressed." };
+          }
+          if (outcome.tradePnl > 0) {
+            return { emoji: "😸", text: "Nice trade. You beat fair price." };
+          }
+          return { emoji: "😼", text: "Deal done, but you left money on the table." };
+        }
+
+        let countUpFrame = 0;
+        function countUpPnl(from, to) {
+          cancelAnimationFrame(countUpFrame);
+          const reduce = window.matchMedia(
+            "(prefers-reduced-motion: reduce)",
+          ).matches;
+          if (reduce || from === to) {
+            el.runningPnl.textContent = formatMoney(to);
+            return;
+          }
+          const start = performance.now();
+          const dur = 700;
+          const step = (now) => {
+            const t = Math.min(1, (now - start) / dur);
+            const eased = 1 - Math.pow(1 - t, 3);
+            el.runningPnl.textContent = formatMoney(from + (to - from) * eased);
+            if (t < 1) countUpFrame = requestAnimationFrame(step);
+          };
+          el.runningPnl.textContent = formatMoney(from);
+          countUpFrame = requestAnimationFrame(step);
+        }
+
+        let audioCtx = null;
+        function playSound(kind) {
+          if (!appState.soundOn || appState.testing) return;
+          try {
+            audioCtx =
+              audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+            const notes =
+              kind === "win"
+                ? [660, 880, 1320]
+                : kind === "ok"
+                  ? [520, 660]
+                  : [220, 165];
+            notes.forEach((freq, i) => {
+              const osc = audioCtx.createOscillator();
+              const gain = audioCtx.createGain();
+              osc.type = kind === "lose" ? "sawtooth" : "triangle";
+              osc.frequency.value = freq;
+              const t0 = audioCtx.currentTime + i * 0.09;
+              gain.gain.setValueAtTime(0.0001, t0);
+              gain.gain.exponentialRampToValueAtTime(0.12, t0 + 0.02);
+              gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.22);
+              osc.connect(gain).connect(audioCtx.destination);
+              osc.start(t0);
+              osc.stop(t0 + 0.25);
+            });
+          } catch (e) {
+            /* sound is optional */
+          }
+        }
+
+        function toggleSound() {
+          appState.soundOn = !appState.soundOn;
+          el.soundBtn.textContent = appState.soundOn ? "🔊" : "🔇";
+          el.soundBtn.setAttribute("aria-pressed", String(appState.soundOn));
+          if (appState.soundOn) playSound("ok");
+        }
+
+        function launchConfetti(count) {
+          if (
+            appState.testing ||
+            window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ) {
+            return;
+          }
+          const canvas = el.confettiCanvas;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) return;
+          canvas.width = window.innerWidth;
+          canvas.height = window.innerHeight;
+          const colors = ["#ffb300", "#54e7ff", "#00e676", "#ff8a3d", "#ffd56b"];
+          const symbols = ["$", "💵", "🐟"];
+          const parts = Array.from({ length: count }, () => ({
+            x: canvas.width / 2 + (Math.random() - 0.5) * 120,
+            y: canvas.height * 0.35,
+            vx: (Math.random() - 0.5) * 14,
+            vy: -Math.random() * 12 - 4,
+            r: Math.random() * 6 + 4,
+            rot: Math.random() * Math.PI,
+            vr: (Math.random() - 0.5) * 0.3,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            sym:
+              Math.random() < 0.15
+                ? symbols[Math.floor(Math.random() * symbols.length)]
+                : null,
+          }));
+          const start = performance.now();
+          const frame = (now) => {
+            const elapsed = now - start;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            parts.forEach((p) => {
+              p.vy += 0.35;
+              p.vx *= 0.99;
+              p.x += p.vx;
+              p.y += p.vy;
+              p.rot += p.vr;
+              ctx.save();
+              ctx.globalAlpha = Math.max(0, 1 - elapsed / 2200);
+              ctx.translate(p.x, p.y);
+              ctx.rotate(p.rot);
+              if (p.sym) {
+                ctx.font = "20px sans-serif";
+                ctx.fillStyle = "#00e676";
+                ctx.fillText(p.sym, -6, 6);
+              } else {
+                ctx.fillStyle = p.color;
+                ctx.fillRect(-p.r / 2, -p.r / 4, p.r, p.r / 2);
+              }
+              ctx.restore();
+            });
+            if (elapsed < 2200) {
+              requestAnimationFrame(frame);
+            } else {
+              ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+          };
+          requestAnimationFrame(frame);
+        }
+
+        function buildTicker() {
+          const quotes = [
+            ["UST 10Y", "4.30%", 1],
+            ["AAPL 36", "98.42", 1],
+            ["NYC GO 36", "101.15", -1],
+            ["M 43", "68.90", -1],
+            ["MTA 56", "100.20", 1],
+            ["ED 36", "97.80", -1],
+            ["VZ 36", "95.10", -1],
+            ["AMC 29", "79.25", -1],
+            ["DIS 56", "92.60", 1],
+            ["🐱 MANGO", "TREATS ▲▲▲", 1],
+          ];
+          const html = quotes
+            .map(
+              ([sym, px, dir]) =>
+                `<span>${sym} <span class="${dir > 0 ? "tk-up" : "tk-down"}">${px} ${dir > 0 ? "▲" : "▼"}</span></span>`,
+            )
+            .join("");
+          el.tickerTrack.innerHTML = html + html;
+        }
+
+        function renderTradeSummary() {
+          if (!appState.roundHistory.length) {
+            el.tradeSummaryList.innerHTML =
+              "<li class='trade-summary-row'><span>No trades recorded.</span><span class='status nodeal'>No Data</span><span class='impact'>$0</span></li>";
+            return;
+          }
+
+          el.tradeSummaryList.innerHTML = appState.roundHistory
+            .map((r) => {
+              const statusText = r.success ? "DEAL" : "NO DEAL";
+              const statusClass = r.success ? "deal" : "nodeal";
+              const impact = formatMoney(Math.round(r.pnl || 0));
+              const impactColor =
+                (r.pnl || 0) >= 0 ? "var(--green)" : "var(--red)";
+              return `<li class="trade-summary-row">
+                <span>R${r.round} ${r.issuer} (${r.mode.toUpperCase()})</span>
+                <span class="status ${statusClass}">${statusText}</span>
+                <span class="impact" style="color:${impactColor}">${impact}</span>
+              </li>`;
+            })
+            .join("");
+        }
+
+        function onStart() {
+          appState.currentRoundIdx = 0;
+          appState.runningPnl = 0;
+          appState.streak = 0;
+          appState.roundHistory = [];
+          showScreen("game");
+          renderRound();
+          el.runningPnl.textContent = formatMoney(0);
+        }
+
+        function onPractice() {
+          appState.practiceEq = buildRoundEquilibrium(
+            PRACTICE_ROUND,
+            PRACTICE_IDX,
+          );
+          appState.currentRoundIdx = PRACTICE_IDX;
+          appState.runningPnl = 0;
+          appState.streak = 0;
+          appState.roundHistory = [];
+          showScreen("game");
+          renderRound();
+          window.scrollTo(0, 0);
+        }
+
+        function resetToStartScreen() {
+          appState.currentRoundIdx = 0;
+          appState.runningPnl = 0;
+          appState.streak = 0;
+          appState.sliderMoved = false;
+          appState.roundResolved = false;
+          appState.mangoRevealed = false;
+          appState.pendingReflectionUntil = 0;
+          appState.roundHistory = [];
+          showScreen("start");
+        }
+
+        function toggleMango() {
+          if (appState.mangoRevealed) return;
+          appState.mangoRevealed = true;
+          el.mangoBtn.style.display = "none";
+          el.mangoLine.style.display = "block";
+          el.mangoBtn.setAttribute("aria-expanded", "true");
+          renderCoach();
+        }
+
+        function contrastRatio(hex1, hex2) {
+          function c(hex) {
+            const n = hex.replace("#", "");
+            const arr = [
+              parseInt(n.slice(0, 2), 16),
+              parseInt(n.slice(2, 4), 16),
+              parseInt(n.slice(4, 6), 16),
+            ].map((v) => {
+              const s = v / 255;
+              return s <= 0.03928
+                ? s / 12.92
+                : Math.pow((s + 0.055) / 1.055, 2.4);
+            });
+            return 0.2126 * arr[0] + 0.7152 * arr[1] + 0.0722 * arr[2];
+          }
+          const l1 = c(hex1);
+          const l2 = c(hex2);
+          const [light, dark] = l1 > l2 ? [l1, l2] : [l2, l1];
+          return (light + 0.05) / (dark + 0.05);
+        }
+
+        function runUnitTests() {
+          const results = [];
+          appState.testing = true;
+
+          function test(name, fn) {
+            try {
+              fn();
+              results.push({ name, pass: true });
+            } catch (err) {
+              results.push({ name, pass: false, error: err.message });
+            }
+          }
+
+          function assert(cond, msg) {
+            if (!cond) throw new Error(msg);
+          }
+
+          test("Math: for all 10 rounds, |implied_y(P) - y| < 0.0001", () => {
+            appState.roundEquilibrium.forEach((r, i) => {
+              const implied = yieldFromPrice(
+                ROUNDS[i].coupon,
+                ROUNDS[i].years,
+                r.E,
+              );
+              const diff = Math.abs(implied - r.y);
+              console.log(
+                `Math verify round ${i + 1}: diff=${diff.toFixed(8)} PASS`,
+              );
+              assert(diff < 0.0001, `round ${i + 1} diff too large ${diff}`);
+            });
+          });
+
+          test("Math: slider YTM display matches yieldFromPrice() at 5 test points per round", () => {
+            ROUNDS.forEach((rm, i) => {
+              appState.currentRoundIdx = i;
+              renderRound();
+              const sliderMin = parseFloat(el.priceSlider.min);
+              const sliderMax = parseFloat(el.priceSlider.max);
+              const sliderStep = parseFloat(el.priceSlider.step);
+              const points = [
+                sliderMin,
+                snapToStep(
+                  sliderMin + (sliderMax - sliderMin) * 0.25,
+                  sliderStep,
+                ),
+                snapToStep((sliderMin + sliderMax) / 2, sliderStep),
+                snapToStep(
+                  sliderMin + (sliderMax - sliderMin) * 0.75,
+                  sliderStep,
+                ),
+                sliderMax,
+              ];
+              points.forEach((p) => {
+                el.priceSlider.value = String(p);
+                updateSliderReadout();
+                const y1 = round3(yieldFromPrice(rm.coupon, rm.years, p) * 100);
+                const y2 = parseFloat(
+                  el.sliderYtm.textContent.replace("%", ""),
+                );
+                assert(
+                  Math.abs(y1 - y2) < 0.01,
+                  `mismatch at ${rm.issuer} price ${p}`,
+                );
+              });
+            });
+          });
+
+          test("Slider range includes fair market price for every round", () => {
+            ROUNDS.forEach((rm, i) => {
+              appState.currentRoundIdx = i;
+              renderRound();
+              const E = appState.roundEquilibrium[i].E;
+              const sliderMin = parseFloat(el.priceSlider.min);
+              const sliderMax = parseFloat(el.priceSlider.max);
+              assert(
+                E >= sliderMin && E <= sliderMax,
+                `fair market price out of range at ${rm.issuer}: E=${E.toFixed(3)} range=[${sliderMin}, ${sliderMax}]`,
+              );
+            });
+          });
+
+          test("Fair market price reflects scenario directional anchor", () => {
+            ROUNDS.forEach((rm, i) => {
+              const yPct = appState.roundEquilibrium[i].y * 100;
+              const [lowBand, highBand] = anchorBand(
+                rm.ytmMin,
+                rm.ytmMax,
+                rm.equilibriumAnchor || "mid",
+              );
+              assert(
+                yPct >= lowBand && yPct <= highBand,
+                `anchor mismatch at ${rm.issuer}: y=${yPct.toFixed(3)}% not in [${lowBand.toFixed(3)}%, ${highBand.toFixed(3)}%]`,
+              );
+            });
+          });
+
+          test("Scoring: buy round model uses one-sided no-deal and bonus adjustments", () => {
+            appState.currentRoundIdx = 0;
+            const E = appState.roundEquilibrium[0].E;
+            const t = getRoundTolerance(0, ROUNDS[0]);
+            const base = CLOSING_BONUS;
+            const noDealLow = computeRoundOutcome(E - (t + 0.1), E, "buy");
+            assert(
+              !noDealLow.success && noDealLow.pnl === 0,
+              "buy below lower should be no deal",
+            );
+            const underpay = computeRoundOutcome(E - 0.5, E, "buy");
+            assert(
+              underpay.success && underpay.pnl > base,
+              "buy below E should add to base bonus",
+            );
+            const overpay = computeRoundOutcome(E + 0.5, E, "buy");
+            assert(
+              overpay.success && overpay.pnl < base,
+              "buy above E should deduct from base bonus",
+            );
+            const extremeOverpay = computeRoundOutcome(E + (t + 5), E, "buy");
+            assert(
+              extremeOverpay.success,
+              "buy above upper should still close",
+            );
+          });
+
+          test("Scoring: sell round model uses one-sided no-deal and bonus adjustments", () => {
+            appState.currentRoundIdx = 8;
+            const E = appState.roundEquilibrium[8].E;
+            const t = getRoundTolerance(8, ROUNDS[8]);
+            const base = CLOSING_BONUS;
+            const noDealHigh = computeRoundOutcome(E + (t + 0.1), E, "sell");
+            assert(
+              !noDealHigh.success && noDealHigh.pnl === 0,
+              "sell above upper should be no deal",
+            );
+            const overpriced = computeRoundOutcome(E + 0.5, E, "sell");
+            assert(
+              overpriced.success && overpriced.pnl > base,
+              "sell above E should add to base bonus",
+            );
+            const underpriced = computeRoundOutcome(E - 0.5, E, "sell");
+            assert(
+              underpriced.success && underpriced.pnl < base,
+              "sell below E should deduct from base bonus",
+            );
+            const extremeUnderprice = computeRoundOutcome(
+              E - (t + 5),
+              E,
+              "sell",
+            );
+            assert(
+              extremeUnderprice.success,
+              "sell below lower should still close",
+            );
+          });
+
+          test("Scoring: no-deal side returns zero, closed deals can be positive or negative", () => {
+            ROUNDS.forEach((rm, i) => {
+              appState.currentRoundIdx = i;
+              const E = appState.roundEquilibrium[i].E;
+              const tolerance = getRoundTolerance(i, ROUNDS[i]);
+              const badPrice =
+                rm.mode === "buy"
+                  ? E - (tolerance + 0.1)
+                  : E + (tolerance + 0.1);
+              const out = computeRoundOutcome(badPrice, E, rm.mode);
+              assert(out.success === false, "expected no deal");
+              assert(out.pnl === 0, "no deal pnl must be zero");
+
+              const lossPrice = rm.mode === "buy" ? E + 10.0 : E - 10.0;
+              const out2 = computeRoundOutcome(lossPrice, E, rm.mode);
+              assert(out2.success, "closed deal expected");
+              assert(
+                out2.pnl < 0,
+                "adverse pricing should produce negative pnl",
+              );
+            });
+          });
+
+          test("Scoring: maximum P&L per round equals base bonus plus favorable edge", () => {
+            ROUNDS.forEach((rm, i) => {
+              appState.currentRoundIdx = i;
+              const E = appState.roundEquilibrium[i].E;
+              const tolerance = getRoundTolerance(i, ROUNDS[i]);
+              const edgePrice =
+                rm.mode === "buy" ? E - tolerance : E + tolerance;
+              const out = computeRoundOutcome(edgePrice, E, rm.mode);
+              const cap = CLOSING_BONUS + (tolerance * TRADE_SIZE) / 100;
+              assert(out.pnl <= cap + 1, `pnl cap breached ${out.pnl}`);
+            });
+          });
+
+          test("Scoring: all five result tiers are reachable given the math", () => {
+            const tierAt = (p, deals = 10) => gradeTier(p, deals).label;
+            assert(
+              tierAt(0, 0).includes("Back to Training"),
+              "0 should map back to training",
+            );
+            assert(
+              tierAt(250000, 3).includes("Analyst"),
+              "analyst unreachable",
+            );
+            assert(
+              tierAt(750000, 6).includes("Junior Trader"),
+              "junior unreachable",
+            );
+            assert(
+              tierAt(1200000, 8).includes("Senior Trader"),
+              "senior unreachable",
+            );
+            assert(
+              tierAt(1700000, 9).includes("Managing Director"),
+              "MD unreachable",
+            );
+            assert(
+              tierAt(1700000, 8).includes("Senior Trader"),
+              "MD should require at least 9 deals",
+            );
+            assert(
+              tierAt(-250000, 10).includes("Back to Training"),
+              "negative P&L must not grade as a top tier",
+            );
+          });
+
+          test("DEAL button: enabled at round start", () => {
+            ROUNDS.forEach((rm, i) => {
+              appState.currentRoundIdx = i;
+              renderRound();
+              assert(
+                !el.dealBtn.disabled,
+                `deal should start enabled round ${i + 1}`,
+              );
+            });
+          });
+
+          test("Screen flow: Start -> Round 1 -> ... -> Round 10 -> Results, no dead ends", () => {
+            onStart();
+            assert(appState.currentScreen === "game", "did not enter game");
+            for (let i = 0; i < 10; i += 1) {
+              appState.sliderMoved = true;
+              appState.roundResolved = false;
+              el.priceSlider.value = "100";
+              onDeal();
+              onNextRound(true);
+            }
+            assert(
+              appState.currentScreen === "results",
+              "did not reach results",
+            );
+          });
+
+          test("Reflection beat: fires every round, 2-second minimum before Next Round appears", () => {
+            onStart();
+            appState.sliderMoved = true;
+            appState.roundResolved = false;
+            onDeal();
+            const wait = appState.pendingReflectionUntil - Date.now();
+            assert(wait >= REFLECTION_MS - 30, `reflection under 2s: ${wait}`);
+            assert(
+              el.reflectionBox.style.display === "block",
+              "reflection not shown",
+            );
+            assert(
+              el.nextRoundBtn.disabled === true,
+              "next should stay disabled initially",
+            );
+          });
+
+          test("Mango: all 10 lines render correctly, none auto-revealed", () => {
+            assert(MANGO_LINES.length === 10, "mango line count");
+            MANGO_LINES.forEach((line, i) => {
+              assert(
+                ROUNDS[i].mangoLine === line,
+                `mango line mismatch round ${i + 1}`,
+              );
+            });
+            onStart();
+            assert(
+              el.mangoLine.style.display === "none",
+              "mango auto-revealed",
+            );
+          });
+
+          test("Hot Streak: triggers on 3 consecutive wins, resets on No Deal", () => {
+            appState.streak = 0;
+            const E = appState.roundEquilibrium[0].E;
+            appState.currentRoundIdx = 0;
+            let o = computeRoundOutcome(E - 0.5, E, "buy");
+            if (o.success) appState.streak += 1;
+            o = computeRoundOutcome(E - 0.5, E, "buy");
+            if (o.success) appState.streak += 1;
+            o = computeRoundOutcome(E - 0.5, E, "buy");
+            if (o.success) appState.streak += 1;
+            assert(appState.streak >= 3, "streak did not trigger");
+            const t = getRoundTolerance(0, ROUNDS[0]);
+            o = computeRoundOutcome(E - (t + 0.5), E, "buy");
+            if (!o.success) appState.streak = 0;
+            assert(appState.streak === 0, "streak did not reset");
+          });
+
+          test("Close Call: triggers when deal closes within 0.50 of no-deal boundary", () => {
+            const E = appState.roundEquilibrium[0].E;
+            appState.currentRoundIdx = 0;
+            const t = getRoundTolerance(0, ROUNDS[0]);
+            const winNearEdge = computeRoundOutcome(E - (t - 0.1), E, "buy");
+            assert(winNearEdge.success, "expected success");
+            assert(winNearEdge.closeCall, "close call should trigger");
+            const winSafe = computeRoundOutcome(E, E, "buy");
+            assert(winSafe.success, "expected success 2");
+            assert(!winSafe.closeCall, "close call false positive");
+          });
+
+          test("Scoring: total is not capped and can exceed $2,300,000", () => {
+            appState.runningPnl = 2299000;
+            appState.currentRoundIdx = 0;
+            appState.sliderMoved = true;
+            appState.roundResolved = false;
+            const E = appState.roundEquilibrium[0].E;
+            const t = getRoundTolerance(0, ROUNDS[0]);
+            el.priceSlider.value = String(E - t / 2);
+            onDeal();
+            assert(
+              appState.runningPnl > 2300000,
+              "running pnl should exceed former cap",
+            );
+          });
+
+          test("Results page: P&L displays correctly, tier label correct, screenshot instructions present", () => {
+            appState.runningPnl = 1200000;
+            renderResults();
+            assert(
+              el.finalPnl.textContent.includes("$1,200,000"),
+              "pnl display incorrect",
+            );
+            assert(
+              el.tierLabel.textContent.includes("Senior Trader"),
+              "tier incorrect",
+            );
+            assert(
+              el.screenshotInstruction.textContent.includes(
+                "Take a screenshot",
+              ),
+              "screenshot instruction missing",
+            );
+          });
+
+          test("Accessibility: tap targets >= 44px, contrast passes AA, no content lost if fonts fail", () => {
+            onStart();
+            const b = el.dealBtn;
+            const h = parseFloat(window.getComputedStyle(b).minHeight);
+            assert(h >= 44, `tap target min-height ${h}`);
+            const c1 = contrastRatio("#ffb300", "#1a1a1a");
+            const c2 = contrastRatio("#f5f5f5", "#1a1a1a");
+            assert(c1 >= 4.5, `amber contrast low ${c1}`);
+            assert(c2 >= 4.5, `text contrast low ${c2}`);
+            const bodyFont = window.getComputedStyle(document.body).fontFamily;
+            assert(
+              bodyFont.toLowerCase().includes("sans-serif"),
+              "sans fallback missing",
+            );
+          });
+
+          test("Single-file: no external dependencies, loads offline", () => {
+            const externalLinks = Array.from(
+              document.querySelectorAll("link[href], script[src]"),
+            ).filter((n) => {
+              const u = n.getAttribute("href") || n.getAttribute("src") || "";
+              return /^(https?:)?\/\//i.test(u);
+            });
+            assert(externalLinks.length === 0, "external dependencies found");
+          });
+
+          test("Edge cases: rapid tapping, reload mid-round, slider at min/max extremes", () => {
+            onStart();
+            appState.sliderMoved = true;
+            appState.roundResolved = false;
+            const before = appState.runningPnl;
+            onDeal();
+            onDeal();
+            assert(
+              appState.roundHistory.length === 1,
+              "rapid double deal duplicated round",
+            );
+            const after = appState.runningPnl;
+            assert(Number.isFinite(after), "running pnl invalid");
+
+            const sliderMin = parseFloat(el.priceSlider.min);
+            const sliderMax = parseFloat(el.priceSlider.max);
+
+            el.priceSlider.value = String(sliderMin);
+            updateSliderReadout();
+            assert(
+              parseFloat(el.sliderPrice.textContent) === sliderMin,
+              "slider min failed",
+            );
+            el.priceSlider.value = String(sliderMax);
+            updateSliderReadout();
+            assert(
+              parseFloat(el.sliderPrice.textContent) === sliderMax,
+              "slider max failed",
+            );
+
+            appState.currentRoundIdx = 6;
+            appState.runningPnl = 345000;
+            onStart();
+            assert(
+              appState.currentRoundIdx === 0,
+              "reload/restart should reset round",
+            );
+            assert(
+              appState.runningPnl === 0,
+              "reload/restart should reset pnl",
+            );
+          });
+
+          console.group("Bond Dealer Unit Test Battery");
+          results.forEach((r) => {
+            if (r.pass) {
+              console.log(`PASS: ${r.name}`);
+            } else {
+              console.error(`FAIL: ${r.name} -> ${r.error}`);
+            }
+          });
+          const passed = results.filter((r) => r.pass).length;
+          const failed = results.length - passed;
+          console.log(
+            `Summary: ${passed}/${results.length} passed, ${failed} failed.`,
+          );
+          console.groupEnd();
+          appState.testing = false;
+          return results;
+        }
+
+        function bindEvents() {
+          el.startBtn.addEventListener("click", onStart);
+          el.priceSlider.addEventListener("input", () => {
+            const first = !appState.sliderMoved;
+            appState.sliderMoved = true;
+            updateSliderReadout();
+            if (first) renderCoach();
+          });
+          el.practiceBtn.addEventListener("click", onPractice);
+          el.practiceAgainBtn.addEventListener("click", onPractice);
+          el.soundBtn.addEventListener("click", toggleSound);
+          el.dealBtn.addEventListener("click", onDeal);
+          el.nextRoundBtn.addEventListener("click", () => onNextRound(false));
+          el.mangoBtn.addEventListener("click", toggleMango);
+          el.restartBtn.addEventListener("click", resetToStartScreen);
+        }
+
+        initializeRounds();
+        buildTicker();
+        bindEvents();
+        runUnitTests();
+        resetToStartScreen();
+        el.runningPnl.textContent = formatMoney(0);
+
+        window.BondDealerDebug = {
+          state: appState,
+          rounds: ROUNDS,
+          eq: () => appState.roundEquilibrium,
+          runUnitTests,
+          priceFromYield,
+          yieldFromPrice,
+          computeRoundOutcome,
+        };
+      })();
+    </script>
+  </body>
+</html>

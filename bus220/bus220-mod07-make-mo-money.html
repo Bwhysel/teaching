@@ -1,0 +1,1596 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Make Mo' Money</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Fraunces:opsz,wght@9..144,700;9..144,900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --red:#D33B1F; --cream:#FAF1DC; --brown:#3B2314; --teal:#2A7F7A;
+  --cream-dk:#EFE1BF; --white:#FFFDF6;
+  --gutter:16px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--brown); color:var(--brown);
+  font-family:'DM Sans',system-ui,sans-serif; font-size:16px; line-height:1.45;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  overflow-x:hidden;
+}
+h1,h2{font-family:'Fraunces',Georgia,serif; margin:0}
+.page{max-width:720px; margin:0 auto; padding:0 var(--gutter) 24px}
+
+/* Header: sale-sign banner */
+.banner{
+  background:var(--red); color:var(--cream); text-align:center;
+  margin:0 calc(-1*var(--gutter)); padding:14px 66px 12px;
+  border-bottom:6px solid var(--teal);
+  background-image:repeating-linear-gradient(90deg,rgba(0,0,0,.08) 0 14px,transparent 14px 28px);
+}
+.banner h1{font-size:clamp(22px,7vw,44px); font-weight:900; letter-spacing:.5px; line-height:1.05}
+.banner p{margin:4px 0 0; font-size:16px; font-weight:500}
+
+/* Progress */
+.progress{display:flex; gap:6px; list-style:none; padding:0; margin:14px 0 12px}
+.progress li{
+  flex:1; text-align:center; font-size:13px; font-weight:700; padding:6px 2px;
+  background:var(--cream-dk); border:2px solid var(--brown); border-radius:8px; color:var(--brown);
+  opacity:.6;
+}
+.progress li.done{background:var(--teal); color:var(--cream); opacity:1}
+.progress li.now{background:var(--cream); opacity:1; box-shadow:0 3px 0 var(--red)}
+.progress .n{display:block; font-size:16px}
+.progress li.clickable{cursor:pointer; opacity:1}
+.progress li.clickable:focus-visible{outline:3px solid var(--cream); outline-offset:2px}
+.progress li.viewing{box-shadow:0 0 0 3px var(--red)}
+.review-bar{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:12px; padding:8px 12px;
+  background:var(--cream); border:3px solid var(--red); border-radius:12px; font-weight:700}
+.review-bar[hidden]{display:none}
+.btn.small{min-height:44px; font-size:16px; padding:2px 14px}
+.pane[hidden]{display:none}
+.graph-slot{margin-top:2px}
+.pane .prompt,.card.tagging h2,.card.tagging .vars,.card.tagging .eqnote{padding-right:64px}
+.choice-row{margin:0 0 8px}
+.done-h{font-size:clamp(28px,8vw,40px); margin-bottom:8px}
+.say{background:var(--cream); border:3px solid var(--brown); border-left:10px solid var(--red); border-radius:12px; padding:10px 14px; margin-bottom:14px}
+.say strong{color:var(--teal)}
+.say p{margin:4px 0 0}
+.field{margin:12px 0}
+.field label{display:block; font-weight:700; margin-bottom:4px}
+.field-row{display:flex; justify-content:space-between; align-items:baseline; gap:8px}
+.field input,.field textarea{display:block; width:100%; font:inherit; font-size:18px; line-height:1.4; color:var(--brown); background:var(--white);
+  border:3px solid var(--brown); border-radius:10px; padding:10px 12px}
+.field textarea{resize:vertical; min-height:140px}
+.field input:focus-visible,.field textarea:focus-visible{outline:3px solid var(--teal); outline-offset:2px}
+.count{font-weight:700; font-size:16px; color:var(--teal)}
+.count.max{color:var(--red)}
+.field-msg{margin:4px 0 0; min-height:1.4em; color:var(--red); font-weight:700; font-size:16px}
+.done-out{margin-top:14px}
+.finish-steps{font-weight:700}
+.card-img{display:block; width:100%; height:auto; border:3px solid var(--brown); border-radius:10px; background:var(--cream); -webkit-touch-callout:default; user-select:auto; -webkit-user-select:auto}
+.save-note{margin:8px 0; font-weight:700}
+a.btn{display:inline-flex; align-items:center; text-decoration:none}
+.pop{transform-box:fill-box; transform-origin:center; animation:pop .35s cubic-bezier(.3,1.6,.5,1)}
+@keyframes pop{0%{transform:scale(.2)} 100%{transform:scale(1)}}
+.lvl-flash{animation:lf .5s}
+@keyframes lf{0%,100%{stroke-width:4} 40%{stroke-width:11}}
+.corner-table{width:100%; border-collapse:collapse; margin-top:12px; font-size:17px; background:var(--cream)}
+.corner-table caption{font-family:'Fraunces',Georgia,serif; font-weight:700; font-size:18px; text-align:left; margin-bottom:6px}
+.corner-table th,.corner-table td{border:2px solid var(--brown); padding:8px 10px; text-align:left}
+.corner-table th{background:var(--cream-dk)}
+.corner-table tr.best td{background:var(--teal); color:var(--cream); font-weight:700}
+.table-note{margin:8px 0 0; font-size:16px}
+@media (prefers-reduced-motion:reduce){ .pop,.lvl-flash{animation:none} }
+.clickflash{fill:none; stroke:#D33B1F; stroke-width:4; transform-box:fill-box; transform-origin:center; animation:cf .6s ease-out forwards}
+@keyframes cf{0%{transform:scale(.4); opacity:1} 100%{transform:scale(2.2); opacity:0}}
+@media (prefers-reduced-motion:reduce){ .clickflash{animation:none} }
+
+.card{
+  background:var(--cream); border:3px solid var(--brown); border-radius:14px;
+  padding:14px; margin-bottom:12px;
+}
+.card h2{font-size:20px; margin-bottom:6px}
+.card p{margin:0 0 8px}
+.card p:last-child{margin-bottom:0}
+
+/* Mango: pinned to the top-right corner so his hints are always on screen */
+.mango-strip{position:fixed; z-index:40; top:calc(8px + env(safe-area-inset-top)); right:calc(max(8px, 50% - 348px) + env(safe-area-inset-right)); width:60px; height:66px}
+.mango-wrap{position:relative; width:60px; height:66px}
+button.mango{
+  display:block; width:60px; height:66px; padding:0; border:0; background:none; cursor:pointer;
+  -webkit-tap-highlight-color:transparent; touch-action:manipulation;
+  filter:drop-shadow(0 0 3px rgba(250,241,220,.9)) drop-shadow(0 2px 2px rgba(0,0,0,.35));
+}
+button.mango:focus-visible{outline:3px solid var(--teal); outline-offset:2px; border-radius:12px}
+.mango svg{width:100%; height:100%; overflow:visible; display:block}
+.hint-q{
+  position:absolute; top:12px; right:68px;
+  background:var(--white); border:3px solid var(--brown); border-radius:14px; color:var(--red);
+  padding:6px 12px; font-size:16px; font-weight:700; white-space:nowrap; cursor:pointer;
+  opacity:0; pointer-events:none; transition:opacity .25s;
+}
+.hint-q.show{opacity:1; pointer-events:auto}
+.hint-q::after{content:""; position:absolute; right:-9px; top:50%; width:12px; height:12px;
+  background:var(--white); border:3px solid var(--brown); border-bottom:0; border-left:0;
+  transform:translateY(-50%) rotate(45deg)}
+.hint-panel{
+  position:absolute; top:0; right:68px; width:min(300px, calc(100vw - 96px));
+  background:var(--white); border:3px solid var(--brown); border-radius:14px;
+  padding:12px 14px; font-size:16px; box-shadow:0 6px 18px rgba(0,0,0,.35);
+}
+.hint-panel[hidden]{display:none}
+.hint-panel::after{content:""; position:absolute; right:-10px; top:20px; width:14px; height:14px;
+  background:var(--white); border:3px solid var(--brown); border-bottom:0; border-left:0; transform:rotate(45deg)}
+.hint-panel .tap{display:block; margin-top:6px; font-size:14px; opacity:.7}
+
+/* Activity area (filled in by later stages) */
+.activity{background:var(--white); border:3px solid var(--brown); border-radius:14px; padding:10px; color:var(--brown)}
+#activityLabel{font-size:14px; color:var(--teal); font-weight:500; margin-bottom:6px}
+.graph-host{width:100%}
+svg.graph{display:block; width:100%; height:auto; background:var(--cream); border:2px solid var(--brown); border-radius:8px; touch-action:pan-y; user-select:none; -webkit-user-select:none}
+svg.graph text{font-family:'DM Sans',system-ui,sans-serif; fill:var(--brown)}
+svg.graph [data-layer]{pointer-events:none}
+svg.graph .hdl,svg.graph .hdl *{pointer-events:all}
+svg.graph .hdl.locked,svg.graph .hdl.locked *{pointer-events:none}   /* a finished dot never blocks the one being dragged */
+svg.graph line:not(.hit-stroke){vector-effect:non-scaling-stroke}    /* line weights stay the same on every screen size */
+svg.graph .hit-fill{pointer-events:all}
+svg.graph .hit-stroke{pointer-events:stroke}
+svg.graph .halo{paint-order:stroke; stroke:var(--cream); stroke-width:4px; stroke-linejoin:round}
+/* Step 1 and 2 widgets */
+.prompt{font-size:18px; font-weight:500; margin:0 0 10px}
+.big-btns{display:flex; gap:10px; flex-wrap:wrap}
+.btn{font:inherit; font-size:18px; font-weight:700; min-height:48px; min-width:48px; padding:6px 18px; border:3px solid var(--brown); border-radius:12px;
+  background:var(--cream); color:var(--brown); cursor:pointer; touch-action:manipulation; box-shadow:0 3px 0 var(--brown)}
+.btn:active{transform:translateY(2px); box-shadow:0 1px 0 var(--brown)}
+.btn.primary{background:var(--red); color:var(--cream)}
+.btn.ok{background:var(--teal); color:var(--cream)}
+.btn:disabled:not(.ok){opacity:.4; cursor:not-allowed; box-shadow:none; transform:none}
+.btn.ghost{background:transparent; color:var(--cream); border-color:var(--cream); box-shadow:none}
+.btn.ghost.armed{background:var(--red); border-color:var(--red)}
+.startover-wrap{text-align:center; margin-top:16px}
+.btn:focus-visible{outline:3px solid var(--teal); outline-offset:2px}
+.equation{font-family:'Fraunces',Georgia,serif; font-weight:700; font-size:clamp(22px,6.4vw,32px); display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:12px 0}
+.slot{display:inline-grid; place-items:center; min-width:64px; height:54px; padding:0 8px; border:3px dashed var(--teal); border-radius:10px; background:var(--cream); color:var(--teal)}
+.slot.filled{border-style:solid; background:var(--teal); color:var(--cream)}
+.card.tagging p{line-height:2.2}
+.card.tagging .vars{font-weight:700; margin:0 0 6px}
+.card.tagging .eqnote{font-weight:700; color:var(--teal); line-height:1.4; margin-top:6px}
+.card.tagging .eqprompt{font-size:16px; line-height:1.4; margin:8px 0 0; padding-top:8px; border-top:2px dashed var(--teal)}
+.eq-sticky .equation{flex-wrap:nowrap; gap:6px; margin:0; font-size:clamp(16px,5vw,26px)}
+.eq-sticky .slot{min-width:42px; height:46px; padding:0 3px}
+.eq-sticky .equation{gap:4px}
+.eq-sticky .equation{flex-wrap:wrap}
+.goalsel{font:700 16px 'DM Sans',sans-serif; height:46px; padding:0 2px; border:3px solid var(--brown); border-radius:10px; background:var(--cream); color:var(--brown); cursor:pointer; box-shadow:0 3px 0 var(--brown)}
+.goalsel:focus-visible{outline:3px solid var(--teal); outline-offset:2px}
+.goalsel.right{background:var(--teal); border-color:var(--teal); color:var(--cream); opacity:1; box-shadow:none}
+.eq-sticky{position:sticky; bottom:8px; z-index:5; margin:8px 0 0; padding:6px 10px; background:var(--white); border:3px solid var(--teal); border-radius:12px; box-shadow:0 -4px 12px rgba(0,0,0,.2)}
+.numtag{display:inline-block; position:relative; padding:0 8px; margin:0 1px; border:2px solid var(--red); border-radius:8px; background:#FFE9A8; color:var(--brown);
+  font-weight:700; line-height:1.55; cursor:grab; touch-action:none; user-select:none; -webkit-user-select:none}
+.numtag::after{content:""; position:absolute; inset:-8px -5px}
+.numtag.locked{background:var(--cream-dk); border-color:var(--brown); opacity:.7; cursor:default; touch-action:auto}
+.numtag.selected{background:var(--red); color:var(--cream)}
+.numtag.used{background:var(--teal); border-color:var(--teal); color:var(--cream); opacity:.5; pointer-events:none}
+.numtag.lifting{opacity:.35}
+.numtag.ghost{position:fixed; z-index:50; margin:0; pointer-events:none; box-shadow:0 8px 14px rgba(0,0,0,.3); background:#FFE9A8; color:var(--brown); font-size:18px}
+.numtag:focus-visible,.slot:focus-visible{outline:3px solid var(--teal); outline-offset:2px}
+.shake{animation:shake .45s}
+@keyframes shake{0%,100%{transform:translateX(0)} 20%{transform:translateX(-7px)} 40%{transform:translateX(7px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)}}
+.row-sign{border-top:2px solid var(--cream-dk); padding:10px 0}
+.row-sign:first-of-type{border-top:0}
+.row-sign .sent{margin:0 0 6px; font-size:16px}
+.row-sign .eq{display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-family:'Fraunces',Georgia,serif; font-weight:700; font-size:clamp(20px,5.6vw,26px)}
+.signs{display:flex; gap:8px; margin-top:8px}
+.signq{display:inline-grid; place-items:center; width:48px; height:48px; border:3px dashed var(--teal); border-radius:10px; background:var(--cream); color:var(--teal)}
+.signq.right{border-style:solid; background:var(--teal); color:var(--cream)}
+.signbtn{font:700 22px 'DM Sans',sans-serif; width:48px; height:48px; border:3px solid var(--brown); border-radius:10px; background:var(--cream); color:var(--brown); cursor:pointer; touch-action:manipulation}
+.signbtn:focus-visible{outline:3px solid var(--teal); outline-offset:2px}
+/* Step 3a: readout strip + handles */
+.readout{position:sticky; top:6px; z-index:15; height:84px; display:flex; align-items:center; margin-bottom:8px; padding:6px 68px 6px 12px; overflow:hidden;
+  background:var(--cream); border:3px solid var(--brown); border-radius:10px; font-weight:700; font-size:16px; line-height:1.3; white-space:pre-line; box-shadow:0 4px 0 rgba(59,35,20,.2)}
+.readout.good{background:var(--teal); color:var(--cream)}
+.hdl{cursor:grab; touch-action:none}
+.hdl .vis{fill:#FFC93C; stroke:#3B2314; stroke-width:3}
+.hdl .arr{fill:#3B2314}
+.hdl.locked .arr,.hdl.drag .arr{display:none}
+.hdl.locked{cursor:default}
+.hdl.locked .vis{fill:#2A7F7A}
+.hdl .vis.flash{animation:hflash .55s}
+.hdl .pulse{fill:none; stroke:#D33B1F; stroke-width:3; opacity:.8; animation:pulse 1.6s ease-out infinite}
+.hdl.locked .pulse,.hdl.drag .pulse{display:none}
+@keyframes hflash{0%,100%{fill:#FFC93C} 30%{fill:#D33B1F}}
+@keyframes pulse{0%{r:12; opacity:.9} 100%{r:24; opacity:0}}
+@media (prefers-reduced-motion:reduce){ .hdl .pulse{animation:none!important; r:18} }
+.next-wrap{margin-top:14px; text-align:right}
+
+footer{color:var(--cream); font-size:14px; margin-top:16px; line-height:1.5}
+footer a{color:var(--cream)}
+footer p{margin:0 0 6px}
+
+/* Dev bar: REMOVE BEFORE SHIPPING */
+
+/* Sale-tag burst */
+.burst{position:fixed; left:50%; top:40%; width:min(52vw,220px); margin-left:calc(min(52vw,220px)/-2); margin-top:calc(min(52vw,220px)/-2);
+  pointer-events:none; opacity:0; z-index:20}
+.burst svg{width:100%; height:auto; display:block}
+.burst.go{animation:burst 1.3s ease-out forwards}
+@keyframes burst{
+  0%{opacity:0; transform:scale(.3) rotate(-12deg)}
+  25%{opacity:1; transform:scale(1.08) rotate(3deg)}
+  45%{transform:scale(1) rotate(-1.5deg)}
+  80%{opacity:1; transform:scale(1) rotate(0)}
+  100%{opacity:0; transform:scale(1.05) rotate(0)}
+}
+
+/* Wrong-move flash (used by later stages too) */
+.flash-red{animation:flashred .5s}
+@keyframes flashred{0%,100%{box-shadow:0 0 0 0 rgba(211,59,31,0)} 30%{box-shadow:0 0 0 6px rgba(211,59,31,.85)}}
+
+/* Mango animations */
+.mango svg *{transform-box:fill-box}
+#tail{transform-origin:10% 90%}
+#earL{transform-origin:50% 100%}
+#earR{transform-origin:50% 100%}
+#collar{transform-origin:50% 0%}
+#body-all{transform-origin:50% 100%}
+#eyes{transform-origin:50% 50%}
+#mouth-yawn{opacity:0}
+#paw-up{opacity:0; transform-origin:20% 100%}
+.mango.stretch #body-all{animation:stretch .9s ease-in-out}
+.mango.collar #collar{animation:collar .7s ease-in-out}
+.mango.tail #tail{animation:tail .9s ease-in-out}
+.mango.yawn #mouth-yawn{animation:yawn 1.2s ease-in-out}
+.mango.yawn #mouth-closed{animation:yawnhide 1.2s ease-in-out}
+.mango.ear #earL{animation:ear .5s ease-in-out}
+.mango.blink #eyes{animation:blink 1.4s ease-in-out}
+.mango.paw #paw-up{opacity:1; animation:paw 1.6s ease-in-out}
+.mango.paw #paw-down{opacity:0}
+@keyframes stretch{0%,100%{transform:scale(1,1)} 40%,60%{transform:scale(1.06,.9)}}
+@keyframes collar{0%,100%{transform:rotate(0)} 20%{transform:rotate(-8deg)} 40%{transform:rotate(8deg)} 60%{transform:rotate(-6deg)} 80%{transform:rotate(4deg)}}
+@keyframes tail{0%,100%{transform:rotate(0)} 25%{transform:rotate(18deg)} 50%{transform:rotate(-14deg)} 75%{transform:rotate(10deg)}}
+@keyframes yawn{0%,100%{opacity:0} 25%,75%{opacity:1}}
+@keyframes yawnhide{0%,100%{opacity:1} 25%,75%{opacity:0}}
+@keyframes ear{0%,100%{transform:rotate(0)} 30%{transform:rotate(-14deg)} 60%{transform:rotate(6deg)}}
+@keyframes blink{0%,100%{transform:scaleY(1)} 30%,70%{transform:scaleY(.08)}}
+@keyframes paw{0%{transform:rotate(25deg) translateY(8px)} 25%,75%{transform:rotate(-6deg) translateY(0)} 100%{transform:rotate(25deg) translateY(8px)}}
+
+@media (prefers-reduced-motion:reduce){
+  .mango svg *{animation:none!important}
+  .burst.go{animation:none!important; opacity:1}
+  .hint-q{transition:none}
+}
+/* short screens (phone held sideways): keep the pinned formula bar small */
+@media (max-height:480px){
+  .banner{padding:8px var(--gutter) 6px}
+  .banner p{display:none}
+  .eq-sticky{padding:4px 8px; bottom:4px}
+  .eq-sticky .slot,.goalsel{height:40px}
+  .card.tagging p{line-height:2}
+}
+@media (max-width:420px){ .banner p{display:none} }
+@media (max-width:359px){
+  .progress li .lbl{display:none}
+  .readout{height:108px; padding-right:64px}
+  .banner p{display:none}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header class="banner">
+  <h1>Make Mo' Money</h1>
+  <p>Flair Furniture's big showroom sale puzzle</p>
+</header>
+
+<ol class="progress" id="progress" aria-label="Progress"></ol>
+<div class="review-bar" id="reviewBar" hidden></div>
+
+<section class="card" id="story">
+  <h2>The Flair Furniture story</h2>
+  <p>Flair Furniture makes tables and chairs. Each table needs 3 hours of carpentry and 2 hours of painting. Each chair needs 4 hours of carpentry and 1 hour of painting. This month the shop has 2,400 carpentry hours and 1,000 painting hours.</p>
+  <p>Marketing wants no more than 450 chairs (the warehouse is full of them) and at least 100 tables (the showroom is nearly bare). Each table earns $7 profit and each chair earns $5. Which mix of tables and chairs earns the most?</p>
+</section>
+
+<div class="mango-strip" id="mangoStrip">
+  <div class="mango-wrap" id="mangoWrap">
+    <button class="mango" id="mango" type="button" aria-label="Ask Mango for a hint">
+      <!-- Mango: an original orange bodega cat with a teal collar and red tag -->
+      <svg viewBox="0 0 120 130" aria-hidden="true">
+        <g id="body-all">
+          <path id="tail" d="M92 108 C118 104 122 78 108 66" fill="none" stroke="#E8832A" stroke-width="10" stroke-linecap="round"/>
+          <path d="M108 66 C106 63 104 62 102 62" fill="none" stroke="#FAF1DC" stroke-width="10" stroke-linecap="round" opacity="0"/>
+          <ellipse cx="58" cy="100" rx="38" ry="26" fill="#F29A3C"/>
+          <path d="M40 80 q3 10 0 18 M52 78 q3 12 0 20 M64 78 q3 12 0 20" stroke="#D2711C" stroke-width="4" stroke-linecap="round" fill="none"/>
+          <ellipse id="paw-down" cx="40" cy="120" rx="11" ry="7" fill="#FAF1DC"/>
+          <ellipse cx="74" cy="120" rx="11" ry="7" fill="#FAF1DC"/>
+          <g id="paw-up">
+            <path d="M32 96 C22 80 22 62 28 52" fill="none" stroke="#F29A3C" stroke-width="13" stroke-linecap="round"/>
+            <ellipse cx="28" cy="49" rx="9" ry="8" fill="#FAF1DC"/>
+          </g>
+          <g id="head">
+            <g id="earL"><path d="M28 40 L31 14 L52 30 Z" fill="#F29A3C" stroke="#3B2314" stroke-width="1.5" stroke-linejoin="round"/><path d="M34 33 L35 22 L45 30 Z" fill="#F7B6A8"/></g>
+            <g id="earR"><path d="M92 40 L89 14 L83 21 L79 15 L75 24 L68 30 Z" fill="#F29A3C" stroke="#3B2314" stroke-width="1.5" stroke-linejoin="round"/><path d="M86 33 L85 23 L77 29 Z" fill="#F7B6A8"/></g>
+            <path d="M24 56 l-9 1 l7 4 l-8 4 l10 1 Z M96 56 l9 1 l-7 4 l8 4 l-10 1 Z" fill="#F29A3C" stroke="#3B2314" stroke-width="1.2" stroke-linejoin="round"/>
+            <ellipse cx="60" cy="53" rx="38" ry="28" fill="#F29A3C" stroke="#3B2314" stroke-width="1.5"/>
+            <path d="M60 26 v10 M50 28 l3 8 M70 28 l-3 8" stroke="#D2711C" stroke-width="4" stroke-linecap="round" fill="none"/>
+            <ellipse cx="60" cy="64" rx="15" ry="10" fill="#FAF1DC"/>
+            <path d="M30 60 l7 3 M30 64 l8 0" stroke="#8A3F12" stroke-width="2" stroke-linecap="round"/>
+            <g id="eyes">
+              <ellipse cx="45" cy="52" rx="7.5" ry="6.5" fill="#D9E04F" stroke="#3B2314" stroke-width="1.5"/>
+              <ellipse cx="75" cy="52" rx="7.5" ry="6.5" fill="#D9E04F" stroke="#3B2314" stroke-width="1.5"/>
+              <ellipse cx="48.5" cy="53.5" rx="2.6" ry="4.6" fill="#3B2314"/>
+              <ellipse cx="78.5" cy="53.5" rx="2.6" ry="4.6" fill="#3B2314"/>
+              <path d="M36.8 52 A8.4 7.4 0 0 1 53.2 52 Z" fill="#F29A3C" stroke="#3B2314" stroke-width="2" stroke-linejoin="round"/>
+              <path d="M66.8 52 A8.4 7.4 0 0 1 83.2 52 Z" fill="#F29A3C" stroke="#3B2314" stroke-width="2" stroke-linejoin="round"/>
+            </g>
+            <path d="M37 43 L53 46" stroke="#3B2314" stroke-width="3" stroke-linecap="round"/>
+            <path d="M68 41 L84 35" stroke="#3B2314" stroke-width="3" stroke-linecap="round"/>
+            <path d="M55 60 h10 l-5 6 Z" fill="#D33B1F" stroke="#3B2314" stroke-width="1"/>
+            <path id="mouth-closed" d="M60 66 q-4 6 -11 4 M60 66 q6 4 13 -2 q3 -2 4 -5" stroke="#3B2314" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <ellipse id="mouth-yawn" cx="60" cy="72" rx="7" ry="8" fill="#7A2E1C"/>
+            <path d="M42 66 l-20 -3 M42 70 l-20 5 M78 66 l20 -3 M78 70 l20 5" stroke="#3B2314" stroke-width="1.5" stroke-linecap="round"/>
+          </g>
+          <g id="collar">
+            <path d="M32 74 Q60 90 88 74 L88 82 Q60 98 32 82 Z" fill="#2A7F7A"/>
+            <path d="M32 74 Q60 90 88 74" stroke="#3B2314" stroke-width="1.5" fill="none"/>
+            <circle cx="60" cy="92" r="6" fill="#D33B1F" stroke="#3B2314" stroke-width="1.5"/>
+            <circle cx="60" cy="92" r="1.8" fill="#FAF1DC"/>
+          </g>
+        </g>
+      </svg>
+    </button>
+    <div class="hint-q" id="hintQ" role="button" tabindex="0">Not quite. Hint?</div>
+  </div>
+  <div class="hint-panel" id="hintPanel" hidden role="status" aria-live="polite">
+    <span id="hintText"></span>
+    <span class="tap">Tap anywhere to close</span>
+  </div>
+</div>
+
+<main class="activity" id="activity">
+  <div id="activityLabel"></div>
+  <div id="stage"></div>
+</main>
+
+<div class="startover-wrap"><button class="btn small ghost" id="startOver" type="button" hidden>Start over</button></div>
+
+<footer id="siteFooter" hidden>
+  <p>Problem source: Balakrishnan, N. (Raju), et al. <em>Managerial Decision Modeling: Business Analytics with Spreadsheets</em>, 4th ed., Walter de Gruyter, 2017, Chapter 2 (Flair Furniture Company example).</p>
+  <p>© Brett Whysel 2026. Created with Claude Code. Licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0</a>.</p>
+</footer>
+</div>
+
+<div class="burst" id="burst" aria-hidden="true">
+  <svg viewBox="0 0 200 200">
+    <polygon fill="#D33B1F" stroke="#3B2314" stroke-width="4" stroke-linejoin="round" points="100.0,6.0 115.2,23.5 136.0,13.2 143.3,35.1 166.5,33.5 164.9,56.7 186.8,64.0 176.5,84.8 194.0,100.0 176.5,115.2 186.8,136.0 164.9,143.3 166.5,166.5 143.3,164.9 136.0,186.8 115.2,176.5 100.0,194.0 84.8,176.5 64.0,186.8 56.7,164.9 33.5,166.5 35.1,143.3 13.2,136.0 23.5,115.2 6.0,100.0 23.5,84.8 13.2,64.0 35.1,56.7 33.5,33.5 56.7,35.1 64.0,13.2 84.8,23.5"/>
+    <circle cx="100" cy="100" r="62" fill="none" stroke="#FAF1DC" stroke-width="2.5" stroke-dasharray="3 5"/>
+    <text x="100" y="100" text-anchor="middle" dominant-baseline="central" font-family="Fraunces,Georgia,serif" font-weight="900" font-size="36" fill="#FAF1DC">SOLD!</text>
+  </svg>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  // ---- Activities and Mango's exact hints (one per activity) ----
+  var ACTIVITIES = [
+    {key:'obj',   step:1, name:'Objective',  hint:"Forget the hours and the limits, bro. What does the shop pocket for each additional table and each chair? Those two numbers go in the blanks."},
+    {key:'signs', step:2, name:'Signs',      hint:"Read the sentence again, pal. Is it a most-you-can-do (≤) or a least-you-must-do (≥)? That picks your sign."},
+    {key:'lines', step:3, name:'Draw lines', hint:"Drag it, pal, until the readout says you're exactly at the limit."},
+    {key:'test',  step:3, name:'Shade',      hint:"Click a point above the line and one below it. The side that checks out is the side you shade."},
+    {key:'bound', step:3, name:'Bounded',    hint:"Look at the circle, pal. If all of the shaded region fits inside it, the region is bounded."},
+    {key:'corn',  step:4, name:'Corners',    hint:"Click each spot where two edges of the shaded region meet, pal. The axes count as edges."},
+    {key:'level', step:5, name:'Best corner',hint:"Every mix of tables and chairs on this line earns the same profit, pal. Push the line as far right as it goes while some part of it still touches the shaded region."},
+    {key:'done',  step:6, name:'Finish',     hint:null}
+  ];
+  var STEPS = [
+    {n:1, lbl:'Objective'}, {n:2, lbl:'Signs'}, {n:3, lbl:'Region'}, {n:4, lbl:'Corners'}, {n:5, lbl:'Best'}, {n:6, lbl:'Finish'}
+  ];
+  // Mango's hints. Each step keeps its own hint (above); these are for the other moments within a step.
+  var HINT_GOAL = "Think about the shop, pal. Is Flair trying to rake in as much profit as it can, or as little? Pick that in the Choose one menu.";
+  var HINT_NEXT = "That one's done, pal. Tap Next step when you're ready.";
+  var HINT_FIND = "Hunt for the darkest patch, pal, where every shading piles up. Click inside it.";
+  var HINT_SINGLE = "One point is enough now, pal. Click anywhere off the line and I'll tell you if that spot works, then shade the side that does.";
+  var HINT_LEVEL_DONE = "That's your best corner, bro. The table shows the same answer the graded way. Tap Finish.";
+  var HINT_FINISH = "Be honest, pal. A few real sentences about how this went, then create your certificate and upload it to Brightspace.";
+  var HINT_IMAGE = "Your certificate is ready, pal. Upload it to Brightspace. On a phone, press and hold the picture to save it.";
+  var TITLES = ['Step 1: Write the objective', 'Step 2: Set up the rules', 'Step 3: Draw the lines', 'Step 3: Shade the feasible side', 'Step 3: Check the region is bounded', 'Step 4: Find the corners', 'Step 5: Find the best corner', 'You did it!'];
+
+  var $ = function(id){ return document.getElementById(id); };
+  var mango = $('mango'), hintQ = $('hintQ'), hintPanel = $('hintPanel'), hintText = $('hintText');
+  var reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var smooth = reduceMotion ? 'auto' : 'smooth';
+
+  // act = the furthest activity reached; view = the activity on screen (earlier ones can be reviewed)
+  var state = { act: 0, view: 0 };
+  var STORY_HTML = $('story').innerHTML;
+  var panes = {};        // activity index -> its screen, built once and kept so finished steps can be reviewed
+  var graph = null;      // one shared graph, moved into whichever graph step is on screen
+  var story1 = null;     // step 1 lives inside the story card; its nodes are parked here while another step shows
+  var storyMode = 'plain';
+
+  // =====================================================================
+  // SMALL HELPERS
+  // =====================================================================
+  function h(tag, attrs, kids){
+    var e = document.createElement(tag);
+    for (var k in (attrs||{})){
+      if (k === 'class') e.className = attrs[k];
+      else if (k === 'text') e.textContent = attrs[k];
+      else e.setAttribute(k, attrs[k]);
+    }
+    (kids||[]).forEach(function(c){ e.appendChild(c); });
+    return e;
+  }
+  function wrongMove(node){
+    node.classList.remove('shake','flash-red'); void node.offsetWidth;
+    node.classList.add('shake','flash-red');
+    setTimeout(function(){ node.classList.remove('shake','flash-red'); }, 600);
+    offerHint();
+  }
+  // "Next step" button for the activity just completed (the one at the frontier)
+  function nextButton(label){
+    var i = state.act;
+    var btn = h('button', {'class':'btn primary', type:'button', text: label || 'Next step →'});
+    btn.addEventListener('click', function(e){ e.stopPropagation(); goNextFrom(i); });
+    return h('div', {'class':'next-wrap'}, [btn]);
+  }
+  function goNextFrom(i){
+    if (i + 1 >= ACTIVITIES.length) return;
+    if (i === state.act) advanceTo(i + 1);
+    else showView(i + 1);
+  }
+  function paneHead(pane){
+    var info = h('p', {'class':'prompt'});
+    var readout = h('div', {'class':'readout', role:'status', 'aria-live':'polite'});
+    pane.appendChild(info); pane.appendChild(readout); pane.appendChild(h('div', {'class':'graph-slot'}));
+    return {info:info, readout:readout};
+  }
+  function svgPoint(svg, e){
+    var r = svg.getBoundingClientRect(), s = VB_W / r.width;
+    return {x:(e.clientX - r.left) * s, y:(e.clientY - r.top) * s, scale:r.width / VB_W};
+  }
+  function inPlot(p){ return p.x >= M.l && p.x <= M.l + PW && p.y >= M.t && p.y <= M.t + PH; }
+  function flashAt(layer, x, y){
+    var c = el('circle', {cx:x, cy:y, r:12, 'class':'clickflash'}, layer);
+    setTimeout(function(){ c.remove(); }, 650);
+  }
+
+  // =====================================================================
+  // NAVIGATION: progress strip, review bar, panes
+  // =====================================================================
+  function renderProgress(){
+    var cur = ACTIVITIES[state.act].step, vw = ACTIVITIES[state.view].step;
+    var ol = $('progress'); ol.innerHTML = '';
+    STEPS.forEach(function(s){
+      var cls = s.n < cur ? 'done' : (s.n === cur ? 'now' : '');
+      var clickable = s.n <= cur;
+      var li = h('li', {'class': cls + (clickable ? ' clickable' : '') + (s.n === vw && vw !== cur ? ' viewing' : '')}, [
+        h('span', {'class':'n', text:String(s.n)}), h('span', {'class':'lbl', text:s.lbl})
+      ]);
+      if (s.n === vw) li.setAttribute('aria-current', 'step');
+      if (clickable){
+        li.setAttribute('role', 'button'); li.setAttribute('tabindex', '0');
+        var go = function(){
+          var target = (s.n === cur) ? state.act : lastOfStep(s.n);
+          if (target !== state.view) showView(target, true);
+        };
+        li.addEventListener('click', function(e){ e.stopPropagation(); go(); });
+        li.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); go(); } });
+      }
+      ol.appendChild(li);
+    });
+  }
+  function lastOfStep(n){ var r = 0; ACTIVITIES.forEach(function(a, i){ if (a.step === n) r = i; }); return r; }
+
+  function renderReviewBar(){
+    var bar = $('reviewBar');
+    if (state.view === state.act){ bar.hidden = true; return; }
+    bar.hidden = false; bar.innerHTML = '';
+    bar.appendChild(h('span', {text:'You are looking back at a finished step.'}));
+    var b = h('button', {'class':'btn primary small', type:'button', text:'Back to where I was →'});
+    b.addEventListener('click', function(e){ e.stopPropagation(); showView(state.act); scrollToWork(); });
+    bar.appendChild(b);
+  }
+  function scrollToWork(){ var t = $('activity').hidden ? $('progress') : $('activity'); t.scrollIntoView({block:'start', behavior:smooth}); }
+
+  function setStoryMode(mode){
+    if (mode === storyMode) return;
+    var s = $('story');
+    if (storyMode === 'tags') story1.nodes = Array.prototype.slice.call(s.childNodes);
+    s.classList.toggle('tagging', mode === 'tags');
+    if (mode === 'tags'){ s.innerHTML = ''; story1.nodes.forEach(function(n){ s.appendChild(n); }); }
+    else s.innerHTML = STORY_HTML;
+    storyMode = mode;
+  }
+
+  var RENDERERS = {obj:renderObjective, signs:renderSigns, lines:renderLines, test:renderShade, bound:renderBounded, corn:renderCorners, level:renderLevel, done:renderDone};
+  // first activity at which each graph layer shows (handles show only while drawing the lines)
+  var LAYER_FROM = {lines:2, region:3, overlay:3, bound:4, corners:5, level:6};
+
+  function render(){
+    var v = state.view, key = ACTIVITIES[v].key;
+    hideHint(); hideQ(); renderProgress();
+    for (var k in panes) panes[k].hidden = true;
+    if (!panes[v]){
+      var p = h('div', {'class':'pane'}); $('stage').appendChild(p); panes[v] = p;
+      RENDERERS[key](p, v);
+    }
+    panes[v].hidden = false;
+    setStoryMode(key === 'obj' ? 'tags' : 'plain');
+    $('story').hidden = (key === 'done');
+    $('startOver').hidden = (state.act === 0);       // nothing to start over until the first step is done
+    $('siteFooter').hidden = (key !== 'done');     // source and copyright appear only on the finish page
+    $('activity').hidden = (key === 'obj');
+    $('activityLabel').textContent = TITLES[v];
+    if (v >= 2){
+      var slot = panes[v].querySelector('.graph-slot');
+      if (slot){ slot.appendChild(ensureGraph().host); applyLayers(v); }
+    }
+    renderReviewBar();
+  }
+  // Start over: forget every step and begin again. The button asks for a second tap so it can't be hit by accident.
+  function startOver(){
+    hideHint(); hideQ();
+    panes = {}; graph = null; story1 = null; storyMode = 'plain';
+    $('stage').innerHTML = '';
+    var st = $('story'); st.classList.remove('tagging'); st.innerHTML = STORY_HTML;
+    state.act = 0; state.view = 0;
+    render();
+    window.scrollTo({top:0, behavior:smooth});
+  }
+  (function(){
+    var btn = $('startOver'), timer = null;
+    function disarm(){ clearTimeout(timer); btn.classList.remove('armed'); btn.textContent = 'Start over'; btn.removeAttribute('data-armed'); }
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      if (btn.getAttribute('data-armed')){ disarm(); startOver(); return; }
+      btn.setAttribute('data-armed', '1'); btn.classList.add('armed'); btn.textContent = 'Tap again to start over';
+      timer = setTimeout(disarm, 4000);
+    });
+  })();
+  function advanceTo(i){ state.act = i; state.view = i; render(); scrollToWork(); }
+  function showView(v, toTop){ state.view = v; render(); if (toTop) $('progress').scrollIntoView({block:'start', behavior:smooth}); }
+
+  // =====================================================================
+  // STEP 1: objective function
+  // Everything lives in the story card at the top: pick the goal in the formula bar, then drag the
+  // profit numbers from the story into the blanks (or tap a number, then tap a blank).
+  // =====================================================================
+  function renderObjective(pane){
+    var STORY = [
+      ['Flair Furniture makes tables and chairs. Each table needs ', [3,'3'], ' hours of carpentry and ', [2,'2'], ' hours of painting. Each chair needs ', [4,'4'], ' hours of carpentry and ', [1,'1'], ' hour of painting. This month the shop has ', [2400,'2,400'], ' carpentry hours and ', [1000,'1,000'], ' painting hours.'],
+      ['Marketing wants no more than ', [450,'450'], ' chairs (the warehouse is full of them) and at least ', [100,'100'], ' tables (the showroom is nearly bare). Each table earns ', [7,'$7'], ' profit and each chair earns ', [5,'$5'], '. Which mix of tables and chairs earns the most?']
+    ];
+    var unlocked = false, selected = null, tags = [], step1Done = false;
+    pane.hintNow = function(){ return step1Done ? HINT_NEXT : (unlocked ? null : HINT_GOAL); };
+    var box = h('div');                       // built detached; setStoryMode moves it into the story card
+    box.appendChild(h('h2', {text:'The Flair Furniture story'}));
+    box.appendChild(h('p', {'class':'vars', text:'Let T = the number of tables and C = the number of chairs.'}));
+    var instr = h('p', {'class':'eqnote', text:'Tap “Choose one” in the formula below to pick the goal, then drag the profit numbers from the story into the blanks (or tap a number, then tap a blank).'});
+    box.appendChild(instr);
+    STORY.forEach(function(par){
+      var p = h('p');
+      par.forEach(function(part){
+        if (typeof part === 'string'){ p.appendChild(document.createTextNode(part)); return; }
+        var tag = h('span', {'class':'numtag locked', 'data-v':String(part[0]), role:'button', tabindex:'-1', text:part[1]});
+        tags.push(tag); p.appendChild(tag); wireTag(tag);
+      });
+      box.appendChild(p);
+    });
+
+    // Formula bar: sticks to the bottom of the screen while the story scrolls, so it is always in reach.
+    var sel = h('select', {'class':'goalsel', 'aria-label':'Goal: maximize or minimize'}, [
+      h('option', {value:'', text:'Choose one'}), h('option', {value:'max', text:'Maximize'}), h('option', {value:'min', text:'Minimize'})
+    ]);
+    var slotT = h('span', {'class':'slot', 'data-want':'7', role:'button', tabindex:'-1', 'aria-label':'blank before T'});
+    var slotC = h('span', {'class':'slot', 'data-want':'5', role:'button', tabindex:'-1', 'aria-label':'blank before C'});
+    var slots = [slotT, slotC];
+    box.appendChild(h('div', {'class':'eq-sticky'}, [
+      h('div', {'class':'equation'}, [sel, slotT, h('span', {text:'T'}), h('span', {text:'+'}), slotC, h('span', {text:'C'})])
+    ]));
+    story1 = {nodes: Array.prototype.slice.call(box.childNodes)};
+
+    sel.addEventListener('click', function(e){ e.stopPropagation(); });
+    sel.addEventListener('change', function(){
+      if (sel.value === 'max'){ sel.disabled = true; sel.classList.add('right'); unlock(); }
+      else if (sel.value === 'min'){ sel.value = ''; wrongMove(sel); }
+    });
+
+    function unlock(){
+      unlocked = true;
+      tags.forEach(function(t){ t.classList.remove('locked'); t.setAttribute('tabindex', '0'); });
+      slots.forEach(function(s){
+        s.setAttribute('tabindex', '0');
+        function tapFill(e){
+          e.stopPropagation();
+          if (unlocked && selected && !s.classList.contains('filled')) place(selected, s, null);
+        }
+        s.addEventListener('click', tapFill);
+        s.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); tapFill(e); } });
+      });
+      instr.textContent = 'Good. Now drag the number that goes in each blank from the story (or tap a number, then tap a blank).';
+    }
+    function select(tag){
+      if (selected) selected.classList.remove('selected');
+      selected = (selected === tag) ? null : tag;
+      if (selected) selected.classList.add('selected');
+    }
+    // Try to put tag into slot. ghost (optional) is the floating copy used while dragging.
+    function place(tag, slot, ghost){
+      var ok = slot.getAttribute('data-want') === tag.getAttribute('data-v');
+      if (ok){
+        slot.textContent = tag.getAttribute('data-v'); slot.classList.add('filled');
+        tag.classList.remove('selected', 'lifting'); tag.classList.add('used'); selected = null;
+        if (ghost) ghost.remove();
+        if (slots.every(function(s){ return s.classList.contains('filled'); })) done();
+        return;
+      }
+      if (selected) selected.classList.remove('selected');
+      selected = null;
+      if (ghost){
+        ghost.style.transition = 'transform .28s cubic-bezier(.3,1.4,.5,1)';
+        ghost.style.transform = 'translate(0,0)';
+        setTimeout(function(){ ghost.remove(); tag.classList.remove('lifting'); }, 300);
+      }
+      wrongMove(ghost ? tag : slot);
+    }
+    function done(){
+      step1Done = true;
+      celebrate();
+      instr.textContent = 'Nice. That is the profit Flair earns: $7 for every table and $5 for every chair.';
+      var nb = nextButton(); $('story').appendChild(nb);
+      nb.scrollIntoView({block:'nearest', behavior:smooth});
+    }
+
+    function wireTag(tag){
+      var start = null, moved = false, ghost = null, lift = 0;
+      tag.addEventListener('keydown', function(e){
+        if (unlocked && (e.key === 'Enter' || e.key === ' ') && !tag.classList.contains('used')){ e.preventDefault(); select(tag); }
+      });
+      tag.addEventListener('pointerdown', function(e){
+        if (!unlocked || tag.classList.contains('used')) return;
+        e.preventDefault(); e.stopPropagation();
+        try { tag.setPointerCapture(e.pointerId); } catch (err) {}
+        start = {x:e.clientX, y:e.clientY}; moved = false;
+        lift = e.pointerType === 'touch' ? -40 : 0;          // keep the dragged tag above a fingertip
+      });
+      tag.addEventListener('pointermove', function(e){
+        if (!start) return;
+        var dx = e.clientX - start.x, dy = e.clientY - start.y;
+        if (!moved && Math.hypot(dx, dy) > 6){
+          moved = true;
+          if (selected) select(selected);
+          var r = tag.getBoundingClientRect();
+          ghost = tag.cloneNode(true);
+          ghost.className = 'numtag ghost';
+          ghost.style.left = r.left + 'px'; ghost.style.top = r.top + 'px';
+          document.body.appendChild(ghost);
+          tag.classList.add('lifting');
+        }
+        if (moved) ghost.style.transform = 'translate(' + dx + 'px,' + (dy + lift) + 'px) scale(1.2)';
+      });
+      function end(){
+        if (!start) return;
+        var wasMoved = moved, g = ghost;
+        start = null; moved = false; ghost = null;
+        if (!wasMoved){ select(tag); return; }                // a tap, not a drag
+        var r = g.getBoundingClientRect(), cx = r.left + r.width/2, cy = r.top + r.height/2, hit = null;
+        slots.forEach(function(s){
+          if (s.classList.contains('filled')) return;
+          var b = s.getBoundingClientRect();
+          if (cx >= b.left-16 && cx <= b.right+16 && cy >= b.top-16 && cy <= b.bottom+16) hit = s;
+        });
+        if (hit) place(tag, hit, g);
+        else {
+          g.style.transition = 'transform .28s cubic-bezier(.3,1.4,.5,1)'; g.style.transform = 'translate(0,0)';
+          setTimeout(function(){ g.remove(); tag.classList.remove('lifting'); }, 300);
+        }
+      }
+      tag.addEventListener('pointerup', end);
+      tag.addEventListener('pointercancel', end);
+    }
+  }
+
+  // =====================================================================
+  // STEP 2: constraint signs
+  // =====================================================================
+  function renderSigns(pane){
+    pane.appendChild(h('p', {'class':'prompt', text:'Each limit in the story becomes a rule. T means tables and C means chairs. Pick the sign for each rule.'}));
+    var ROWS = [
+      {sent:'Carpentry: a table takes 3 hours and a chair takes 4 hours. The shop has 2,400 carpentry hours.', lhs:'3T + 4C', rhs:'2,400', ans:'≤'},
+      {sent:'Painting: a table takes 2 hours and a chair takes 1 hour. The shop has 1,000 painting hours.',   lhs:'2T + 1C', rhs:'1,000', ans:'≤'},
+      {sent:'Marketing wants no more than 450 chairs.', lhs:'C', rhs:'450', ans:'≤'},
+      {sent:'Marketing wants at least 100 tables.',     lhs:'T', rhs:'100', ans:'≥'}
+    ];
+    var left = ROWS.length;
+    pane.hintNow = function(){ return left === 0 ? HINT_NEXT : null; };
+    ROWS.forEach(function(r){
+      var row = h('div', {'class':'row-sign'});
+      row.appendChild(h('p', {'class':'sent', text:r.sent}));
+      var le = h('span', {text:r.lhs}), q = h('span', {'class':'signq', text:'?', 'aria-label':'sign not chosen yet'}), re = h('span', {text:r.rhs});
+      var choices = h('div', {'class':'signs'});
+      ['≤','≥'].forEach(function(s){
+        var b = h('button', {'class':'signbtn', type:'button', 'aria-label': s==='≤' ? 'less than or equal to' : 'greater than or equal to', text:s});
+        b.addEventListener('click', function(e){
+          e.stopPropagation();
+          if (row.classList.contains('done')) return;
+          if (s === r.ans){
+            q.textContent = s; q.classList.add('right'); row.classList.add('done'); choices.remove();
+            if (--left === 0){ celebrate(); var nb = nextButton(); pane.appendChild(nb); nb.scrollIntoView({block:'nearest', behavior:smooth}); }
+          } else wrongMove(b);
+        });
+        choices.appendChild(b);
+      });
+      row.appendChild(h('div', {'class':'eq'}, [le, q, re]));
+      row.appendChild(choices);
+      pane.appendChild(row);
+    });
+  }
+
+  // =====================================================================
+  // STEP 3a: draw the lines
+  // =====================================================================
+  function renderLines(pane){
+    var head = paneHead(pane), info = head.info, readout = head.readout;
+    var svg = ensureGraph().svg, Lr = svg.layers;
+
+    function usedText(label, limit){ return function(v){ return label + ': ' + fmt(Math.round(v)) + ' of ' + limit; }; }
+    var PLAN = [
+      {k:'carp',  info:'Draw the carpentry line with two dots: one is a plan with only tables, the other a plan with only chairs. Slide each dot along its axis until the readout says all the carpentry hours are used up.',
+        hs:[{axis:'T', target:800,  start:250, read:function(v){ return usedText('Carpentry hours used','2,400')(3*v); }},
+            {axis:'C', target:600,  start:150, read:function(v){ return usedText('Carpentry hours used','2,400')(4*v); }}]},
+      {k:'paint', info:'Now the painting line, the same way. Drag each dot along its axis until all the painting hours are used up.',
+        hs:[{axis:'T', target:500,  start:150, read:function(v){ return usedText('Painting hours used','1,000')(2*v); }},
+            {axis:'C', target:1000, start:250, read:function(v){ return usedText('Painting hours used','1,000')(v); }}]},
+      {k:'chair', info:'Now marketing’s limit on chairs. Drag the dot up the chairs axis until the readout reaches the limit. The line will run straight across from the dot.',
+        hs:[{axis:'C', target:450,  start:200, read:function(v){ return 'Chairs made: ' + fmt(Math.round(v)) + ' (marketing allows at most 450)'; }}]},
+      {k:'table', info:'Last one: marketing’s minimum on tables. Drag the dot along the tables axis until the readout reaches the minimum. The line will run straight up from the dot.',
+        hs:[{axis:'T', target:100,  start:350, read:function(v){ return 'Tables made: ' + fmt(Math.round(v)) + ' (marketing requires at least 100)'; }}]}
+    ];
+    var idx = -1, finished = false;
+    pane.hintNow = function(){ return finished ? HINT_NEXT : null; };
+
+    // "800 tables, 0 chairs" on the first line, the resource readout on the second
+    function say(spec, v){
+      var plan = spec.axis === 'T' ? fmt(Math.round(v)) + ' tables, 0 chairs' : '0 tables, ' + fmt(Math.round(v)) + ' chairs';
+      return plan + '\n' + spec.read(v);
+    }
+    function startLine(i){
+      idx = i;
+      var p = PLAN[i], left = p.hs.length;
+      info.textContent = p.info;
+      p.hs.forEach(function(spec){ makeHandle(spec, function(){ if (--left === 0) lineDone(p); }); });
+      readout.className = 'readout';
+      readout.textContent = say(p.hs[0], p.hs[0].start);
+    }
+    function lineDone(p){
+      var k = CONSTRAINTS.filter(function(c){ return c.id === p.k; })[0];
+      drawOneLine(Lr.lines, k);
+      readout.className = 'readout good';
+      readout.textContent = '✓ ' + k.name + ' line drawn.';
+      if (idx < PLAN.length - 1){
+        setTimeout(function(){ if (!finished) startLine(idx + 1); }, 1100);
+      } else {
+        finished = true;
+        info.textContent = 'All four lines are drawn.'; celebrate();
+        var nb = nextButton(); pane.appendChild(nb); nb.scrollIntoView({block:'nearest', behavior:smooth});
+      }
+    }
+
+    function makeHandle(spec, onLock){
+      var isT = spec.axis === 'T', max = isT ? T_MAX : C_MAX;
+      var g = el('g', {'class':'hdl', role:'slider', 'aria-label':'Drag along the ' + (isT ? 'tables' : 'chairs') + ' axis'}, Lr.handles);
+      el('circle', {r:28, fill:'transparent', 'class':'hitc'}, g);        // 44 px+ hit area
+      var hv = el('g', {'class':'hv', 'data-r':'11', 'data-css':'12'}, g);
+      el('circle', {'class':'pulse', r:12}, hv);
+      // small arrows show which way the dot slides
+      el('path', {'class':'arr', d: isT ? 'M-17 0 l-7 -6 v12 z M17 0 l7 -6 v12 z' : 'M0 -17 l-6 -7 h12 z M0 17 l-6 7 h12 z'}, hv);
+      var vis = el('circle', {'class':'vis', r:11}, hv);
+      var val = spec.start;
+      function place(v){
+        val = v;
+        g.setAttribute('transform', 'translate(' + (isT ? px(v) : px(0)) + ',' + (isT ? py(0) : py(v)) + ')');
+      }
+      place(spec.start);
+      var tol = 0, active = false, locked = false;
+      function lock(){
+        place(spec.target); locked = true; g.classList.add('locked');
+        readout.className = 'readout good'; readout.textContent = say(spec, spec.target) + '  ✓';
+        onLock();
+      }
+      function unitsPerPx(){
+        var scale = svg.getBoundingClientRect().width / VB_W;       // CSS px per viewBox unit
+        return (isT ? T_MAX / PW : C_MAX / PH) / scale;
+      }
+      function pointerVal(e){
+        var p = svgPoint(svg, e), v = isT ? toT(p.x) : toC(p.y);
+        v = Math.round(v / 10) * 10;                       // the dots move in steps of 10
+        return Math.max(0, Math.min(max, v));
+      }
+      g.addEventListener('pointerdown', function(e){
+        if (locked) return;
+        e.preventDefault(); e.stopPropagation();
+        try { g.setPointerCapture(e.pointerId); } catch (err) {}
+        active = true; g.classList.add('drag');
+        tol = 12 * unitsPerPx();
+      });
+      g.addEventListener('pointermove', function(e){
+        if (!active) return;
+        var v = pointerVal(e); place(v); readout.className = 'readout'; readout.textContent = say(spec, v);
+      });
+      function end(){
+        if (!active) return; active = false; g.classList.remove('drag');
+        if (Math.abs(val - spec.target) <= tol) lock();
+        else if (Math.abs(val - spec.target) > 4 * tol){
+          vis.classList.remove('flash'); void vis.getBoundingClientRect(); vis.classList.add('flash');
+          offerHint();
+        }
+      }
+      g.addEventListener('pointerup', end);
+      g.addEventListener('pointercancel', end);
+    }
+
+    startLine(0);
+  }
+
+  // =====================================================================
+  // STEP 3b: shade the feasible side of each line
+  // =====================================================================
+  function renderShade(pane){
+    var head = paneHead(pane), info = head.info, readout = head.readout;
+    var svg = ensureGraph().svg, Lr = svg.layers;
+    var n = -1, sides = [], marks = [], finished = false, finding = false;
+    pane.hintNow = function(){ return finished ? HINT_NEXT : (finding ? HINT_FIND : (n >= 2 ? HINT_SINGLE : null)); };
+    var catcher = el('rect', {x:M.l, y:M.t, width:PW, height:PH, fill:'transparent', 'class':'hit-fill', style:'touch-action:none;cursor:crosshair'}, Lr.overlay);
+
+    function lineDistPx(k, x, y){
+      var e = lineEnds(k), x0 = px(e[0].T), y0 = py(e[0].C), x1 = px(e[1].T), y1 = py(e[1].C);
+      return Math.abs((x1-x0)*(y0-y) - (x0-x)*(y1-y0)) / Math.hypot(x1-x0, y1-y0);
+    }
+    function addMark(x, y, ok){
+      var g = el('g', {transform:'translate(' + x + ',' + y + ')'}, Lr.overlay);
+      var mv = el('g', {'class':'hv', 'data-r':'10', 'data-css':'11'}, g);
+      el('circle', {r:10, fill: ok ? '#2A7F7A' : '#D33B1F', stroke:'#3B2314', 'stroke-width':2}, mv);
+      el('path', {d: ok ? 'M-4.5 0 L-1 3.5 L5 -4' : 'M-4 -4 L4 4 M4 -4 L-4 4', stroke:'#FFFDF6', 'stroke-width':2.6, fill:'none', 'stroke-linecap':'round', 'stroke-linejoin':'round'}, mv);
+      marks.push(g);
+    }
+    function clearMarks(){ marks.forEach(function(g){ g.remove(); }); marks = []; }
+    function shade(k){
+      var s = k.sign === '<=' ? 1 : -1;
+      var rect = [{T:0,C:0},{T:T_MAX,C:0},{T:T_MAX,C:C_MAX},{T:0,C:C_MAX}];
+      var poly = clipPoly(rect, {a:s*k.a, b:s*k.b, c:s*k.rhs});
+      var pts = poly.map(function(p){ return px(p.T) + ',' + py(p.C); }).join(' ');
+      var e = el('polygon', {points:pts, fill:'#2A7F7A', 'fill-opacity':0, style:'transition:fill-opacity .6s'}, Lr.region);
+      requestAnimationFrame(function(){ requestAnimationFrame(function(){ e.setAttribute('fill-opacity', .22); }); });
+    }
+    function startLine(i){
+      n = i; sides = []; clearMarks();
+      var k = CONSTRAINTS[i];
+      info.textContent = i < 2 ? 'Test the ' + k.name.toLowerCase() + ' line. Click one point on each side of it.'
+                               : 'Test the ' + k.name.toLowerCase() + ' line. One point is enough this time: click anywhere.';
+      readout.className = 'readout'; readout.textContent = 'Click anywhere on the graph.';
+    }
+    function lineDone(){
+      var k = CONSTRAINTS[n];
+      shade(k);
+      var overlapNote = ['', ' Where both shadings overlap, both rules hold.', ' Where all three overlap, all three rules hold.', ''][n];
+      readout.className = 'readout good'; readout.textContent = '✓ ' + k.name + ' shaded.' + overlapNote;
+      if (n < CONSTRAINTS.length - 1){
+        setTimeout(function(){ if (!finished) startLine(n + 1); }, 1100);
+      } else {
+        setTimeout(clearMarks, 900);
+        finding = true;
+        info.textContent = 'Every point on the graph is a choice of T tables and C chairs. Click the spot where the choice of T and C meets all four constraints.';
+        readout.className = 'readout'; readout.textContent = 'Hint: it is where all four shadings overlap.';
+      }
+    }
+    // the region is only drawn and labeled once the student has found it
+    function showRegion(){
+      finished = true; finding = false; catcher.style.pointerEvents = 'none';
+      var pts = feasiblePolygon().map(function(p){ return px(p.T) + ',' + py(p.C); }).join(' ');
+      el('polygon', {points:pts, fill:'#2A7F7A', 'fill-opacity':.3, stroke:'#2A7F7A', 'stroke-width':3, 'stroke-linejoin':'round'}, Lr.region);
+      txt(Lr.region, px(255), py(180), 'Feasible region', {'text-anchor':'middle', 'font-size':15, 'font-weight':700, 'class':'halo regionlbl'});
+      txt(Lr.region, px(255), py(180) + 18, 'all rules met', {'text-anchor':'middle', 'font-size':14, 'font-weight':500, 'class':'halo regionlbl'});
+      readout.className = 'readout good'; readout.textContent = '\u2713 That overlap is the feasible region.';
+      info.textContent = 'Every point in the overlap is a choice of T and C that meets all of the constraints.';
+      celebrate();
+      var nb = nextButton(); pane.appendChild(nb); nb.scrollIntoView({block:'nearest', behavior:smooth});
+    }
+    catcher.addEventListener('pointerdown', function(e){
+      if (finished || n < 0) return;
+      e.preventDefault();
+      var p = svgPoint(svg, e);
+      if (!inPlot(p)) return;
+      if (finding){
+        var fT = toT(p.x), fC = toC(p.y);
+        if (HALF_PLANES.every(function(hp){ return hp.a*fT + hp.b*fC <= hp.c; })) showRegion();
+        else { flashAt(Lr.overlay, p.x, p.y); offerHint(); }
+        return;
+      }
+      var k = CONSTRAINTS[n], T = toT(p.x), C = toC(p.y);
+      var side = (k.a*T + k.b*C - k.rhs) < 0 ? -1 : 1;
+      if (lineDistPx(k, p.x, p.y) < 12 / p.scale || sides.indexOf(side) !== -1){
+        flashAt(Lr.overlay, p.x, p.y); offerHint(); return;            // on the line, or the same side again
+      }
+      var ok = satisfies(k, T, C);
+      sides.push(side); addMark(p.x, p.y, ok);
+      readout.className = 'readout';
+      if (sides.length < (n < 2 ? 2 : 1)) readout.textContent = k.name + ': that mix is ' + (ok ? 'feasible' : 'infeasible') + '. Now click the other side.';
+      else { readout.textContent = k.name + ': that mix is ' + (ok ? 'feasible' : 'infeasible') + '. Shading the feasible side…'; lineDone(); }
+    });
+    startLine(0);
+  }
+
+  // =====================================================================
+  // STEP 3c: bounded check. The circle is drawn around the region; the student says whether it all fits.
+  // =====================================================================
+  function renderBounded(pane){
+    var head = paneHead(pane), info = head.info, readout = head.readout;
+    var svg = ensureGraph().svg, Lr = svg.layers;
+    var verts = feasiblePolygon().map(function(p){ return {x:px(p.T), y:py(p.C)}; });
+    var xs = verts.map(function(v){ return v.x; }), ys = verts.map(function(v){ return v.y; });
+    var cx = (Math.min.apply(null, xs) + Math.max.apply(null, xs)) / 2, cy = (Math.min.apply(null, ys) + Math.max.apply(null, ys)) / 2;
+    var R = Math.max.apply(null, verts.map(function(v){ return Math.hypot(v.x - cx, v.y - cy); })) + 14;
+    var finished = false;
+    pane.hintNow = function(){ return finished ? HINT_NEXT : null; };
+
+    info.textContent = 'Here is a circle around the shaded region. Does all of the region fit inside it?';
+    readout.textContent = 'Tap Yes or No.';
+    var circle = el('circle', {cx:cx, cy:cy, r:0, fill:'#2A7F7A', 'fill-opacity':.08, stroke:'#2A7F7A', 'stroke-width':3, 'stroke-dasharray':'7 5'}, Lr.bound);
+    var yes = h('button', {'class':'btn', type:'button', text:'Yes, it fits'});
+    var no = h('button', {'class':'btn', type:'button', text:'No, it runs off'});
+    pane.insertBefore(h('div', {'class':'big-btns choice-row'}, [yes, no]), pane.querySelector('.graph-slot'));
+
+    // the circle grows out from the middle of the region
+    function grow(){
+      if (reduceMotion){ circle.setAttribute('r', R); return; }
+      var t0 = null;
+      (function step(ts){
+        if (finished){ circle.setAttribute('r', R); return; }
+        if (t0 === null) t0 = ts;
+        var u = Math.min(1, (ts - t0) / 800);
+        circle.setAttribute('r', (R * (1 - Math.pow(1 - u, 3))).toFixed(1));
+        if (u < 1) requestAnimationFrame(step);
+      })(performance.now());
+    }
+    setTimeout(grow, 350);
+
+    no.addEventListener('click', function(e){ e.stopPropagation(); if (!finished) wrongMove(no); });
+    yes.addEventListener('click', function(e){
+      e.stopPropagation();
+      if (finished) return;
+      finished = true;
+      circle.setAttribute('r', R); circle.setAttribute('stroke-dasharray', '');
+      yes.classList.add('ok'); yes.disabled = true; no.disabled = true; no.style.opacity = .4;
+      readout.className = 'readout good'; readout.textContent = '✓ Yes. The whole region fits inside, so it is bounded.';
+      info.textContent = 'Bounded means the region stops: it does not run off forever in any direction.';
+      celebrate();
+      var nb = nextButton(); pane.appendChild(nb); nb.scrollIntoView({block:'nearest', behavior:smooth});
+    });
+  }
+
+  // =====================================================================
+  // STEP 4: find the corners
+  // =====================================================================
+  function renderCorners(pane){
+    var head = paneHead(pane), info = head.info, readout = head.readout;
+    var svg = ensureGraph().svg, Lr = svg.layers;
+    var corners = feasiblePolygon(), found = {}, count = 0, finished = false;
+    pane.hintNow = function(){ return finished ? HINT_NEXT : null; };
+    var crossings = lineCrossings(corners);
+    // where each corner's coordinate label sits, as an offset from the dot (viewBox units)
+    var LABEL_OFF = {'100,0':[12,-12,'start'], '100,450':[12,24,'start'], '200,450':[0,-15,'middle'], '320,360':[14,26,'start'], '500,0':[0,-15,'middle']};
+    var catcher = el('rect', {x:M.l, y:M.t, width:PW, height:PH, fill:'transparent', 'class':'hit-fill', style:'cursor:crosshair'}, Lr.corners);
+    info.textContent = 'Click each corner of the shaded region.';
+    readout.textContent = 'Corners found: 0 of ' + corners.length;
+
+    function key(c){ return Math.round(c.T) + ',' + Math.round(c.C); }
+    function mark(c){
+      var k = key(c), off = LABEL_OFF[k] || [12, -12, 'start'];
+      found[k] = true; count++;
+      var g = el('g', {transform:'translate(' + px(c.T) + ',' + py(c.C) + ')'}, Lr.corners);
+      var cv = el('g', {'class':'hv', 'data-r':'8', 'data-css':'9.5'}, g);
+      el('circle', {r:8, fill:'#D33B1F', stroke:'#3B2314', 'stroke-width':2.5, 'class':'pop'}, cv);
+      txt(g, off[0], off[1], '(' + Math.round(c.T) + ', ' + Math.round(c.C) + ')', {'text-anchor':off[2], 'font-size':14, 'font-weight':700, 'class':'halo cornerlbl'});
+      readout.className = 'readout';
+      readout.textContent = 'Corners found: ' + count + ' of ' + corners.length;
+      if (count === corners.length) win();
+    }
+    function win(){
+      finished = true; catcher.style.pointerEvents = 'none';
+      readout.className = 'readout good'; readout.textContent = '✓ All ' + corners.length + ' corners found.';
+      info.textContent = 'Those five points are the corners of the feasible region.';
+      celebrate();
+      var nb = nextButton(); pane.appendChild(nb); nb.scrollIntoView({block:'nearest', behavior:smooth});
+    }
+    catcher.addEventListener('pointerdown', function(e){
+      if (finished) return;
+      e.preventDefault();
+      var p = svgPoint(svg, e); if (!inPlot(p)) return;
+      // Every spot where two lines or axes cross competes for the click, and the nearest wins. That way a
+      // click on a crossing that is not a real corner (it lies outside the shaded region) is not taken as
+      // a nearby real corner.
+      var best = null, bestD = Infinity;
+      crossings.forEach(function(c){
+        var d = Math.hypot(px(c.T) - p.x, py(c.C) - p.y);
+        if (d < bestD){ bestD = d; best = c; }
+      });
+      if (bestD * p.scale <= 22 && best.real){            // 44 px wide target around each real corner
+        if (!found[key(best)]) mark(best);
+      } else { flashAt(Lr.corners, p.x, p.y); offerHint(); }
+    });
+  }
+
+  // =====================================================================
+  // STEP 5: best corner (drag the level line)
+  // =====================================================================
+  var BEST = {T:320, C:360};
+  function renderLevel(pane){
+    var head = paneHead(pane), info = head.info, readout = head.readout;
+    var svg = ensureGraph().svg, Lr = svg.layers;
+    var corners = feasiblePolygon(), Z = 1000, finished = false;
+    pane.hintNow = function(){ return finished ? HINT_LEVEL_DONE : null; };
+    var Z_MIN = 100, Z_MAX = profit(T_MAX, C_MAX);
+    var layer = Lr.level;
+    var leader = el('line', {'stroke-width':1.5}, layer);
+    var line = el('line', {'stroke-width':4, 'stroke-linecap':'round'}, layer);
+    var hit = el('line', {stroke:'transparent', 'stroke-width':52, 'stroke-linecap':'round', 'class':'hit-stroke', style:'touch-action:none;cursor:grab'}, layer);
+    // a grab handle on the line, with arrows showing it slides sideways (perpendicular to itself)
+    var grip = el('g', {'class':'hit-fill', style:'touch-action:none;cursor:grab'}, layer);
+    el('circle', {r:28, fill:'transparent', 'class':'hitc'}, grip);
+    var gh = el('g', {'class':'hv', 'data-r':'11', 'data-css':'12'}, grip);
+    var arrows = el('path', {d:'M-18 0 l-8 -6 v12 z M18 0 l8 -6 v12 z', fill:'#3B2314'}, gh);
+    el('circle', {r:11, fill:'#FFC93C', stroke:'#3B2314', 'stroke-width':3}, gh);
+    var lab1 = txt(layer, VB_W - 10, py(1000) + 2, 'Every plan on this line', {'text-anchor':'end', 'font-size':15, 'font-weight':700, 'class':'halo'});
+    var lab2 = txt(layer, VB_W - 10, py(1000) + 26, '', {'text-anchor':'end', 'font-size':15, 'font-weight':700, 'class':'halo'});
+    info.textContent = 'Press on the green line (or the yellow dot on it) and drag it sideways. Find the best corner of the shaded region and stop the line there.';
+
+    function update(){
+      var e = levelEnds(Z), ok = levelTouches(Z), col = ok ? '#1E8A3C' : '#D33B1F';
+      [line, hit].forEach(function(l){ l.setAttribute('x1', px(e[0].T)); l.setAttribute('y1', py(e[0].C)); l.setAttribute('x2', px(e[1].T)); l.setAttribute('y2', py(e[1].C)); });
+      line.setAttribute('stroke', col);
+      var mid = {T:(e[0].T + e[1].T)/2, C:(e[0].C + e[1].C)/2};
+      var ang = Math.atan2(py(e[1].C) - py(e[0].C), px(e[1].T) - px(e[0].T)) * 180 / Math.PI + 90;   // arrows point across the line
+      grip.setAttribute('transform', 'translate(' + px(mid.T) + ',' + py(mid.C) + ')');
+      arrows.setAttribute('transform', 'rotate(' + ang.toFixed(1) + ')');
+      leader.setAttribute('x1', VB_W - 80); leader.setAttribute('y1', py(1000) + 34);
+      leader.setAttribute('x2', px(mid.T)); leader.setAttribute('y2', py(mid.C)); leader.setAttribute('stroke', col);
+      lab1.style.fill = col; lab2.style.fill = col;
+      lab2.textContent = 'earns $' + fmt(Math.round(Z));
+      if (!finished){
+        readout.className = 'readout';
+        readout.textContent = 'Profit on this line: $' + fmt(Math.round(Z)) + (ok ? '' : '. The line is not touching the shaded region.');
+      }
+    }
+    // distance from corner c to the level line at profit z, in CSS pixels
+    function cornerDist(c, z, scale){
+      var e = levelEnds(z), x0 = px(e[0].T), y0 = py(e[0].C), x1 = px(e[1].T), y1 = py(e[1].C), x = px(c.T), y = py(c.C);
+      return Math.abs((x1-x0)*(y0-y) - (x0-x)*(y1-y0)) / Math.hypot(x1-x0, y1-y0) * scale;
+    }
+    function tween(to, done){
+      var from = Z, t0 = null;
+      if (reduceMotion){ Z = to; update(); done && done(); return; }
+      (function step(ts){
+        if (t0 === null) t0 = ts;
+        var u = Math.min(1, (ts - t0) / 260); Z = from + (to - from) * (1 - Math.pow(1 - u, 3)); update();
+        if (u < 1) requestAnimationFrame(step); else done && done();
+      })(performance.now());
+    }
+    function win(){
+      finished = true; hit.style.pointerEvents = 'none'; grip.style.pointerEvents = 'none'; grip.style.display = 'none';
+      Z = profit(BEST.T, BEST.C); update();
+      readout.className = 'readout good';
+      readout.textContent = '✓ Best corner: 320 tables and 360 chairs earn $' + fmt(Z) + '.';
+      info.textContent = 'The line leaves the region at its last corner. That corner earns the most.';
+      celebrate();
+      showTable();
+    }
+    function showTable(){
+      var rows = [[100,0],[100,450],[200,450],[320,360],[500,0]];
+      var t = h('table', {'class':'corner-table'});
+      t.appendChild(h('caption', {text:'Profit at each corner'}));
+      t.appendChild(h('tr', {}, [h('th', {text:'Corner (T, C)'}), h('th', {text:'Profit'})]));
+      rows.forEach(function(r){
+        var best = r[0] === BEST.T && r[1] === BEST.C;
+        t.appendChild(h('tr', {'class': best ? 'best' : ''}, [
+          h('td', {text:'(' + r[0] + ', ' + r[1] + ')'}),
+          h('td', {text:'$' + fmt(profit(r[0], r[1])) + (best ? '  ← best' : '')})
+        ]));
+      });
+      pane.appendChild(t);
+      pane.appendChild(h('p', {'class':'table-note', text:'The graded method gives the same answer: work out the profit at every corner and pick the largest.'}));
+      var fin = nextButton('Finish \u2192'); pane.appendChild(fin);
+      t.scrollIntoView({block:'nearest', behavior:smooth});
+    }
+
+    var drag = null;
+    function down(e){
+      if (finished) return;
+      e.preventDefault(); e.stopPropagation();
+      try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
+      var p = svgPoint(svg, e);
+      drag = {z0:Z, startZ:Z, base:profit(toT(p.x), toC(p.y)), scale:p.scale};
+    }
+    function move(e){
+      if (!drag) return;
+      var p = svgPoint(svg, e);
+      Z = Math.max(Z_MIN, Math.min(Z_MAX, drag.z0 + profit(toT(p.x), toC(p.y)) - drag.base));
+      update();
+    }
+    function end(){
+      if (!drag) return;
+      var d = drag; drag = null;
+      var near = null, nearD = Infinity;
+      corners.forEach(function(c){
+        var dist = cornerDist(c, Z, d.scale);
+        if (dist < nearD){ nearD = dist; near = c; }
+      });
+      if (nearD > 14) return;                               // no corner close: no verdict
+      if (near.T === BEST.T && near.C === BEST.C) win();
+      else {                                                // snapped to a corner that is not the best: bounce back
+        Z = profit(near.T, near.C); update();
+        var vis = line; vis.classList.remove('lvl-flash'); void vis.getBoundingClientRect(); vis.classList.add('lvl-flash');
+        offerHint();
+        setTimeout(function(){ tween(d.startZ); }, 450);
+      }
+    }
+    [hit, grip].forEach(function(t){
+      t.addEventListener('pointerdown', down); t.addEventListener('pointermove', move);
+      t.addEventListener('pointerup', end); t.addEventListener('pointercancel', end);
+    });
+    update();
+  }
+
+  // =====================================================================
+  // FINISH: congratulations, reflection, and the downloadable image
+  // =====================================================================
+  var SUMMARY = 'Nice work, bro. You wrote the objective, set up the constraints, drew the feasible region, found its corners, and used the level line to find the best one: 320 tables and 360 chairs for $4,040. Not bad for a day at the showroom.';
+  var PROMPT_TEXT = 'Take a breath and check in with your experience. What sensations, emotions, intuitions, or insights do you notice?';
+  var MAX_CHARS = 400, MIN_WORDS = 10;
+
+  function countWords(s){ return s.split(/\s+/).filter(function(w){ return w.length; }).length; }
+
+  function renderDone(pane){
+    pane.appendChild(h('h2', {'class':'done-h', text:'You did it!'}));
+    pane.appendChild(h('div', {'class':'say'}, [h('strong', {text:'Mango says'}), h('p', {text:SUMMARY})]));
+    pane.appendChild(h('p', {'class':'prompt finish-steps', text:'To finish: enter your name and your reflection. Then create your certificate and upload it to Brightspace for credit.'}));
+
+    var nameIn = h('input', {type:'text', id:'doneName', autocomplete:'name', maxlength:'60', 'aria-describedby':'nameMsg'});
+    var nameMsg = h('p', {'class':'field-msg', id:'nameMsg', role:'status'});
+    var refIn = h('textarea', {id:'doneRef', rows:'6', maxlength:String(MAX_CHARS), 'aria-describedby':'refMsg'});
+    var count = h('span', {'class':'count', text:'0 / ' + MAX_CHARS});
+    var refMsg = h('p', {'class':'field-msg', id:'refMsg', role:'status'});
+    var make = h('button', {'class':'btn primary', type:'button', text:'Create certificate'});
+    var out = h('div', {'class':'done-out'});
+    var made = false;
+    pane.hintNow = function(){ return made ? HINT_IMAGE : HINT_FINISH; };
+
+    pane.appendChild(h('div', {'class':'field'}, [h('label', {'for':'doneName', text:'Your name'}), nameIn, nameMsg]));
+    pane.appendChild(h('p', {'class':'prompt', text:PROMPT_TEXT}));
+    pane.appendChild(h('div', {'class':'field'}, [
+      h('div', {'class':'field-row'}, [h('label', {'for':'doneRef', text:'Your reflection'}), count]),
+      refIn, refMsg
+    ]));
+    pane.appendChild(make);
+    pane.appendChild(out);
+
+    function words(){ return countWords(refIn.value); }
+    function updateCount(){
+      count.textContent = refIn.value.length + ' / ' + MAX_CHARS;
+      count.classList.toggle('max', refIn.value.length >= MAX_CHARS);
+    }
+    var busy = false;
+    // the button is gray and unclickable until there is a name and at least 10 words
+    function refresh(){
+      make.disabled = busy || !nameIn.value.trim() || words() < MIN_WORDS;
+    }
+    nameIn.addEventListener('input', function(){ nameMsg.textContent = ''; refresh(); });
+    refIn.addEventListener('input', function(){ updateCount(); refMsg.textContent = ''; refresh(); });
+    refresh();
+    [nameIn, refIn].forEach(function(f){
+      f.addEventListener('focus', function(){ setTimeout(function(){ f.scrollIntoView({block:'center', behavior:smooth}); }, 250); });  // keep it visible above the keyboard
+    });
+
+    var lastUrl = null;
+    make.addEventListener('click', function(e){
+      e.stopPropagation();
+      var name = nameIn.value.trim(), text = refIn.value.trim().replace(/\s+/g, ' ');
+      if (make.disabled) return;
+      refMsg.textContent = '';
+      busy = true;
+      make.disabled = true; make.textContent = 'Creating your certificate…';
+      drawCard(name, text).then(function(canvas){
+        canvas.toBlob(function(blob){
+          busy = false; make.textContent = 'Update certificate'; refresh();
+          if (!blob){ refMsg.textContent = 'Sorry, your browser could not create the certificate. Please try another browser.'; return; }
+          if (lastUrl) URL.revokeObjectURL(lastUrl);
+          lastUrl = URL.createObjectURL(blob);
+          showResult(out, blob, lastUrl, name); made = true;
+          celebrate();
+        }, 'image/png');
+      });
+    });
+  }
+
+  function showResult(out, blob, url, name){
+    out.innerHTML = '';
+    var slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'student';
+    var filename = 'make-mo-money-' + slug + '.png';
+    out.appendChild(h('p', {'class':'prompt', text:'Your certificate is ready. Upload it to Brightspace for credit.'}));
+    out.appendChild(h('img', {'class':'card-img', src:url, alt:'Your completion certificate for Make Mo’ Money, with your name, the date, and your reflection'}));
+    out.appendChild(h('p', {'class':'save-note', text:'On a phone, press and hold the certificate, then choose Save (or Add to Photos).'}));
+    var row = h('div', {'class':'big-btns'});
+    var dl = h('a', {'class':'btn primary', href:url, download:filename, text:'Download certificate'});
+    row.appendChild(dl);
+    // Share sheet where the browser can share image files (lets phones save to Photos or Files)
+    try {
+      var file = new File([blob], filename, {type:'image/png'});
+      if (navigator.canShare && navigator.canShare({files:[file]})){
+        var sh = h('button', {'class':'btn', type:'button', text:'Share or save…'});
+        sh.addEventListener('click', function(e){
+          e.stopPropagation();
+          navigator.share({files:[file], title:'Make Mo’ Money'}).catch(function(){});
+        });
+        row.appendChild(sh);
+      }
+    } catch (err) {}
+    out.appendChild(row);
+    out.scrollIntoView({block:'nearest', behavior:smooth});
+  }
+
+  // ---- the image itself, drawn on a canvas (not a screenshot) so fonts and Mango render reliably ----
+  function loadFonts(){
+    var wanted = ['900 80px Fraunces', '700 40px Fraunces', '700 30px "DM Sans"', '500 30px "DM Sans"', '400 30px "DM Sans"'];
+    var all = Promise.all(wanted.map(function(f){ return document.fonts.load(f); }));
+    var timeout = new Promise(function(r){ setTimeout(r, 2500); });          // fall back to system fonts if offline
+    return Promise.race([all, timeout]).catch(function(){});
+  }
+  function mangoPicture(){
+    return new Promise(function(resolve){
+      var svgEl = $('mango').querySelector('svg').cloneNode(true);
+      svgEl.setAttribute('xmlns', SVGNS); svgEl.setAttribute('width', '240'); svgEl.setAttribute('height', '260');
+      var st = document.createElementNS(SVGNS, 'style');
+      st.textContent = '#mouth-yawn{opacity:0}#paw-up{opacity:1}#paw-down{opacity:0}';   // still pose: paw raised
+      svgEl.insertBefore(st, svgEl.firstChild);
+      var img = new Image();
+      img.onload = function(){ resolve(img); };
+      img.onerror = function(){ resolve(null); };
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(svgEl));
+    });
+  }
+  function wrapLines(ctx, text, maxW){
+    var lines = [], line = '';
+    text.split(' ').forEach(function(word){
+      while (ctx.measureText(word).width > maxW){                       // a very long word with no spaces
+        var cut = word.length - 1;
+        while (cut > 1 && ctx.measureText(word.slice(0, cut)).width > maxW) cut--;
+        if (line){ lines.push(line); line = ''; }
+        lines.push(word.slice(0, cut)); word = word.slice(cut);
+      }
+      var test = line ? line + ' ' + word : word;
+      if (ctx.measureText(test).width > maxW && line){ lines.push(line); line = word; } else line = test;
+    });
+    if (line) lines.push(line);
+    return lines;
+  }
+  function roundRect(ctx, x, y, w, hgt, r){
+    ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + hgt, r); ctx.arcTo(x + w, y + hgt, x, y + hgt, r);
+    ctx.arcTo(x, y + hgt, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+  }
+  function drawCard(name, reflection){
+    return Promise.all([loadFonts(), mangoPicture()]).then(function(r){
+      var mangoImg = r[1];
+      var W = 1080, H = 1350, RED = '#D33B1F', CREAM = '#FAF1DC', BROWN = '#3B2314', TEAL = '#2A7F7A', WHITE = '#FFFDF6', CREAM_DK = '#EFE1BF';
+      var HEAD = 'Fraunces, Georgia, serif', BODY = '"DM Sans", system-ui, sans-serif';
+      var c = document.createElement('canvas'); c.width = W; c.height = H;
+      var x = c.getContext('2d');
+      x.fillStyle = CREAM; x.fillRect(0, 0, W, H);
+
+      // sale-sign banner
+      x.fillStyle = RED; x.fillRect(0, 0, W, 230);
+      x.fillStyle = 'rgba(0,0,0,0.08)'; for (var sx = 0; sx < W; sx += 56) x.fillRect(sx, 0, 28, 230);
+      x.fillStyle = TEAL; x.fillRect(0, 230, W, 14);
+      x.fillStyle = CREAM; x.textAlign = 'center'; x.textBaseline = 'alphabetic';
+      x.font = '900 104px ' + HEAD; x.fillText('Make Mo’ Money', W / 2, 140);
+      x.font = '500 34px ' + BODY; x.fillText('Flair Furniture: the graphical method, completed', W / 2, 200);
+
+      // Mango and his summary
+      if (mangoImg) x.drawImage(mangoImg, 60, 290, 240, 260);
+      x.textAlign = 'left';
+      x.font = '400 30px ' + BODY;
+      var sumLines = wrapLines(x, SUMMARY, 600);
+      var bubbleH = 76 + sumLines.length * 40, bubbleY = 290;
+      x.fillStyle = WHITE; x.strokeStyle = BROWN; x.lineWidth = 6;
+      roundRect(x, 340, bubbleY, 680, bubbleH, 26); x.fill(); x.stroke();
+      x.beginPath(); x.moveTo(341, bubbleY + 150); x.lineTo(305, bubbleY + 175); x.lineTo(341, bubbleY + 200); x.closePath();
+      x.fillStyle = WHITE; x.fill(); x.stroke();
+      x.fillStyle = WHITE; x.fillRect(338, bubbleY + 153, 8, 44);
+      x.fillStyle = TEAL; x.font = '700 28px ' + BODY; x.fillText('Mango says', 372, bubbleY + 52);
+      x.fillStyle = BROWN; x.font = '400 30px ' + BODY;
+      sumLines.forEach(function(l, i){ x.fillText(l, 372, bubbleY + 100 + i * 40); });
+
+      // who and when
+      var y = Math.max(bubbleY + bubbleH, 580) + 70;
+      x.fillStyle = TEAL; x.font = '700 28px ' + BODY; x.fillText('COMPLETED BY', 60, y);
+      var size = 68; x.font = '700 ' + size + 'px ' + HEAD;
+      while (x.measureText(name).width > 960 && size > 16){ size -= 2; x.font = '700 ' + size + 'px ' + HEAD; }
+      x.fillStyle = BROWN; x.fillText(name, 60, y + 72);
+      var date = new Date().toLocaleDateString('en-US', {year:'numeric', month:'long', day:'numeric'});
+      x.font = '500 36px ' + BODY; x.fillText(date, 60, y + 124);
+
+      // reflection
+      var ry = y + 190;
+      x.fillStyle = TEAL; x.font = '700 28px ' + BODY; x.fillText('MY REFLECTION', 60, ry);
+      var boxY = ry + 22, boxH = H - 90 - boxY;
+      x.fillStyle = CREAM_DK; roundRect(x, 60, boxY, 960, boxH, 22); x.fill();
+      var fs = 36, lines;
+      for (;;){                                                          // shrink the text until the whole reflection fits its box
+        x.font = '400 ' + fs + 'px ' + BODY; lines = wrapLines(x, reflection, 890);
+        if (lines.length * fs * 1.35 <= boxH - 56 || fs <= 22) break;
+        fs -= 2;
+      }
+      x.fillStyle = BROWN; x.font = '400 ' + fs + 'px ' + BODY;
+      lines.forEach(function(l, i){ x.fillText(l, 95, boxY + 56 + i * fs * 1.35); });
+
+      // source line and frame
+      x.fillStyle = BROWN; x.globalAlpha = 0.75; x.textAlign = 'center'; x.font = '400 22px ' + BODY;
+      x.fillText('Source: Balakrishnan et al., Managerial Decision Modeling, 4th ed., Ch. 2', W / 2, H - 38);
+      x.globalAlpha = 1; x.strokeStyle = BROWN; x.lineWidth = 12; x.strokeRect(6, 6, W - 12, H - 12);
+      return c;
+    });
+  }
+
+  // =====================================================================
+  // MANGO: behaviors, hint panel, "hint?" bubble, celebration
+  // =====================================================================
+  var BEHAVIORS = ['stretch','collar','tail','yawn','ear','blink'];
+  var lastBehavior = -1, clearTimer = null;
+  function playBehavior(name){
+    if (reduceMotion) return;
+    mango.classList.remove('stretch','collar','tail','yawn','ear','blink','paw');
+    void mango.offsetWidth;
+    mango.classList.add(name);
+    clearTimeout(clearTimer);
+    clearTimer = setTimeout(function(){ mango.classList.remove(name); }, name==='paw' ? 1700 : 1500);
+  }
+  function randomBehavior(){
+    var i; do { i = Math.floor(Math.random()*BEHAVIORS.length); } while (i === lastBehavior && BEHAVIORS.length > 1);
+    lastBehavior = i; playBehavior(BEHAVIORS[i]);
+  }
+  var qTimer = null;
+  function showHint(){
+    var pane = panes[state.view];
+    var hint = (pane && pane.hintNow && pane.hintNow()) || ACTIVITIES[state.view].hint;
+    if (!hint) return;
+    hintText.textContent = hint;
+    hintPanel.hidden = false;
+    hideQ();
+  }
+  function hideHint(){ hintPanel.hidden = true; }
+  function hideQ(){ clearTimeout(qTimer); hintQ.classList.remove('show'); }
+  function offerHint(){
+    // Called by every wrong move.
+    hintQ.classList.add('show');
+    clearTimeout(qTimer);
+    qTimer = setTimeout(hideQ, 4500);
+  }
+  function celebrate(){
+    var b = $('burst');
+    b.classList.remove('go'); void b.offsetWidth; b.classList.add('go');
+    if (reduceMotion) setTimeout(function(){ b.classList.remove('go'); b.style.opacity = 0; }, 1500);
+    if (!reduceMotion){ playBehavior('paw'); }
+  }
+  mango.addEventListener('click', function(e){
+    e.stopPropagation();
+    randomBehavior();
+    showHint();
+  });
+  hintQ.addEventListener('click', function(e){ e.stopPropagation(); showHint(); randomBehavior(); });
+  hintQ.addEventListener('keydown', function(e){ if (e.key==='Enter' || e.key===' '){ e.preventDefault(); showHint(); } });
+  // Tap anywhere dismisses the hint panel.
+  document.addEventListener('click', function(){ if (!hintPanel.hidden) hideHint(); });
+
+  // =====================================================================
+  // GRAPH AND DATA MODEL
+  // =====================================================================
+  var T_MAX = 900, C_MAX = 1100;
+  var VB_W = 400, VB_H = 446;                       // viewBox units (scales to the screen)
+  var M = {l:84, r:14, t:14, b:46};                 // margins inside the viewBox
+  var PW = VB_W - M.l - M.r, PH = VB_H - M.t - M.b; // plot width / height
+  var OBJ = {t:7, c:5};
+
+  // Constraints as a*T + b*C <= rhs  (">=" constraints are stored negated for clipping).
+  var CONSTRAINTS = [
+    {id:'carp', name:'Carpentry',      a:3, b:4, rhs:2400, sign:'<=', short:'Carpentry', dash:'', color:'#3B2314'},
+    {id:'paint',name:'Painting',       a:2, b:1, rhs:1000, sign:'<=', short:'Painting',  dash:'', color:'#1F4E9C'},
+    {id:'chair',name:'Maximum chairs', a:0, b:1, rhs:450,  sign:'<=', short:'Max chairs', dash:'', color:'#7B2D8E'},
+    {id:'table',name:'Minimum tables', a:1, b:0, rhs:100,  sign:'>=', short:'Min tables', dash:'', color:'#B34700'}
+  ];
+  // Half-planes of the feasible region: a*T + b*C <= c
+  var HALF_PLANES = [
+    {a:3,  b:4,  c:2400},
+    {a:2,  b:1,  c:1000},
+    {a:0,  b:1,  c:450},
+    {a:-1, b:0,  c:-100},   // T >= 100
+    {a:0,  b:-1, c:0},      // C >= 0
+    {a:-1, b:0,  c:0}       // T >= 0 (redundant given T >= 100)
+  ];
+
+  function px(T){ return M.l + T / T_MAX * PW; }
+  function py(C){ return M.t + PH - C / C_MAX * PH; }
+  function toT(x){ return (x - M.l) / PW * T_MAX; }
+  function toC(y){ return (M.t + PH - y) / PH * C_MAX; }
+  function profit(T, C){ return OBJ.t * T + OBJ.c * C; }
+
+  function clipPoly(poly, hp){
+    var out = [], n = poly.length, EPS = 1e-9;
+    for (var i = 0; i < n; i++){
+      var p = poly[i], q = poly[(i+1)%n];
+      var dp = hp.c - (hp.a*p.T + hp.b*p.C), dq = hp.c - (hp.a*q.T + hp.b*q.C);
+      var pin = dp >= -EPS, qin = dq >= -EPS;
+      if (pin) out.push(p);
+      if (pin !== qin){
+        var s = dp / (dp - dq);
+        out.push({T: p.T + s*(q.T-p.T), C: p.C + s*(q.C-p.C)});
+      }
+    }
+    return out;
+  }
+  function feasiblePolygon(){
+    var poly = [{T:0,C:0},{T:T_MAX,C:0},{T:T_MAX,C:C_MAX},{T:0,C:C_MAX}];
+    HALF_PLANES.forEach(function(hp){ poly = clipPoly(poly, hp); });
+    var res = [];
+    poly.forEach(function(p){
+      var last = res[res.length-1];
+      if (!last || Math.abs(last.T-p.T) > 1e-6 || Math.abs(last.C-p.C) > 1e-6) res.push(p);
+    });
+    if (res.length > 1 && Math.abs(res[0].T-res[res.length-1].T) < 1e-6 && Math.abs(res[0].C-res[res.length-1].C) < 1e-6) res.pop();
+    // drop collinear vertices so only true corners remain
+    return res.filter(function(p, i){
+      var a = res[(i+res.length-1)%res.length], b = res[(i+1)%res.length];
+      var cross = (p.T-a.T)*(b.C-a.C) - (p.C-a.C)*(b.T-a.T);
+      return Math.abs(cross) > 1e-6;
+    }).map(function(p){ return {T: Math.round(p.T*1e6)/1e6, C: Math.round(p.C*1e6)/1e6}; });
+  }
+  // Does constraint k hold at (T,C)?  (the feasible / infeasible verdict in step 3b)
+  function satisfies(k, T, C){
+    var v = k.a*T + k.b*C;
+    return k.sign === '<=' ? v <= k.rhs + 1e-9 : v >= k.rhs - 1e-9;
+  }
+  // Endpoints of a constraint's boundary line, clipped to the plot rectangle.
+  function lineEnds(k){
+    var pts = [];
+    function add(T, C){ if (T >= -1e-9 && T <= T_MAX+1e-9 && C >= -1e-9 && C <= C_MAX+1e-9) pts.push({T:T, C:C}); }
+    if (k.b !== 0){ add(0, k.rhs/k.b); add(T_MAX, (k.rhs - k.a*T_MAX)/k.b); }
+    if (k.a !== 0){ add(k.rhs/k.a, 0); add((k.rhs - k.b*C_MAX)/k.a, C_MAX); }
+    pts.sort(function(p,q){ return p.T - q.T || p.C - q.C; });
+    return [pts[0], pts[pts.length-1]];
+  }
+  // Every point inside the plot where two of the lines (or an axis) cross; the real corners are marked real.
+  function lineCrossings(corners){
+    var ls = CONSTRAINTS.concat([{a:1, b:0, rhs:0}, {a:0, b:1, rhs:0}]), out = [];
+    for (var i = 0; i < ls.length; i++) for (var j = i + 1; j < ls.length; j++){
+      var A = ls[i], B = ls[j], det = A.a*B.b - A.b*B.a;
+      if (Math.abs(det) < 1e-9) continue;
+      var T = (A.rhs*B.b - A.b*B.rhs) / det, C = (A.a*B.rhs - A.rhs*B.a) / det;
+      if (T < -1e-6 || T > T_MAX + 1e-6 || C < -1e-6 || C > C_MAX + 1e-6) continue;
+      if (out.some(function(q){ return Math.abs(q.T - T) < 1e-6 && Math.abs(q.C - C) < 1e-6; })) continue;
+      out.push({T:T, C:C, real:corners.some(function(c){ return Math.abs(c.T - T) < 1e-6 && Math.abs(c.C - C) < 1e-6; })});
+    }
+    return out;
+  }
+  // Ends of the level line 7T + 5C = Z inside the plot rectangle.
+  function levelEnds(Z){ return lineEnds({a:OBJ.t, b:OBJ.c, rhs:Z}); }
+  // Does the level line at profit Z touch the feasible region?
+  function levelTouches(Z){
+    var ps = feasiblePolygon().map(function(p){ return profit(p.T, p.C); });
+    return Z >= Math.min.apply(null, ps) - 1e-9 && Z <= Math.max.apply(null, ps) + 1e-9;
+  }
+
+  var SVGNS = 'http://www.w3.org/2000/svg';
+  function el(name, attrs, parent){
+    var e = document.createElementNS(SVGNS, name);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  function txt(parent, x, y, s, attrs){
+    var t = el('text', attrs || {}, parent); t.setAttribute('x', x); t.setAttribute('y', y); t.textContent = s;
+    var fs = parseFloat((attrs || {})['font-size']);
+    if (fs) t.setAttribute('data-px', String(Math.max(13, Math.round(fs * 1.05))));   // on-screen size in CSS px, never below 13
+    return t;
+  }
+  function fmt(n){ return n.toLocaleString('en-US'); }
+
+  // Base graph (axes, grid, labels) plus empty layers that each step draws into.
+  function buildGraph(host){
+    var svg = el('svg', {'class':'graph', viewBox:'0 0 '+VB_W+' '+VB_H, role:'img',
+      'aria-label':'Graph with tables (T) on the horizontal axis and chairs (C) on the vertical axis'}, host);
+    var gGrid = el('g', {}, svg);
+    for (var T = 0; T <= T_MAX; T += 100){
+      el('line', {x1:px(T), y1:py(0), x2:px(T), y2:py(C_MAX), stroke:'#3B2314', 'stroke-opacity':.12, 'stroke-width':1}, gGrid);
+      if (T % 200 === 0) txt(gGrid, px(T), py(0)+17, fmt(T), {'text-anchor':'middle', 'font-size':15});
+    }
+    for (var C = 0; C <= C_MAX; C += 100){
+      el('line', {x1:px(0), y1:py(C), x2:px(T_MAX), y2:py(C), stroke:'#3B2314', 'stroke-opacity':.12, 'stroke-width':1}, gGrid);
+      if (C % 200 === 0) txt(gGrid, px(0)-9, py(C)+5, fmt(C), {'text-anchor':'end', 'font-size':15});
+    }
+    var layers = {};
+    ['region','lines','bound','corners','level','handles','overlay'].forEach(function(n){ layers[n] = el('g', {'data-layer':n}, svg); });
+    // axes on top of region
+    var gAx = el('g', {}, svg);
+    el('line', {x1:px(0), y1:py(0), x2:px(T_MAX), y2:py(0), stroke:'#3B2314', 'stroke-width':3}, gAx);
+    el('line', {x1:px(0), y1:py(0), x2:px(0), y2:py(C_MAX), stroke:'#3B2314', 'stroke-width':3}, gAx);
+    txt(gAx, px(T_MAX/2), VB_H-6, 'Tables (T)', {'text-anchor':'middle', 'font-size':15, 'font-weight':700});
+    var yl = txt(gAx, 0, 0, 'Chairs (C)', {'text-anchor':'middle', 'font-size':15, 'font-weight':700});
+    yl.setAttribute('transform', 'translate(16,'+(M.t+PH/2)+') rotate(-90)');
+    // the axes sit above the layers drawn so far; move the interactive layers above the axes
+    ['corners','level','handles','overlay','bound'].forEach(function(n){ svg.appendChild(layers[n]); });
+    svg.layers = layers;
+    return svg;
+  }
+  function ensureGraph(){
+    if (!graph){
+      var host = h('div', {'class':'graph-host'});
+      graph = {host:host, svg:buildGraph(host)};
+      var pending = false;
+      var schedule = function(){ if (pending) return; pending = true; requestAnimationFrame(function(){ pending = false; fitGraph(); }); };
+      if (window.ResizeObserver) new ResizeObserver(schedule).observe(host);
+      new MutationObserver(schedule).observe(graph.svg, {childList:true, subtree:true});
+      schedule();
+    }
+    return graph;
+  }
+  // The graph is drawn in 400-wide viewBox units and scales to the screen. On a narrow phone that would make
+  // labels, dots and tap targets too small, so they are re-sized here to fixed pixel sizes.
+  function fitGraph(){
+    if (!graph) return;
+    var svg = graph.svg, w = svg.getBoundingClientRect().width;
+    if (!w) return;
+    var scale = w / VB_W;
+    Array.prototype.forEach.call(svg.querySelectorAll('text[data-px]'), function(t){
+      t.setAttribute('font-size', (parseFloat(t.getAttribute('data-px')) / scale).toFixed(1));
+    });
+    Array.prototype.forEach.call(svg.querySelectorAll('.cornerlbl'), function(t){ t.style.display = w < 340 ? 'none' : ''; });   // too crowded on the narrowest phones
+    Array.prototype.forEach.call(svg.querySelectorAll('.hv'), function(g){        // dots and markers
+      var k = Math.max(1, parseFloat(g.getAttribute('data-css')) / (parseFloat(g.getAttribute('data-r')) * scale));
+      g.setAttribute('transform', 'scale(' + k.toFixed(3) + ')');
+    });
+    Array.prototype.forEach.call(svg.querySelectorAll('.hitc'), function(c){ c.setAttribute('r', Math.max(28, 24 / scale).toFixed(1)); });   // at least 48 px across
+    Array.prototype.forEach.call(svg.querySelectorAll('.hit-stroke'), function(l){ l.setAttribute('stroke-width', Math.max(52, 48 / scale).toFixed(1)); });
+  }
+  // Show only what belongs to the step being viewed, so reviewing step 3a doesn't show shading, etc.
+  function applyLayers(v){
+    var L = graph.svg.layers;
+    for (var n in L){
+      var show = (n === 'handles') ? v === 2 : (n === 'bound') ? v === 4 : v >= LAYER_FROM[n];   // the circle belongs to step 3c only
+      L[n].style.display = show ? '' : 'none';
+    }
+    Array.prototype.forEach.call(graph.svg.querySelectorAll('.regionlbl'), function(t){ t.style.display = v >= 5 ? 'none' : ''; });
+  }
+
+  var LABEL_AT = { // where each constraint's direct label sits (T,C) and anchor
+    carp:  {T:600, C:150,  anchor:'start', dy:-9, text:'Carpentry'},
+    paint: {T:155, C:720,  anchor:'start', dy:0,  dx:4, text:'Painting'},
+    chair: {T:890, C:450,  anchor:'end',   dy:-8, text:'Max chairs'},
+    table: {T:100, C:1065, anchor:'start', dy:0,  dx:8, text:'Min tables'}
+  };
+  function drawOneLine(layer, k){
+    var e = lineEnds(k);
+    el('line', {x1:px(e[0].T), y1:py(e[0].C), x2:px(e[1].T), y2:py(e[1].C),
+      stroke:k.color, 'stroke-width':3, 'stroke-dasharray':k.dash, 'stroke-linecap':'round'}, layer);
+    var L = LABEL_AT[k.id];
+    var t = txt(layer, px(L.T)+(L.dx||0), py(L.C)+(L.dy||0), L.text, {'text-anchor':L.anchor, 'font-size':15, 'font-weight':700, 'class':'halo'});
+    t.style.fill = k.color;
+    if (k.id === 'carp') t.setAttribute('transform', 'rotate('+(Math.atan(3/4*PH/PW*T_MAX/C_MAX*1)*180/Math.PI).toFixed(1)+' '+px(L.T)+' '+py(L.C)+')');
+  }
+  render();
+})();
+</script>
+</body>
+</html>
