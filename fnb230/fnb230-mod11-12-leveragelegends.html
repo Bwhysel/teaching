@@ -77,6 +77,7 @@ td.r,th.r{text-align:right}
 .receipt .total{font-size:2.2rem;font-weight:900;text-align:center;margin:10px 0 2px}
 .receipt th,.receipt td{border-bottom:1px dashed #9A957F}
 .receipt .copy{background:#1B1B2A;color:var(--ink);border-radius:8px;padding:10px;text-align:center;font-weight:800;margin-top:12px}
+.receipt .copy .tip{text-align:left;font-weight:500;margin-top:8px}
 .field{display:block;margin:10px 0}
 .field span{display:block;font-weight:700;margin-bottom:4px}
 .field input{width:100%;min-height:50px;border-radius:12px;border:2px solid var(--panel2);background:#0B1228;padding:8px 12px;font-size:1.15rem}
@@ -370,10 +371,10 @@ function tipBox(i){
   if (tipped(i)){
     var f = fcast(i), say;
     if (one){
-      say = 'I checked what these sold for on three resale apps. Likely <b>' + pct(f.base) + '</b>, between <b>' + pct(f.lo) + ' and ' + pct(f.hi) + '</b>. ' + (s1RuleChoice(S.st.own, i, f.base) === 'sit' ? 'Sit this one out. You need about +' + p0(s1BreakEven()) + ' to cover the debt and the partner. ' + pct(f.base) + ' doesn\'t.' : 'Play this season. You need about +' + p0(s1BreakEven()) + ' to cover the debt and the partner. ' + pct(f.base) + ' beats that.');
+      say = (i === 0 ? 'I checked what these sold for on three resale apps. ' : '') + 'Likely <b>' + pct(f.base) + '</b>, between <b>' + pct(f.lo) + ' and ' + pct(f.hi) + '</b>. ' + (s1RuleChoice(S.st.own, i, f.base) === 'sit' ? 'Sit this one out. You need about +' + p0(s1BreakEven()) + ' to cover the debt and the partner. ' + pct(f.base) + ' doesn\'t.' : 'Play this season. You need about +' + p0(s1BreakEven()) + ' to cover the debt and the partner. ' + pct(f.base) + ' beats that.');
     } else {
       var w = s2RuleChoice(i, S.st.lease, f).split('+'); var m2 = s2Margins(), even = Math.ceil(CONFIG.S2.RENT / (m2.stall - m2.app));
-      say = 'I counted foot traffic at the market last Saturday. Likely <b>' + n0(f.base) + '</b> buyers, between <b>' + n0(f.lo) + ' and ' + n0(f.hi) + '</b>. ' +
+      say = (i === 0 ? 'I counted foot traffic at the market last Saturday. ' : '') + 'Likely <b>' + n0(f.base) + '</b> buyers, between <b>' + n0(f.lo) + ' and ' + n0(f.hi) + '</b>. ' +
         (S.st.lease > 0 && w[0] === 'leased' ? 'Your lease is running, so sell at the stall.' : w[0] === 'app' ? 'Use the app. The stall needs ' + even + ' buyers to beat it, and I expect ' + n0(f.base) + '.' : w[0] === 'stall' ? 'Use the stall. It beats the app at ' + even + ' buyers, and I expect ' + n0(f.base) + '.' : w[0] === 'lease' ? 'Sign the lease. The rent is lower, and the next months look busy.' : 'Close this month.') + (w[1] ? ' Borrow for 40 items: I expect more than 20 buyers.' : '');
     }
     return '<div class="mango" style="margin:10px 0 0"><div class="mface" aria-hidden="true">' + FACE.smug + '</div><div class="bubble">' + say + '</div></div>';
@@ -600,7 +601,7 @@ function resultsScreen(){
   return '<div class="awning"></div><div class="receipt"><h2>' + esc(S.name.toUpperCase()) + '\'S RESALE CO.</h2><p style="text-align:center;margin:-6px 0 8px;font-size:.8rem;letter-spacing:1px">LEVERAGE LEGENDS</p>' + L('Name', H().icon + ' ' + esc(S.name)) + L('Stage', S.stage === 2 ? '2 · Operating leverage' : '1 · Financial leverage') + L('Played', new Date(S.doneAt || Date.now()).toLocaleDateString() + ' · try ' + (S.attempt || 1)) + extra +
     '<p style="color:#555;text-align:center;margin:12px 0 0">' + (S.stage === 1 ? 'YOUR STAKE' : 'YOUR PROFIT') + '</p><div class="total num">' + (S.stage === 1 ? money(total) : signed(cents(total - S.base))) + '</div>' + (S.stage === 1 ? '<p style="text-align:center;margin:0;font-weight:800">' + pct((total - CONFIG.S1.START) / CONFIG.S1.START) + ' on your ' + money(CONFIG.S1.START) + '</p>' : '') + '<p style="text-align:center;font-weight:800;font-size:1.2rem">' + label + '</p>' +
     '<p style="border-top:1px dashed #9A957F;padding-top:8px">' + best + '</p><table><thead>' + head + '</thead><tbody>' + rows + '</tbody></table>' +
-    '<div class="copy">Take a screenshot of this receipt.</div></div>' +
+    '<div class="copy">Take a screenshot of this receipt.' + tip('shot', '<b>iPhone:</b> press the side button and volume up together. Older iPhones with a Home button: side or top button and Home.<br><b>Android:</b> press power and volume down together.<br><b>Windows:</b> press Windows + Shift + S, then drag over the receipt.<br><b>Mac:</b> press Shift + Command + 4, then drag over the receipt.<br><b>Chromebook:</b> press Ctrl + Show windows.') + '</div></div>' +
     mango(label === 'Legend' ? FACE.wow : FACE.smug, label === 'Legend' ? 'Okay. Legend. Don\'t brag.' : label === 'Played it safe' ? 'Safe is fine. But your money did not grow.' : 'Your classmates had different outcomes. Compare your choices with theirs, not your totals.') + (S.stage === 1 ? '<button class="btn-go" data-act="stage2" style="width:100%;margin-bottom:8px">Go on to Stage 2 with ' + money(Math.max(CONFIG.S2.START, total)) + '</button>' : '') + '<button data-act="again" style="width:100%">Play again</button><button class="btn-ghost" data-act="home" style="width:100%;margin-top:8px">Back to the counter</button>';
 }
 
