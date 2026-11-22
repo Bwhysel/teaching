@@ -503,8 +503,8 @@ function guide2(i){
 function mvBtn(v, on, title, sub, isNew){ return '<button class="mv' + (on ? ' on' : '') + '" data-act="move" data-v="' + v + '" aria-pressed="' + on + '"><b>' + title + (isNew ? '<span class="new">NEW</span>' : '') + '</b><small>' + sub + '</small></button>'; }
 function decide2(){
   var i = S.i, st = S.st, c = CONFIG.S2, T = S2T[i], m = s2Margins(), opts = s2Options(st.lease, i), way = S.move, sit = way === 'sit', cardOpen = i >= c.CARD_FROM && !sit, card = cardOpen && S.card, rent = s2Rent(st.lease, way), sell = way === 'app' ? 'app' : 'stall', f = fcast(i), g = s2DOL(f.base, sell, rent, card), be = rent / m.stall;
-  var look = c.MONTHS.slice(i + 1).map(function(x){ return n0(caseOf(x).base); }).join(' · ');
-  var h = guide2(i) + '<div class="card" style="--ac:' + T.ac + '"><span class="pill">Month ' + (i + 1) + ' of ' + N() + ' · ' + T.name + '</span><h2>' + T.story + '</h2>' + forecastBox(i) + tipBox(i) + '<p class="dim" style="margin-top:8px">' + (look ? 'Coming up, likely buyers: ' + look : 'This is the last month.') + '</p></div>';
+  var look = c.MONTHS.slice(i, i + c.LEASE_MONTHS).map(function(x){ return n0(caseOf(x).base); }).join(' · '); /* the months a lease signed now would cover */
+  var h = guide2(i) + '<div class="card" style="--ac:' + T.ac + '"><span class="pill">Month ' + (i + 1) + ' of ' + N() + ' · ' + T.name + '</span><h2>' + T.story + '</h2>' + forecastBox(i) + tipBox(i) + (i === N() - 1 ? '<p class="dim" style="margin-top:8px">This is the last month.</p>' : '') + '</div>';
   h += '<div class="card plain"><h3>What this month could earn' + tip('c2', 'The app keeps ' + m0(m.app) + ' a sale. The stall keeps ' + m0(m.stall) + ' a sale, minus ' + m0(rent) + ' rent. Across: buyers. Up: profit. Where the orange stall line crosses $0, you have paid the rent. Where the two lines cross, the stall and the app pay the same. The yellow band is the forecast; the dashed line is the likely number.') + '</h3>' + chart2(st, i, way, card) +
 
     '<div class="gauge"><b>Stall: pays its rent at ' + Math.ceil(be) + ' sales.</b> Beats the app at ' + Math.ceil(rent / (m.stall - m.app)) + '.</div>' +
@@ -514,7 +514,7 @@ function decide2(){
   else {
     h += mvBtn('app', way === 'app', '📱 The app', m0(c.APP_FEE) + ' fee on each sale. No rent.');
     h += mvBtn('stall', way === 'stall', '⛱️ Stall, this month only', m0(c.RENT) + ' rent' + (i === 0 ? ', owed even if nobody comes.' : '.'));
-    if (opts.indexOf('lease') >= 0) h += mvBtn('lease', way === 'lease', '📝 Stall, sign a ' + c.LEASE_MONTHS + '-month lease', m0(c.LEASE_RENT) + ' a month. You owe all ' + c.LEASE_MONTHS + ' months.', i === c.LEASE_FROM);
+    if (opts.indexOf('lease') >= 0) h += mvBtn('lease', way === 'lease', '📝 Stall, sign a ' + c.LEASE_MONTHS + '-month lease', m0(c.LEASE_RENT) + ' a month. You owe all ' + c.LEASE_MONTHS + ' months. Likely buyers: ' + look + '.', i === c.LEASE_FROM);
   }
   h += mvBtn('sit', sit, '🔒 Close this month', m0(c.SIT_COST) + ' storage' + (st.lease > 0 ? ', plus the lease rent' : '') + '. No sales.');
   h += '</div>';
@@ -556,7 +556,8 @@ function animateReveal(e){
   if (REDUCED){ land(); return; }
   if (cashEl) cashEl.textContent = m0(from);
   app.addEventListener('click', land); setTimeout(land, 1500);
-  (function frame(t){ if (done) return; var x = (t - t0) / 1300; if (x >= 1){ land(); return; } if (t - last > 70){ last = t; SFX.tick(); el.textContent = S.stage === 1 ? pct(Math.random() * 0.8 - 0.4) : Math.floor(Math.random() * 30); } requestAnimationFrame(frame); })(t0);
+  var goal = S.stage === 1 ? Math.round(e.ret * 100) : e.buyers, shown = null; /* count up (or down) in order from 0, slowing near the end */
+  (function frame(t){ if (done) return; var x = (t - t0) / 1300; if (x >= 1){ land(); return; } var v = Math.round(goal * (1 - Math.pow(1 - x, 3))); if (v !== shown){ shown = v; if (t - last > 40){ last = t; SFX.tick(); } el.textContent = S.stage === 1 ? pct(v / 100) : v; } requestAnimationFrame(frame); })(t0);
 }
 var ovTimer = null;
 function closeOv(){ ov.innerHTML = ''; clearTimeout(ovTimer); ui.ov = 0; }
