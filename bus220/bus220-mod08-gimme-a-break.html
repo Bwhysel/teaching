@@ -1,0 +1,2504 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gimme a Break &#x1F63C;</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap");
+
+      :root {
+        --black: #0a0a0a;
+        --white: #f5f0e8;
+        --orange: #ff5c1a;
+        --orange-dark: #cc3d00;
+        --green: #1db954;
+        --red: #e63946;
+        --yellow: #ffd166;
+        --gray: #2a2a2a;
+        --gray-mid: #444;
+        --gray-light: #888;
+        --card-bg: #141414;
+        --border: #333;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background: var(--black);
+        color: var(--white);
+        font-family: "DM Sans", sans-serif;
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      .screen {
+        display: none;
+      }
+      .screen.active {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+
+      /*  TYPOGRAPHY  */
+      .display {
+        font-family: "Bebas Neue", sans-serif;
+        letter-spacing: 0.03em;
+        line-height: 0.95;
+      }
+
+      .mono {
+        font-family: "DM Mono", monospace;
+      }
+
+      /*  LAYOUT  */
+      .container {
+        max-width: 680px;
+        margin: 0 auto;
+        padding: 24px 20px;
+        width: 100%;
+      }
+
+      /*  HEADER STRIP  */
+      .header-strip {
+        background: var(--orange);
+        padding: 8px 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .header-strip .store-name {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 1.1rem;
+        letter-spacing: 0.1em;
+        color: var(--black);
+      }
+      .header-strip .level-badge {
+        margin-left: auto;
+        background: var(--black);
+        color: var(--orange);
+        font-family: "DM Mono", monospace;
+        font-size: 0.7rem;
+        padding: 2px 8px;
+        border-radius: 2px;
+      }
+
+      /*  CARDS  */
+      .card {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 16px;
+      }
+
+      .card-label {
+        font-family: "DM Mono", monospace;
+        font-size: 0.65rem;
+        letter-spacing: 0.12em;
+        color: var(--orange);
+        text-transform: uppercase;
+        margin-bottom: 8px;
+      }
+
+      /*  BUTTONS  */
+      .btn {
+        display: inline-block;
+        padding: 14px 28px;
+        border-radius: 4px;
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 1.1rem;
+        letter-spacing: 0.08em;
+        cursor: pointer;
+        border: none;
+        transition:
+          transform 0.1s,
+          opacity 0.1s;
+        text-align: center;
+      }
+      .btn:active {
+        transform: scale(0.97);
+      }
+      .btn-primary {
+        background: var(--orange);
+        color: var(--black);
+      }
+      .btn-primary:hover {
+        background: var(--orange-dark);
+      }
+      .btn-secondary {
+        background: transparent;
+        color: var(--white);
+        border: 1px solid var(--border);
+      }
+      .btn-secondary:hover {
+        border-color: var(--white);
+      }
+      .btn-green {
+        background: var(--green);
+        color: var(--black);
+      }
+      .btn-yellow {
+        background: var(--yellow);
+        color: var(--black);
+      }
+      .btn-red {
+        background: var(--red);
+        color: var(--white);
+      }
+      .btn-full {
+        width: 100%;
+        display: block;
+      }
+      .btn-disabled {
+        opacity: 0.4;
+        pointer-events: none;
+      }
+
+      /*  MANGO TOOLTIP  */
+      .mango-wrap {
+        position: relative;
+        margin-bottom: 16px;
+      }
+      .mango-btn {
+        background: none;
+        border: 1px dashed #555;
+        color: var(--gray-light);
+        font-family: "DM Sans", sans-serif;
+        font-size: 0.85rem;
+        padding: 8px 14px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition:
+          border-color 0.2s,
+          color 0.2s;
+      }
+      .mango-btn:hover {
+        border-color: var(--yellow);
+        color: var(--yellow);
+      }
+      .mango-bubble {
+        display: none;
+        background: #1a1500;
+        border: 1px solid var(--yellow);
+        border-radius: 8px;
+        padding: 14px 16px;
+        margin-top: 8px;
+        font-size: 0.88rem;
+        line-height: 1.5;
+        color: var(--yellow);
+        position: relative;
+      }
+      .mango-bubble.open {
+        display: block;
+      }
+      .mango-bubble .fallacy-tag {
+        display: inline-block;
+        font-family: "DM Mono", monospace;
+        font-size: 0.6rem;
+        background: #332800;
+        color: #aaa;
+        padding: 2px 6px;
+        border-radius: 2px;
+        margin-top: 8px;
+      }
+      .mango-name {
+        font-weight: 600;
+        color: var(--yellow);
+        margin-bottom: 4px;
+        font-size: 0.8rem;
+        letter-spacing: 0.05em;
+      }
+
+      /*  SLIDERS  */
+      .slider-row {
+        margin-bottom: 20px;
+      }
+      .slider-label {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+      }
+      .slider-label .val {
+        font-family: "DM Mono", monospace;
+        color: var(--orange);
+        font-size: 1rem;
+        font-weight: 500;
+      }
+      input[type="range"] {
+        width: 100%;
+        -webkit-appearance: none;
+        appearance: none;
+        height: 4px;
+        background: var(--gray);
+        border-radius: 2px;
+        outline: none;
+      }
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: var(--orange);
+        cursor: pointer;
+        border: 2px solid var(--black);
+      }
+      input[type="range"]:disabled {
+        opacity: 0.4;
+      }
+
+      /*  SCORE BAR  */
+      .score-display {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+      .score-box {
+        flex: 1;
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 12px;
+        text-align: center;
+      }
+      .score-box .score-num {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 2rem;
+        color: var(--orange);
+      }
+      .score-box .score-label {
+        font-size: 0.7rem;
+        color: var(--gray-light);
+        font-family: "DM Mono", monospace;
+        letter-spacing: 0.08em;
+      }
+
+      /*  OFFER HISTORY  */
+      .offer-history {
+        margin-bottom: 16px;
+      }
+      .offer-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--border);
+        font-size: 0.88rem;
+        gap: 8px;
+      }
+      .offer-row:last-child {
+        border-bottom: none;
+      }
+      .offer-row .who {
+        font-family: "DM Mono", monospace;
+        font-size: 0.7rem;
+        color: var(--gray-light);
+        min-width: 80px;
+      }
+      .offer-row .terms {
+        flex: 1;
+        color: var(--white);
+      }
+      .offer-row .pts {
+        font-family: "DM Mono", monospace;
+        font-size: 0.8rem;
+        color: var(--green);
+      }
+
+      /*  ROUND INDICATOR  */
+      .round-dots {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 20px;
+        align-items: center;
+      }
+      .round-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--gray);
+        transition: background 0.3s;
+      }
+      .round-dot.done {
+        background: var(--green);
+      }
+      .round-dot.active {
+        background: var(--orange);
+      }
+      .round-label {
+        font-family: "DM Mono", monospace;
+        font-size: 0.7rem;
+        color: var(--gray-light);
+        margin-left: 8px;
+      }
+
+      /*  REVEAL / REFLECTION  */
+      .reveal-block {
+        background: #0a1a0a;
+        border: 1px solid var(--green);
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 16px;
+      }
+      .reveal-block .reveal-label {
+        font-family: "DM Mono", monospace;
+        font-size: 0.65rem;
+        color: var(--green);
+        letter-spacing: 0.12em;
+        margin-bottom: 10px;
+      }
+
+      .gap-block {
+        background: #1a0a00;
+        border: 1px solid var(--orange);
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 16px;
+      }
+
+      .reflection-block {
+        background: #0a0a1a;
+        border: 1px solid #555;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 16px;
+      }
+      .reflection-block textarea {
+        width: 100%;
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--white);
+        font-family: "DM Sans", sans-serif;
+        font-size: 0.9rem;
+        padding: 10px;
+        border-radius: 4px;
+        resize: none;
+        margin-top: 10px;
+        min-height: 80px;
+      }
+
+      /*  CONCEPT PILL  */
+      .concept-pill {
+        display: inline-block;
+        background: #1a1a2a;
+        border: 1px solid #444;
+        border-radius: 20px;
+        padding: 4px 12px;
+        font-size: 0.75rem;
+        font-family: "DM Mono", monospace;
+        color: #aaa;
+        margin: 4px 4px 4px 0;
+      }
+
+      /*  START PAGE  */
+      #screen-start {
+        background: var(--black);
+      }
+      .start-hero {
+        background: var(--orange);
+        padding: 48px 20px 40px;
+        text-align: center;
+      }
+      .start-hero .game-title {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: clamp(3.5rem, 12vw, 6rem);
+        color: var(--black);
+        line-height: 0.9;
+        letter-spacing: 0.02em;
+      }
+      .start-hero .subtitle {
+        font-size: 0.9rem;
+        color: #333;
+        margin-top: 8px;
+        font-weight: 500;
+      }
+      .mango-face {
+        font-size: 3rem;
+        margin-bottom: 12px;
+        display: block;
+      }
+
+      /*  MODE SELECT  */
+      .mode-card {
+        background: var(--card-bg);
+        border: 2px solid var(--border);
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 12px;
+        cursor: pointer;
+        transition: border-color 0.2s;
+      }
+      .mode-card:hover {
+        border-color: var(--orange);
+      }
+      .mode-card.selected {
+        border-color: var(--orange);
+        background: #1a0a00;
+      }
+      .mode-card .mode-title {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 1.3rem;
+        letter-spacing: 0.05em;
+        margin-bottom: 4px;
+      }
+      .mode-card .mode-desc {
+        font-size: 0.82rem;
+        color: var(--gray-light);
+        line-height: 1.5;
+      }
+      .mode-card .mode-bonus {
+        display: inline-block;
+        background: var(--green);
+        color: var(--black);
+        font-family: "DM Mono", monospace;
+        font-size: 0.7rem;
+        padding: 2px 8px;
+        border-radius: 2px;
+        margin-top: 8px;
+      }
+
+      /*  BATNA REVEAL  */
+      .batna-card {
+        background: #0d0d1a;
+        border: 2px solid #3a3a6a;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 16px;
+      }
+      .batna-card .batna-label {
+        font-family: "DM Mono", monospace;
+        font-size: 0.65rem;
+        letter-spacing: 0.12em;
+        color: #7a7aaa;
+        margin-bottom: 8px;
+      }
+      .batna-card .batna-scenario {
+        font-size: 1rem;
+        line-height: 1.6;
+        margin-bottom: 12px;
+      }
+      .batna-card .batna-pts {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 2rem;
+        color: #9090dd;
+      }
+      .batna-card .batna-pts-label {
+        font-size: 0.8rem;
+        color: #666;
+        margin-left: 6px;
+      }
+
+      /*  DIVIDER  */
+      .divider {
+        border: none;
+        border-top: 1px solid var(--border);
+        margin: 20px 0;
+      }
+
+      /*  RESULT PAGE  */
+      .result-hero {
+        background: var(--gray);
+        padding: 32px 20px;
+        text-align: center;
+        border-bottom: 3px solid var(--orange);
+      }
+      .final-score-big {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: clamp(4rem, 16vw, 8rem);
+        color: var(--orange);
+        line-height: 0.9;
+      }
+      .final-pct {
+        font-family: "DM Mono", monospace;
+        font-size: 1rem;
+        color: var(--gray-light);
+        margin-top: 4px;
+      }
+
+      /*  CONCEPT DEFINITIONS  */
+      .concept-def {
+        border-left: 3px solid var(--orange);
+        padding-left: 14px;
+        margin-bottom: 16px;
+      }
+      .concept-def .term {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 1.1rem;
+        letter-spacing: 0.05em;
+        color: var(--orange);
+        margin-bottom: 4px;
+      }
+      .concept-def .definition {
+        font-size: 0.85rem;
+        color: #bbb;
+        line-height: 1.6;
+      }
+
+      /*  UTILITY  */
+      .text-center {
+        text-align: center;
+      }
+      .text-sm {
+        font-size: 0.82rem;
+        color: var(--gray-light);
+        line-height: 1.6;
+      }
+      .text-orange {
+        color: var(--orange);
+      }
+      .text-green {
+        color: var(--green);
+      }
+      .text-red {
+        color: var(--red);
+      }
+      .p-body {
+        font-size: 0.95rem;
+        line-height: 1.7;
+      }
+      .p-body-tight {
+        font-size: 0.95rem;
+        line-height: 1.7;
+        margin-bottom: 10px;
+      }
+      .p-muted {
+        font-size: 0.9rem;
+        line-height: 1.7;
+        color: #bbb;
+      }
+      .p-warning {
+        font-size: 0.9rem;
+        line-height: 1.7;
+        margin-top: 10px;
+        color: var(--yellow);
+      }
+      .mb-8 {
+        margin-bottom: 8px;
+      }
+      .mb-12 {
+        margin-bottom: 12px;
+      }
+      .mb-16 {
+        margin-bottom: 16px;
+      }
+      .mb-24 {
+        margin-bottom: 24px;
+      }
+      .mt-10 {
+        margin-top: 10px;
+      }
+      .mt-8 {
+        margin-top: 8px;
+      }
+      .mt-16 {
+        margin-top: 16px;
+      }
+      .big-num {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 2.5rem;
+        line-height: 1;
+      }
+
+      .role-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 3px;
+        font-family: "DM Mono", monospace;
+        font-size: 0.75rem;
+        letter-spacing: 0.08em;
+        font-weight: 500;
+      }
+      .role-manager {
+        background: #1a0a00;
+        color: var(--orange);
+        border: 1px solid var(--orange);
+      }
+      .role-candidate {
+        background: #0a1a0a;
+        color: var(--green);
+        border: 1px solid var(--green);
+      }
+
+      .waiting-pulse {
+        animation: pulse 1.5s infinite;
+        color: var(--gray-light);
+        font-size: 0.85rem;
+        font-family: "DM Mono", monospace;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.4;
+        }
+      }
+
+      .fade-in {
+        animation: fadeIn 0.4s ease;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /*  PLAYER NAME INPUT  */
+      .name-input {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        color: var(--white);
+        font-family: "DM Sans", sans-serif;
+        font-size: 1rem;
+        padding: 12px 14px;
+        border-radius: 4px;
+        width: 100%;
+        margin-bottom: 12px;
+      }
+      .name-input:focus {
+        outline: none;
+        border-color: var(--orange);
+      }
+
+      .turn-indicator {
+        background: var(--orange);
+        color: var(--black);
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 1rem;
+        letter-spacing: 0.08em;
+        padding: 8px 16px;
+        border-radius: 4px;
+        margin-bottom: 16px;
+        display: inline-block;
+      }
+
+      .no-deal-banner {
+        background: var(--red);
+        color: var(--white);
+        text-align: center;
+        padding: 16px;
+        border-radius: 6px;
+        margin-bottom: 16px;
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 1.3rem;
+        letter-spacing: 0.05em;
+      }
+
+      .deal-banner {
+        background: var(--green);
+        color: var(--black);
+        text-align: center;
+        padding: 16px;
+        border-radius: 6px;
+        margin-bottom: 16px;
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 1.3rem;
+        letter-spacing: 0.05em;
+      }
+
+      /*  REVEAL/RESULT UTILITIES  */
+      .reveal-title {
+        font-size: 2rem;
+      }
+      .reveal-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .two-col-8 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .score-box-actual {
+        border-color: #555;
+      }
+      .score-box-solver {
+        border-color: var(--green);
+        background: #0a1a0a;
+      }
+      .mono-kicker {
+        font-family: "DM Mono", monospace;
+        font-size: 0.65rem;
+        margin-bottom: 10px;
+      }
+      .kicker-actual {
+        color: #aaa;
+      }
+      .kicker-solver {
+        color: var(--green);
+      }
+      .score-label-md {
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+      }
+      .mono-name {
+        font-family: "DM Mono", monospace;
+        font-size: 0.65rem;
+        color: #888;
+      }
+      .big-num-sm {
+        font-size: 1.8rem;
+      }
+      .below-batna {
+        font-size: 0.6rem;
+        color: var(--red);
+      }
+      .joint-row {
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px solid #333;
+        font-size: 0.75rem;
+        color: #aaa;
+      }
+      .eff-card {
+        margin-top: 12px;
+        padding: 10px;
+        background: #1a1a1a;
+        border-radius: 4px;
+        text-align: center;
+      }
+      .eff-label {
+        font-size: 0.75rem;
+        color: #888;
+        margin-bottom: 2px;
+      }
+      .big-num-2 {
+        font-size: 2rem;
+      }
+      .eff-pct {
+        font-size: 0.7rem;
+        color: #888;
+      }
+      .solver-details {
+        background: #0a1a0a;
+        border: 1px solid #2a4a2a;
+        border-radius: 8px;
+        padding: 14px 16px;
+        margin-bottom: 16px;
+      }
+      .solver-summary {
+        cursor: pointer;
+        font-family: "DM Mono", monospace;
+        font-size: 0.72rem;
+        color: var(--green);
+        letter-spacing: 0.08em;
+        list-style: none;
+        outline: none;
+      }
+      .solver-copy {
+        margin-top: 12px;
+        font-size: 0.85rem;
+        line-height: 1.7;
+        color: #bbb;
+      }
+      .prospect-note {
+        margin-top: 12px;
+        padding: 12px;
+        background: #0f0a1f;
+        border-left: 3px solid #8866aa;
+        border-radius: 4px;
+        font-size: 0.88rem;
+        line-height: 1.6;
+        color: #ccc;
+      }
+      .manager-batna-reveal {
+        border-color: #555;
+      }
+      .mono-sm {
+        font-family: "DM Mono", monospace;
+        font-size: 0.8rem;
+        color: #bbb;
+      }
+      .score-round-label {
+        font-size: 0.75rem;
+        color: #888;
+        font-family: "DM Mono", monospace;
+      }
+      .score-round-value {
+        font-family: "DM Mono", monospace;
+        font-size: 0.85rem;
+      }
+      .offer-row-total {
+        border-top: 2px solid #444;
+      }
+      .result-kicker {
+        font-family: "DM Mono", monospace;
+        font-size: 0.8rem;
+        color: #888;
+        margin-bottom: 8px;
+        letter-spacing: 0.1em;
+      }
+      .cat-emoji {
+        font-size: 3rem;
+        margin-bottom: 4px;
+      }
+      .result-solver-note {
+        font-family: "DM Mono", monospace;
+        font-size: 0.75rem;
+        color: #666;
+        margin-top: 6px;
+      }
+      .metric-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--border);
+        font-size: 0.9rem;
+      }
+      .metric-row:last-child {
+        border-bottom: none;
+      }
+      .metric-label {
+        color: var(--gray-light);
+        font-family: "DM Mono", monospace;
+        font-size: 0.7rem;
+        letter-spacing: 0.06em;
+      }
+      .metric-val {
+        color: var(--orange);
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 1rem;
+        letter-spacing: 0.04em;
+      }
+      .concepts-title {
+        font-size: 1.8rem;
+        margin-top: 8px;
+      }
+      .mango-final-quote {
+        color: var(--yellow);
+        font-size: 0.9rem;
+        line-height: 1.7;
+        margin-bottom: 8px;
+      }
+      .fallacy-pill {
+        display: inline-block;
+        font-family: "DM Mono", monospace;
+        font-size: 0.6rem;
+        background: #332800;
+        color: #aaa;
+        padding: 2px 6px;
+        border-radius: 2px;
+      }
+      .fallacy-ok {
+        background: #0a1a0a;
+        color: #5a9;
+      }
+      .mb-20 {
+        margin-bottom: 20px;
+      }
+      .p-note {
+        font-size: 0.88rem;
+        line-height: 1.7;
+        color: #bbb;
+      }
+      .role-badge-mini {
+        font-size: 0.6rem;
+        padding: 2px 6px;
+      }
+      .offer-meta {
+        font-family: "DM Mono", monospace;
+        font-size: 0.72rem;
+        color: #aaa;
+        margin-top: 2px;
+      }
+      .offer-focus {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+      .offer-score {
+        font-family: "DM Mono", monospace;
+        font-size: 0.85rem;
+        margin-bottom: 4px;
+      }
+      .offer-batna-floor {
+        font-size: 0.8rem;
+        color: #888;
+      }
+      .framing-note {
+        background: #1a1200;
+        border: 1px solid #665500;
+        border-radius: 8px;
+        padding: 14px 16px;
+        margin-bottom: 12px;
+        font-size: 0.88rem;
+        line-height: 1.6;
+        color: #ccc;
+      }
+      .framing-note strong {
+        color: var(--yellow);
+      }
+      .actions-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+      .slider-feasible {
+        font-size: 0.72rem;
+        color: #888;
+        font-family: "DM Mono", monospace;
+        text-align: center;
+        margin-top: 4px;
+        margin-bottom: 4px;
+      }
+      .offer-preview {
+        margin-top: 8px;
+        font-family: "DM Mono", monospace;
+        font-size: 0.8rem;
+        color: #888;
+      }
+      .choice-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: 4px;
+        margin-bottom: 8px;
+        cursor: pointer;
+      }
+      .choice-label {
+        flex: 1;
+        font-size: 0.9rem;
+      }
+      .choice-pts {
+        font-family: "DM Mono", monospace;
+        font-size: 0.75rem;
+      }
+      .neg-head {
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .score-total-label {
+        font-weight: 600;
+      }
+      .solver-copy p {
+        margin-bottom: 8px;
+      }
+      .package-summary-grid {
+        display: grid;
+        gap: 12px;
+      }
+      .package-item {
+        background: #101010;
+        border: 1px solid #2f2f2f;
+        border-radius: 8px;
+        padding: 14px 16px;
+      }
+      .package-item:last-child {
+        margin-bottom: 0;
+      }
+      .package-title {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 1.1rem;
+        letter-spacing: 0.05em;
+        color: var(--orange);
+        margin-bottom: 8px;
+      }
+      .package-term {
+        font-size: 0.95rem;
+        line-height: 1.5;
+        color: var(--white);
+        margin-bottom: 10px;
+      }
+      .package-points {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .package-points .score-box {
+        margin: 0;
+        padding: 10px 12px;
+      }
+      .totals-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+      }
+      .totals-grid .score-box {
+        margin: 0;
+      }
+      .why-note,
+      .coach-note,
+      .tradeoff-card {
+        border-radius: 8px;
+        padding: 14px 16px;
+        margin-bottom: 16px;
+        font-size: 0.88rem;
+        line-height: 1.6;
+        color: #ccc;
+      }
+      .why-note {
+        background: #0d0d1a;
+        border: 1px solid #3a3a6a;
+      }
+      .why-note strong {
+        color: #9090dd;
+      }
+      .coach-note {
+        background: #0a1a0a;
+        border: 1px solid #2a4a2a;
+      }
+      .coach-note strong {
+        color: var(--green);
+      }
+      .tradeoff-card {
+        background: #1a1200;
+        border: 1px solid #665500;
+      }
+      .tradeoff-card strong {
+        color: var(--yellow);
+      }
+      .batna-example {
+        background: #0d0d1a;
+        border: 1px dashed #3a3a6a;
+        border-radius: 6px;
+        padding: 12px 14px;
+        margin: 4px 0 14px;
+        font-size: 0.88rem;
+        line-height: 1.6;
+        color: #ccc;
+      }
+      .batna-example ul,
+      .batna-steps {
+        padding-left: 20px;
+      }
+      .batna-steps {
+        margin-bottom: 12px;
+        font-size: 0.92rem;
+        line-height: 1.7;
+      }
+      .mango-react {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: #1a1500;
+        border: 1px solid var(--yellow);
+        border-radius: 8px;
+        padding: 14px 16px;
+        margin-bottom: 16px;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        color: var(--yellow);
+      }
+      .mango-react-face {
+        font-size: 2rem;
+      }
+      @media (max-width: 640px) {
+        .totals-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- """"""""""""""""""""""""""""""""""""""""""
+     SCREEN: START
+"""""""""""""""""""""""""""""""""""""""""" -->
+    <div id="screen-start" class="screen active">
+      <div class="start-hero">
+        <span class="mango-face">&#x1F63C;</span>
+        <div class="game-title display">Gimme a Break</div>
+        <div class="subtitle">
+          A job negotiation game at Sole Ambition 👟, a sporting goods and
+          sneaker store on Fordham Road
+        </div>
+      </div>
+      <div class="container">
+        <div class="card mb-16 fade-in">
+          <div class="card-label">The Setup</div>
+          <p class="p-body-tight">
+            You are the job candidate negotiating with Kwame, the manager.
+            Four rounds: wage &amp; hours, shift type, schedule notice, and
+            breaks. Score as many points as you can (points show how much you
+            like a deal, not just the money).
+          </p>
+          <p class="p-muted">
+            You get up to 5 exchanges per round. After each move you will see
+            why Kwame reacted as he did, plus a coach tip.
+          </p>
+          <details class="p-muted mt-10">
+            <summary>Who are 😼Mango and 🧠Solver?</summary>
+            <p class="mt-8">
+              😼Mango is the store mascot. She always has an opinion. Whether
+              she's actually helpful...
+            </p>
+            <p class="mt-8">
+              🧠Solver is a perfectly rational agent with no ego and no
+              need for fairness, just math. You will see its best deal after
+              each round.
+            </p>
+          </details>
+        </div>
+
+        <div class="card mb-24">
+          <div class="card-label">BATNA: Your Walk-Away Option</div>
+          <p class="p-body-tight">
+            <strong class="text-orange"
+              >Best Alternative to a Negotiated Agreement</strong
+            >
+            is what you get if there is no deal, such as another job offer. A
+            deal worth more than your BATNA beats walking away. A deal worth
+            less does not.
+          </p>
+          <div class="batna-example">
+            <strong>Example:</strong> Your BATNA is 95 pts. An 80-pt offer?
+            Counter or walk. A 105-pt offer? It beats walking away.
+          </div>
+          <p class="p-muted">
+            Kwame has a hidden BATNA too. Find a deal that beats both. If you
+            walk away, or the exchanges run out, that round ends and you both
+            take your BATNA.
+          </p>
+        </div>
+
+        <div id="name-fields">
+          <div id="name-1p-fields">
+            <input
+              class="name-input"
+              id="name-candidate"
+              placeholder="Your name (Candidate)"
+            />
+          </div>
+        </div>
+
+        <button class="btn btn-primary btn-full" onclick="startGame()">
+          Let's Negotiate &#x1F45F;
+        </button>
+
+      </div>
+    </div>
+
+    <!-- """"""""""""""""""""""""""""""""""""""""""
+     SCREEN: ROLE REVEAL
+"""""""""""""""""""""""""""""""""""""""""" -->
+    <div id="screen-role" class="screen">
+      <div class="header-strip">
+        <span class="store-name">SOLE AMBITION - FORDHAM RD</span>
+        <span class="level-badge" id="role-level-badge">ROUND 1</span>
+      </div>
+      <div class="container">
+        <div id="role-reveal-content" class="fade-in"></div>
+      </div>
+    </div>
+
+    <!-- """"""""""""""""""""""""""""""""""""""""""
+     SCREEN: NEGOTIATE
+"""""""""""""""""""""""""""""""""""""""""" -->
+    <div id="screen-negotiate" class="screen">
+      <div class="header-strip">
+        <span class="store-name">SOLE AMBITION - FORDHAM RD</span>
+        <span class="level-badge" id="neg-level-badge">LEVEL 1</span>
+      </div>
+      <div class="container">
+        <div id="negotiate-content" class="fade-in"></div>
+      </div>
+    </div>
+
+    <!-- """"""""""""""""""""""""""""""""""""""""""
+     SCREEN: REVEAL
+"""""""""""""""""""""""""""""""""""""""""" -->
+    <div id="screen-reveal" class="screen">
+      <div class="header-strip">
+        <span class="store-name">SOLE AMBITION - FORDHAM RD</span>
+        <span class="level-badge">SOLVER REVEAL</span>
+      </div>
+      <div class="container">
+        <div id="reveal-content" class="fade-in"></div>
+      </div>
+    </div>
+
+    <!-- """"""""""""""""""""""""""""""""""""""""""
+     SCREEN: RESULTS
+"""""""""""""""""""""""""""""""""""""""""" -->
+    <div id="screen-results" class="screen">
+      <div id="result-hero-content"></div>
+      <div class="container">
+        <div id="results-content" class="fade-in"></div>
+      </div>
+    </div>
+
+    <script>
+      //
+      // SCORING (Round 1 only  numeric)
+      //
+      function numCandPts(w, h) {
+        return Math.round(100 + (w - 15) * 20 - Math.abs(h - 15) * 5);
+      }
+      function numMgrPts(w, h) {
+        return Math.round(-(w - 15) * 6.25 + (h - 10) * 5);
+      }
+
+      //
+      // ROUND DEFINITIONS  (4 standalone, independent negotiations)
+      //
+      const ROUNDS = [
+        {
+          id: "wage-hours",
+          header: "ROUND 1 · WAGE & HOURS",
+          termType: "numeric",
+          topic:
+            "Negotiate your hourly wage and weekly hours. Kwame makes the first offer.",
+          candidateBatna: 95, // numCandPts(16,20)
+          managerBatna: 65, // numMgrPts(15,23)
+          candidateBatnaDesc:
+            "Another store offered you $16/hr for 20 hrs/week.",
+          managerBatnaDesc:
+            "Another candidate will accept $15/hr for 23 hrs/week.",
+          candidateScorecardNote:
+            "Scoring model: every $1 above $15/hr earns you 20 pts, but each hour away from 15 hrs/wk costs 5 pts.",
+          managerScorecardNote:
+            "Every $1 above $15/hr costs Kwame 6.25 pts. Every extra hour earns him 5 pts.",
+          candidatePrefNote:
+            "You want higher wage but closer to 15 hrs/week for schedule stability. Your BATNA is $16/hr for 20 hrs.",
+          managerPrefNote:
+            "Kwame wants low wage and high hours. His fallback: another candidate at $15/hr for 23 hrs.",
+          solverLabel: "$20.5/hr · 30 hrs/wk",
+          solverCandPts: 135,
+          solverMgrPts: 66,
+          mangoOffers: [
+            { wage: 15, hours: 23 },
+            { wage: 15.5, hours: 22 },
+            { wage: 16, hours: 24 },
+          ],
+          defaultPending: { wage: 17, hours: 15 },
+          hint: "Kwame cares more about hours than wage. Extra hours cost you little and are worth a lot to him.",
+          tradeoff:
+            "<strong>Give a little, gain more.</strong> Each extra hour above 15 costs you 5 pts and gives Kwame 5 pts. Each extra $1/hr gives you 20 pts and costs Kwame only 6.25 pts. So agree to 3 more hours (you -15, Kwame +15) in exchange for $1 more per hour (you +20, Kwame -6.25). Net: you +5, Kwame +8.75. Both of you end up better off.",
+          nextTime:
+            "Next time, offer more hours and ask for a higher wage in return. Hours are cheap for you and valuable to Kwame; wage is the reverse.",
+          tips: {
+            brief: {
+              text: "Just ask for $22/hr and 10 hours. Make them come to you.",
+              fallacy: "Appeal to False Authority",
+              wrong: true,
+            },
+            counter: {
+              text: "If you care more about wage and they care more about hours, trading can make both of you better off. That's a Pareto improvement.",
+              wrong: false,
+            },
+            reveal: {
+              text: "With this score model, Solver's joint-max feasible deal is $20.5/hr and 30 hours.",
+              wrong: false,
+            },
+          },
+        },
+        {
+          id: "shift-type",
+          header: "ROUND 2 · SHIFT TYPE",
+          termType: "choice",
+          topic:
+            "Same store, same manager - now negotiate what kind of shifts you'll work.",
+          candidateBatna: 0,
+          managerBatna: 40,
+          candidateBatnaDesc:
+            "No agreement - a staffing agency assigns your shifts at random.",
+          managerBatnaDesc:
+            "No agreement - Kwame defaults to a balanced day/evening mix from staffing.",
+          candidateScorecardNote:
+            "Daytime is worth most to you (60 pts). Evenings are rough (10 pts), and Eves & Wknds are worst (-10 pts).",
+          managerScorecardNote:
+            "Evening/weekend coverage is what Kwame needs (80 pts). Daytime barely helps him (10 pts).",
+          candidatePrefNote:
+            "You prefer daytime for school and life. Evenings are hard but not impossible.",
+          managerPrefNote:
+            "Kwame needs evening and weekend coverage for his peak sales hours.",
+          options: [
+            { id: "daytime", label: "Daytime", cPts: 60, mPts: 10 },
+            {
+              id: "mixed",
+              label: "Balanced Mix (Day + Evening)",
+              cPts: 40,
+              mPts: 40,
+            },
+            { id: "evenings", label: "Evenings", cPts: 10, mPts: 60 },
+            { id: "wknds", label: "Eves & Wknds", cPts: -10, mPts: 80 },
+          ],
+          solverId: "mixed",
+          solverLabel: "Balanced Mix (Day + Evening)",
+          solverCandPts: 40,
+          solverMgrPts: 40,
+          defaultChoice: "evenings",
+          mangoOffers: ["wknds", "evenings", "wknds"],
+          hint: "Kwame needs evenings and weekends far more than daytime. You can give him some coverage without giving up everything.",
+          tradeoff:
+            "<strong>Give a little, gain more.</strong> Moving from Eves & Wknds to the Balanced Mix gains you 50 pts and costs Kwame 40. Moving from Daytime to the Balanced Mix costs you 20 pts and gives Kwame 30. The Balanced Mix has the biggest combined score (80), so the middle is where the pie is largest.",
+          nextTime:
+            "Next time, aim for the Balanced Mix early. Anchoring on Daytime hides the deal that works best for both of you.",
+          tips: {
+            brief: {
+              text: "Just ask for daytime. You want daytime. Negotiation is simple when you know what you want.",
+              fallacy: "Bandwagon",
+              wrong: true,
+            },
+            counter: {
+              text: "If you care about days and they care about evenings, a split schedule leaves both sides better off.",
+              wrong: false,
+            },
+            reveal: {
+              text: "The Solver picked Balanced Mix (Day + Evening). Anchoring on your preferred shift hides the Pareto-improving trade.",
+              wrong: false,
+            },
+          },
+        },
+        {
+          id: "schedule-notice",
+          header: "ROUND 3 · SCHEDULE NOTICE",
+          termType: "choice",
+          topic: "How many days in advance will Kwame post the schedule?",
+          candidateBatna: 40,
+          managerBatna: 30,
+          candidateBatnaDesc:
+            "Another employer offers a package with guaranteed 1-week schedule notice.",
+          managerBatnaDesc:
+            "No agreement - staffing policy defaults to 3 days notice.",
+          candidateScorecardNote:
+            "More notice is worth more to you: 1 week = 40 pts, 2 weeks = 60 pts. 1 day hurts (-30 pts), and no formal notice policy would be worse (about -40 pts).",
+          managerScorecardNote:
+            "Short notice is what Kwame wants (50 pts for 1 day). 1 week still works for operations (30 pts), while 2 weeks is harder (20 pts).",
+          candidatePrefNote:
+            "More advance notice lets you plan school, childcare, and other commitments.",
+          managerPrefNote:
+            "Kwame wants to post schedules last-minute. Long commitments limit his staffing flexibility.",
+          options: [
+            { id: "1day", label: "1 Day", cPts: -30, mPts: 50 },
+            { id: "3days", label: "3 Days", cPts: 0, mPts: 30 },
+            { id: "1week", label: "1 Week", cPts: 40, mPts: 30 },
+            { id: "2weeks", label: "2 Weeks", cPts: 60, mPts: 20 },
+          ],
+          solverId: "1week",
+          solverLabel: "1 Week",
+          solverCandPts: 40,
+          solverMgrPts: 30,
+          defaultChoice: "1day",
+          mangoOffers: ["1day", "3days", "1day"],
+          hint: "Look at the jump from 3 days to 1 week. It is worth a lot to you and costs Kwame nothing.",
+          tradeoff:
+            "<strong>Give a little, gain more.</strong> Moving from 3 days to 1 week gains you 40 pts and costs Kwame 0 pts. Moving from 1 week to 2 weeks gains you only 20 more and costs Kwame 10. Take the free gain first, then decide whether the extra week is worth the push.",
+          nextTime:
+            "Next time, look for the step where you gain a lot and Kwame loses little: 3 days to 1 week.",
+          tips: {
+            brief: {
+              text: "Demand two weeks notice. More is always better. Just push.",
+              fallacy: "False Dichotomy",
+              wrong: true,
+            },
+            counter: {
+              text: "Notice has real value to you and real cost to Kwame. The trade-off has a price.",
+              wrong: false,
+            },
+            reveal: {
+              text: "1 week now clears both BATNAs and gives a stable agreement zone. That's the key trade in this round.",
+              wrong: false,
+            },
+          },
+        },
+        {
+          id: "break-policy",
+          header: "ROUND 4 · BREAK POLICY",
+          termType: "choice",
+          topic:
+            "Gimme a break! Negotiate the formal break policy for your shifts.",
+          candidateBatna: 0,
+          managerBatna: 25,
+          candidateBatnaDesc:
+            "No formal policy - breaks happen when the manager allows, unpredictably.",
+          managerBatnaDesc:
+            "No agreement - store policy defaults to one guaranteed 15-min break.",
+          candidateScorecardNote:
+            "Guaranteed breaks matter: two breaks + a meal break = 50 pts. At-will hurts (-20 pts).",
+          managerScorecardNote:
+            "Kwame prefers flexibility. At-will = 40 pts. The meal break add-on costs him almost nothing (5 pts).",
+          candidatePrefNote:
+            "You're on your feet all shift. Predictable, guaranteed breaks are worth real money to you.",
+          managerPrefNote:
+            "Kwame wants staffing flexibility. Formal break rules reduce his coverage options at peak hours.",
+          options: [
+            {
+              id: "atwill",
+              label: "At Manager's Discretion",
+              cPts: -20,
+              mPts: 40,
+            },
+            { id: "one", label: "One 15-min Break", cPts: 15, mPts: 25 },
+            { id: "two", label: "Two 15-min Breaks", cPts: 35, mPts: 10 },
+            {
+              id: "twomeal",
+              label: "Two Breaks + Meal Break",
+              cPts: 50,
+              mPts: 5,
+            },
+          ],
+          solverId: "twomeal",
+          solverLabel: "Two Breaks + Meal Break",
+          solverCandPts: 50,
+          solverMgrPts: 5,
+          defaultChoice: "atwill",
+          mangoOffers: ["atwill", "atwill", "one"],
+          hint: "Kwame hardly cares about the meal break (5 pts to him). Ask for it.",
+          tradeoff:
+            "<strong>Give a little, gain more.</strong> Moving from Two Breaks to Two Breaks + Meal gains you 15 pts and costs Kwame only 5. Moving from One Break to Two Breaks gains you 20 and costs him 15. Cheap add-ons for Kwame are where you get the most value.",
+          nextTime:
+            "Next time, ask for the meal break. It costs Kwame 5 pts and is worth 15 pts to you on top of two breaks.",
+          tips: {
+            brief: {
+              text: "Ask for maximum breaks. You're on your feet all day. Go big.",
+              fallacy: "Appeal to Nature",
+              wrong: true,
+            },
+            counter: {
+              text: "The meal break add-on costs Kwame almost nothing but is worth a lot to you. That gap is where value gets created.",
+              wrong: false,
+            },
+            reveal: {
+              text: "Two Breaks + Meal costs Kwame 5 pts and earns you 50. That's the trade most people miss.",
+              wrong: false,
+            },
+          },
+        },
+      ];
+
+      const MAX_EXCHANGES = 5;
+
+      //
+      // STATE
+      //
+      const STATE = {
+        nameCandidate: "Player",
+        roundIndex: 0, // which ROUND (0-3)
+        negotiRound: 1, // exchange within current negotiation (1-MAX_EXCHANGES)
+        turn: "manager",
+        offers: [],
+        deal: null,
+        dealAccepted: false,
+        candidateCountering: false,
+        pendingWage: 17,
+        pendingHours: 20,
+        pendingChoice: null,
+        walkAwayBy: null,
+        scores: [], // [{cPts, mPts, dealLabel}] one per completed round
+      };
+
+      function R() {
+        return ROUNDS[STATE.roundIndex];
+      }
+
+      //
+      // HELPERS
+      //
+      function showScreen(id) {
+        document
+          .querySelectorAll(".screen")
+          .forEach((s) => s.classList.remove("active"));
+        document.getElementById("screen-" + id).classList.add("active");
+      }
+
+      function offerCandPts(offer) {
+        if (offer.wage !== undefined)
+          return numCandPts(offer.wage, offer.hours);
+        return (R().options.find((o) => o.id === offer.choice) || { cPts: 0 })
+          .cPts;
+      }
+      function offerMgrPts(offer) {
+        if (offer.wage !== undefined) return numMgrPts(offer.wage, offer.hours);
+        return (R().options.find((o) => o.id === offer.choice) || { mPts: 0 })
+          .mPts;
+      }
+      function offerLabel(offer) {
+        if (offer.wage !== undefined)
+          return `$${offer.wage}/hr · ${offer.hours} hrs/wk`;
+        return (
+          R().options.find((o) => o.id === offer.choice) || {
+            label: offer.choice,
+          }
+        ).label;
+      }
+
+      function escapeHTML(value) {
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#39;");
+      }
+
+      function mangoHTML(tip) {
+        if (!tip) return "";
+        const id = "mango-" + Math.random().toString(36).slice(2, 8);
+        const tag = tip.wrong
+          ? `<div class="fallacy-tag">! ${tip.fallacy}</div>`
+          : `<div class="fallacy-tag fallacy-ok">OK Correct framing</div>`;
+        return `<div class="mango-wrap">
+          <button class="mango-btn" onclick="var b=document.getElementById('${id}');b.classList.toggle('open');this.textContent=b.classList.contains('open')?'Hide Mango ▲':'Ask Mango &#x1F63C;';">Ask Mango &#x1F63C;</button>
+          <div class="mango-bubble" id="${id}">
+            <div class="mango-name">MANGO SAYS</div>
+            "${tip.text}"
+            ${tag}
+          </div>
+        </div>`;
+      }
+
+      //
+      // GAME FLOW
+      //
+      function startGame() {
+        const n = document.getElementById("name-candidate").value.trim();
+        STATE.nameCandidate = escapeHTML(n || "Player");
+        STATE.roundIndex = 0;
+        STATE.walkAwayBy = null;
+        STATE.scores = [];
+        showCandidateBrief();
+      }
+
+      function showRoleReveal() {
+        const r = R();
+        document.getElementById("role-level-badge").textContent = r.header;
+        showScreen("role");
+        document.getElementById("role-reveal-content").innerHTML = `
+          <div class="mb-20">
+            <span class="role-badge role-manager">Kwame - Manager</span>
+          </div>
+          <div class="card mb-16">
+            <div class="card-label">The Situation</div>
+            <p class="p-body">${r.topic}</p>
+          </div>
+          <div class="batna-card mb-16">
+            <div class="batna-label">Manager Context</div>
+            <div class="batna-scenario">Kwame also has a fallback option, but his BATNA is private unless negotiations end in a walk-away.</div>
+          </div>
+          <div class="card mb-16">
+            <div class="card-label">Kwame's Priorities</div>
+            <p class="p-note">${r.managerPrefNote}</p>
+          </div>
+          <button class="btn btn-primary btn-full" onclick="showCandidateBrief()">See Your Brief -></button>
+        `;
+      }
+
+      function showCandidateBrief() {
+        const r = R();
+        document.getElementById("role-level-badge").textContent = r.header;
+        showScreen("role");
+        document.getElementById("role-reveal-content").innerHTML = `
+          <div class="mb-20">
+            <span class="role-badge role-candidate">${STATE.nameCandidate} - Candidate</span>
+          </div>
+          <div class="batna-card mb-16">
+            <div class="batna-label">Your BATNA - Kwame Can't See This</div>
+            <div class="batna-scenario">${r.candidateBatnaDesc}</div>
+            <div><span class="batna-pts">${r.candidateBatna}</span><span class="batna-pts-label"> pts - your floor</span></div>
+            <p class="text-sm mt-8">Offers worth more than ${r.candidateBatna} pts beat walking away. Offers worth less do not. Walking away ends only this round.</p>
+          </div>
+          <div class="card mb-16">
+            <div class="card-label">Your Scorecard</div>
+            <p class="p-note">${r.candidateScorecardNote}</p>
+          </div>
+          <div class="tradeoff-card">
+            <div class="card-label">Trade-off to Look For</div>
+            <p>${r.tradeoff}</p>
+            <p class="mt-8"><strong>Hint:</strong> ${r.hint}</p>
+          </div>
+          ${mangoHTML(r.tips.brief)}
+          <button class="btn btn-primary btn-full" onclick="startNegotiation()">I'm Ready</button>
+        `;
+      }
+
+      function startNegotiation() {
+        const r = R();
+        STATE.negotiRound = 1;
+        STATE.turn = "manager";
+        STATE.offers = [];
+        STATE.deal = null;
+        STATE.dealAccepted = false;
+        STATE.candidateCountering = false;
+        STATE.walkAwayBy = null;
+        if (r.termType === "numeric") {
+          STATE.pendingWage = r.defaultPending.wage;
+          STATE.pendingHours = r.defaultPending.hours;
+        } else {
+          STATE.pendingChoice = r.defaultChoice;
+        }
+        renderNegotiate();
+      }
+
+      //
+      // NEGOTIATION ENGINE  (handles all rounds)
+      //
+      function renderNegotiate() {
+        const r = R();
+        document.getElementById("neg-level-badge").textContent = r.header;
+        showScreen("negotiate");
+
+        const isManager = STATE.turn === "manager";
+        const turnName = isManager ? "Kwame" : STATE.nameCandidate;
+
+        // Round progress dots / exchange tracker uses actual manager-offer count.
+        const managerOfferCount = STATE.offers.filter(
+          (o) => o.who === "manager",
+        ).length;
+        const exchange = isManager
+          ? Math.min(managerOfferCount + 1, MAX_EXCHANGES)
+          : Math.max(1, Math.min(managerOfferCount, MAX_EXCHANGES));
+
+        const dots = Array.from({ length: MAX_EXCHANGES }, (_, i) => i + 1)
+          .map((i) => {
+            let c = "round-dot";
+            if (i < exchange) c += " done";
+            else if (i === exchange) c += " active";
+            return `<div class="${c}"></div>`;
+          })
+          .join("");
+
+        // Offer history
+        let history = "";
+        if (STATE.offers.length > 1) {
+          history = `<div class="card mb-16"><div class="card-label">Offer History</div><div class="offer-history">`;
+          STATE.offers.forEach((o) => {
+            const isM = o.who === "manager";
+            const nm = isM ? "Kwame" : STATE.nameCandidate;
+            const bdg = isM ? "role-manager" : "role-candidate";
+            const cPts = offerCandPts(o);
+            const mPts = offerMgrPts(o);
+            const cColor =
+              cPts >= r.candidateBatna ? "var(--green)" : "var(--red)";
+            const mColor =
+              mPts >= r.managerBatna ? "var(--green)" : "var(--red)";
+            history += `<div class="offer-row">
+              <span class="who"><span class="role-badge role-badge-mini ${bdg}">${nm}</span></span>
+              <span class="terms">
+                <div>${offerLabel(o)}</div>
+                <div class="offer-meta">
+                  Candidate: <span style="color:${cColor};">${cPts} pts</span> (BATNA ${r.candidateBatna})
+                  &nbsp;|&nbsp;
+                  Manager: <span style="color:${mColor};">${mPts} pts</span>
+                </div>
+              </span>
+            </div>`;
+          });
+          history += `</div></div>`;
+        }
+
+        let mainUI = "";
+
+        if (isManager) {
+          // Kwame's turn - show pulsing state then let them reveal
+          const msgId = "mmsg" + Date.now();
+          mainUI = `
+            <div class="card mb-16">
+              <div class="card-label">Kwame is reviewing terms...</div>
+              <div id="${msgId}" class="waiting-pulse">Decision in progress... 📋</div>
+            </div>`;
+          const tok = (STATE.renderTok = (STATE.renderTok || 0) + 1);
+          setTimeout(() => {
+            if (STATE.renderTok === tok && STATE.turn === "manager")
+              mangoMakesOffer();
+          }, 1200);
+        } else if (!STATE.candidateCountering && STATE.offers.length) {
+          // Candidate reviewing manager's last offer
+          const last = [...STATE.offers]
+            .reverse()
+            .find((o) => o.who === "manager");
+          const cPts = offerCandPts(last);
+          const beats = cPts >= r.candidateBatna;
+          mainUI = `
+            <div class="card mb-16" style="border-color:${beats ? "var(--green)" : "var(--red)"}">
+              <div class="card-label">Kwame's Offer</div>
+              <div class="offer-focus">${offerLabel(last)}</div>
+              <div class="offer-score">
+                Your score: <span style="color:${beats ? "var(--green)" : "var(--red)"}">${cPts} pts</span>
+              </div>
+              <div class="offer-batna-floor">Your BATNA floor: ${r.candidateBatna} pts. ${
+                beats
+                  ? "This beats walking away; accept, or counter for more."
+                  : "This is below your BATNA; counter, or walk away if Kwame will not move."
+              }</div>
+            </div>
+            ${r.id === "schedule-notice" && last.choice === "1day" ? '<div class="framing-note"><strong>Framing:</strong> Kwame\'s offer means losing 2 weeks of planning time compared to what you asked for.</div>' : ""}
+            <div class="actions-grid">
+              <button class="btn btn-green" onclick="${beats ? "acceptDeal()" : "if(confirm('This offer is below your BATNA. You would be better off walking away. Accept anyway?'))acceptDeal()"}">${beats ? "Accept ✓" : "Accept (below BATNA)"}</button>
+              ${
+                STATE.negotiRound < MAX_EXCHANGES
+                  ? '<button class="btn btn-yellow" onclick="startCounter()">Counter -></button>'
+                  : '<button class="btn btn-secondary btn-disabled">No Counters Left</button>'
+              }
+              <button class="btn btn-red" onclick="walkAwayNow()">Walk Away X</button>
+            </div>
+            ${last.reason ? `<div class="why-note"><strong>Why Kwame responded this way:</strong> ${last.reason}</div>` : ""}
+            ${last.coach ? `<div class="coach-note"><strong>Coach tip on your last counter:</strong> ${last.coach}</div>` : ""}
+            ${mangoHTML(r.tips.counter)}`;
+        } else {
+          if (r.termType === "numeric") {
+            mainUI = `
+              <div class="card mb-16">
+                <div class="card-label">Build Your Counteroffer</div>
+                <div class="slider-row">
+                  <div class="slider-label">
+                    <span>Hourly Wage</span>
+                    <span class="val" id="wage-val">$${STATE.pendingWage}/hr</span>
+                  </div>
+                  <input type="range" min="15" max="22" step="0.5" value="${STATE.pendingWage}"
+                    oninput="STATE.pendingWage=parseFloat(this.value);document.getElementById('wage-val').textContent='$'+this.value+'/hr';updatePreview();">
+                </div>
+                <div class="slider-row">
+                  <div class="slider-label">
+                    <span>Hours/Week</span>
+                    <span class="val" id="hours-val">${STATE.pendingHours} hrs</span>
+                  </div>
+                  <input type="range" min="10" max="30" step="1" value="${STATE.pendingHours}"
+                    oninput="STATE.pendingHours=parseInt(this.value);document.getElementById('hours-val').textContent=this.value+' hrs';updatePreview();">
+                </div>
+                <div class="slider-feasible">Sliders show the allowed range ($15-$22/hr, 10-30 hrs)</div>
+                <div id="offer-preview" class="offer-preview"></div>
+              </div>
+              ${mangoHTML(r.tips.counter)}
+                <div class="actions-grid">
+                  <button class="btn btn-yellow" onclick="submitOffer()">Submit Counter</button>
+                  <button class="btn btn-red" onclick="walkAwayNow()">Walk Away X</button>
+                </div>`;
+          } else {
+            const cur = STATE.pendingChoice || r.defaultChoice;
+            const radios = r.options
+              .map((opt) => {
+                const col =
+                  opt.cPts >= 40
+                    ? "var(--green)"
+                    : opt.cPts >= 0
+                      ? "var(--orange)"
+                      : "var(--red)";
+                const sel = cur === opt.id;
+                return `<label class="choice-row" style="border:1px solid ${sel ? "var(--green)" : "#333"};background:${sel ? "#0a1a0a" : "transparent"};">
+                <input type="radio" name="choice-pick" value="${opt.id}" ${sel ? "checked" : ""} onchange="STATE.pendingChoice=this.value;renderNegotiate();" style="accent-color:var(--green);">
+                <span class="choice-label">${opt.label}</span>
+                <span class="choice-pts" style="color:${col};">You ${opt.cPts > 0 ? "+" : ""}${opt.cPts} · Kwame ${opt.mPts}</span>
+              </label>`;
+              })
+              .join("");
+            mainUI = `
+              <div class="card mb-16">
+                <div class="card-label">Choose Your Preference</div>
+                ${radios}
+                <div id="offer-preview" class="offer-preview"></div>
+              </div>
+              ${mangoHTML(r.tips.counter)}
+              <div class="actions-grid">
+                <button class="btn btn-yellow" onclick="submitOffer()">Submit Counter</button>
+                <button class="btn btn-red" onclick="walkAwayNow()">Walk Away X</button>
+              </div>`;
+          }
+        }
+
+        document.getElementById("negotiate-content").innerHTML = `
+          <div class="neg-head">
+            <div class="round-dots">${dots}<span class="round-label">Exchange ${exchange} of ${MAX_EXCHANGES}</span></div>
+          </div>
+          <div class="turn-indicator">${isManager ? "📋" : "💼"} ${turnName}'s Turn</div>
+          ${history}
+          ${mainUI}`;
+
+        updatePreview();
+      }
+
+      function updatePreview() {
+        const el = document.getElementById("offer-preview");
+        if (!el || STATE.turn !== "candidate") return;
+        const r = R();
+        const pending =
+          r.termType === "numeric"
+            ? { wage: STATE.pendingWage, hours: STATE.pendingHours }
+            : { choice: STATE.pendingChoice || r.defaultChoice };
+        const c = offerCandPts(pending);
+        const m = offerMgrPts(pending);
+        const last = lastOfferBy("manager");
+        const change = last
+          ? ` Compared with Kwame's last offer: you ${ptsDelta(c - offerCandPts(last))}, Kwame ${ptsDelta(m - offerMgrPts(last))}.`
+          : "";
+        el.textContent = `Worth ${c} pts to you (BATNA floor: ${r.candidateBatna}) and ${m} pts to Kwame.${change}`;
+      }
+
+      function ptsDelta(n) {
+        return (n > 0 ? "+" : "") + n;
+      }
+
+      function sameOffer(a, b) {
+        return (
+          !!a &&
+          !!b &&
+          a.wage === b.wage &&
+          a.hours === b.hours &&
+          a.choice === b.choice
+        );
+      }
+
+      // Why Kwame made this offer, in terms the player can act on.
+      function explainKwameOffer(r, offer, prevManager, lastCandidate) {
+        const cPts = offerCandPts(offer);
+        if (!lastCandidate) {
+          return `Kwame opens with an anchor that favors him. It is worth ${cPts} pts to you, below your BATNA of ${r.candidateBatna}. An opening offer is rarely anyone's real limit, so do not accept just because it came first.`;
+        }
+        const counterM = offerMgrPts(lastCandidate);
+        const moved = prevManager ? cPts - offerCandPts(prevManager) : 0;
+        const termTxt =
+          prevManager && offer.wage !== undefined
+            ? ` Versus his last offer, wage changed by ${ptsDelta(+(offer.wage - prevManager.wage).toFixed(1))}/hr and hours by ${ptsDelta(offer.hours - prevManager.hours)}.`
+            : "";
+        const movedTxt =
+          (moved > 0
+            ? ` Overall he moved ${moved} pts in your favor.`
+            : moved < 0
+              ? " He pulled back from his last offer."
+              : " He held firm on his last offer.") + termTxt;
+        if (counterM < r.managerBatna) {
+          return `Your counter left Kwame with ${counterM} pts, less than he could get from his own fallback, so he cannot say yes. He answered with the closest deal he can live with.${movedTxt}`;
+        }
+        if (sameOffer(offer, lastCandidate)) {
+          return `Your counter beats Kwame's fallback, so he is willing to meet you there. A counter that works for both sides gets a yes.`;
+        }
+        return `Kwame moved toward your counter while keeping a deal that still beats his fallback.${movedTxt}`;
+      }
+
+      // Feedback on the player's own counter, shown with Kwame's reply.
+      function coachForCounter(r, counter, prevManager, reply) {
+        const c = offerCandPts(counter);
+        const m = offerMgrPts(counter);
+        const prevC = prevManager ? offerCandPts(prevManager) : null;
+        if (c < r.candidateBatna) {
+          return `Your counter was worth ${c} pts to you, below your BATNA of ${r.candidateBatna}. Never propose a deal you would be better off walking away from.`;
+        }
+        if (prevC !== null && c <= prevC) {
+          return `Your counter (${c} pts) was no better for you than Kwame's previous offer (${prevC} pts). Ask for more, or accept that offer.`;
+        }
+        if (m < r.managerBatna) {
+          return `Your counter was aggressive: it left Kwame ${m} pts, less than his fallback. Pushing past what the other side can accept makes them dig in. Kwame's reply gave him ${offerMgrPts(reply)} pts, about as low as he will go. Look for a trade he values instead.`;
+        }
+        return `Good counter. It gave you ${c} pts, above your BATNA, while leaving Kwame ${m} pts, so both sides could say yes. Next, look for a trade that grows the total.`;
+      }
+
+      function toOffer(raw) {
+        return raw && raw.wage !== undefined
+          ? { who: "manager", wage: raw.wage, hours: raw.hours }
+          : { who: "manager", choice: raw };
+      }
+
+      function lastOfferBy(who) {
+        return [...STATE.offers].reverse().find((o) => o.who === who) || null;
+      }
+
+      function offerDistance(a, b, r) {
+        if (!a || !b) return 999;
+        if (r.termType === "numeric") {
+          return (
+            Math.abs(a.wage - b.wage) +
+            Math.abs((a.hours || 0) - (b.hours || 0)) * 0.2
+          );
+        }
+        const ids = r.options.map((o) => o.id);
+        const ai = ids.indexOf(a.choice);
+        const bi = ids.indexOf(b.choice);
+        if (ai === -1 || bi === -1) return 99;
+        return Math.abs(ai - bi);
+      }
+
+      function generateManagerOfferCandidates(r) {
+        if (r.termType === "numeric") {
+          const out = [];
+          for (let w = 15; w <= 22; w += 0.5) {
+            for (let h = 10; h <= 30; h += 1) {
+              out.push({ who: "manager", wage: +w.toFixed(1), hours: h });
+            }
+          }
+          return out;
+        }
+        return r.options.map((opt) => ({ who: "manager", choice: opt.id }));
+      }
+
+      function chooseManagerOffer(r) {
+        const scriptedRaw = r.mangoOffers[Math.min(STATE.negotiRound - 1, 2)];
+        const scripted = toOffer(scriptedRaw);
+        const prevManager = lastOfferBy("manager");
+        const lastCandidate = lastOfferBy("candidate");
+
+        // Kwame's floor is his BATNA — he can concede own pts to raise joint value.
+        const minManagerScore = r.managerBatna;
+
+        const allCandidates = generateManagerOfferCandidates(r);
+        const feasible = allCandidates.filter(
+          (o) => offerMgrPts(o) >= minManagerScore,
+        );
+
+        if (feasible.length === 0) {
+          const bestManagerOffer = [...allCandidates].sort(
+            (a, b) => offerMgrPts(b) - offerMgrPts(a),
+          )[0];
+          return bestManagerOffer || prevManager || scripted;
+        }
+
+        // Opening offer rule: always start below candidate BATNA.
+        if (!lastCandidate) {
+          const openingCandidatesAll = allCandidates.filter(
+            (o) => offerCandPts(o) < r.candidateBatna,
+          );
+          if (!openingCandidatesAll.length) {
+            const fallbackOpening = [...feasible].sort((a, b) => {
+              const da = offerDistance(a, scripted, r);
+              const db = offerDistance(b, scripted, r);
+              if (da !== db) return da - db;
+              return offerMgrPts(b) - offerMgrPts(a);
+            })[0];
+            return fallbackOpening || prevManager || scripted;
+          }
+
+          const openingCandidatesFeasible = openingCandidatesAll.filter(
+            (o) => offerMgrPts(o) >= minManagerScore,
+          );
+          const openingCandidates = openingCandidatesFeasible.length
+            ? openingCandidatesFeasible
+            : openingCandidatesAll;
+
+          if (
+            offerCandPts(scripted) < r.candidateBatna &&
+            (offerMgrPts(scripted) >= minManagerScore ||
+              !openingCandidatesFeasible.length)
+          ) {
+            return scripted;
+          }
+
+          openingCandidates.sort((a, b) => {
+            const da = offerDistance(a, scripted, r);
+            const db = offerDistance(b, scripted, r);
+            if (da !== db) return da - db;
+            return offerMgrPts(b) - offerMgrPts(a);
+          });
+          return openingCandidates[0];
+        }
+
+        // Respond to candidate's counter with realism-first priorities:
+        // move toward the candidate while maximizing manager value above BATNA.
+        const target = lastCandidate || scripted;
+        feasible.sort((a, b) => {
+          const da = offerDistance(a, target, r);
+          const db = offerDistance(b, target, r);
+          if (da !== db) return da - db;
+          const mgrDelta = offerMgrPts(b) - offerMgrPts(a);
+          if (mgrDelta !== 0) return mgrDelta;
+          const jointB = offerCandPts(b) + offerMgrPts(b);
+          const jointA = offerCandPts(a) + offerMgrPts(a);
+          if (jointB !== jointA) return jointB - jointA;
+          return offerCandPts(b) - offerCandPts(a);
+        });
+
+        const top = feasible[0];
+        if (!top) return scripted;
+
+        // Soft movement: avoid exact repeats when a near alternative exists.
+        const sameAsPrev = sameOffer(top, prevManager);
+        if (sameAsPrev && feasible.length > 1) {
+          const nearThreshold = r.termType === "numeric" ? 1.2 : 1;
+          const alt = feasible.find(
+            (o) =>
+              !sameOffer(o, prevManager) &&
+              offerDistance(o, top, r) <= nearThreshold,
+          );
+          if (alt) return alt;
+        }
+
+        return top;
+      }
+
+      function mangoMakesOffer() {
+        const r = R();
+        const prevManager = lastOfferBy("manager");
+        const lastCandidate = lastOfferBy("candidate");
+        const offer = { ...chooseManagerOffer(r) };
+        offer.reason = explainKwameOffer(r, offer, prevManager, lastCandidate);
+        if (lastCandidate)
+          offer.coach = coachForCounter(r, lastCandidate, prevManager, offer);
+        STATE.offers.push(offer);
+        if (offer.wage !== undefined) {
+          STATE.pendingWage = offer.wage;
+          STATE.pendingHours = offer.hours;
+        } else {
+          STATE.pendingChoice = offer.choice;
+        }
+        STATE.turn = "candidate";
+        STATE.candidateCountering = false;
+        renderNegotiate();
+      }
+
+      function submitOffer() {
+        const r = R();
+        const offer =
+          r.termType === "numeric"
+            ? {
+                who: STATE.turn,
+                wage: STATE.pendingWage,
+                hours: STATE.pendingHours,
+              }
+            : { who: STATE.turn, choice: STATE.pendingChoice };
+        STATE.offers.push(offer);
+        if (STATE.turn === "manager") {
+          STATE.turn = "candidate";
+          STATE.candidateCountering = false;
+        } else {
+          STATE.negotiRound++;
+          STATE.candidateCountering = false;
+          if (STATE.negotiRound > MAX_EXCHANGES) {
+            managerWalkAwayNow();
+            return;
+          }
+          STATE.turn = "manager";
+        }
+        renderNegotiate();
+      }
+
+      function startCounter() {
+        if (STATE.negotiRound >= MAX_EXCHANGES) {
+          walkAwayNow();
+          return;
+        }
+        const last = [...STATE.offers]
+          .reverse()
+          .find((o) => o.who === "manager");
+        if (last) {
+          if (last.wage !== undefined) {
+            STATE.pendingWage = last.wage;
+            STATE.pendingHours = last.hours;
+          } else STATE.pendingChoice = last.choice;
+        }
+        STATE.candidateCountering = true;
+        renderNegotiate();
+      }
+
+      // A walk-away ends only the current round; both sides take their BATNA.
+      function endRoundNoDeal(by) {
+        STATE.walkAwayBy = by;
+        STATE.deal = null;
+        STATE.dealAccepted = false;
+        showReveal();
+      }
+
+      function walkAwayNow() {
+        endRoundNoDeal("candidate");
+      }
+
+      function managerWalkAwayNow() {
+        endRoundNoDeal("manager");
+      }
+
+      function acceptDeal() {
+        const lastManager = [...STATE.offers]
+          .reverse()
+          .find((o) => o.who === "manager");
+        if (!lastManager || offerMgrPts(lastManager) < R().managerBatna) {
+          managerWalkAwayNow();
+          return;
+        }
+        STATE.deal = lastManager;
+        STATE.dealAccepted = true;
+        showReveal();
+      }
+
+      function noDeal() {
+        managerWalkAwayNow();
+      }
+
+      function calcRoundRobustness(roundDef, dealCPts, dealMPts, dealAccepted) {
+        const candCushion = Math.max(0, dealCPts - roundDef.candidateBatna);
+        const mgrCushion = Math.max(0, dealMPts - roundDef.managerBatna);
+        const solverCandCushion = Math.max(
+          0,
+          roundDef.solverCandPts - roundDef.candidateBatna,
+        );
+        const solverMgrCushion = Math.max(
+          0,
+          roundDef.solverMgrPts - roundDef.managerBatna,
+        );
+        const solverTotalCushion = solverCandCushion + solverMgrCushion;
+        const totalCushion = candCushion + mgrCushion;
+
+        const cushionScore =
+          solverTotalCushion > 0
+            ? Math.round((totalCushion / solverTotalCushion) * 100)
+            : dealAccepted
+              ? 100
+              : 0;
+        const balanceScore =
+          totalCushion > 0
+            ? Math.round(
+                (Math.min(candCushion, mgrCushion) / totalCushion) * 200,
+              )
+            : dealAccepted
+              ? 0
+              : 100;
+        const score = Math.max(
+          0,
+          Math.min(100, Math.round(cushionScore * 0.7 + balanceScore * 0.3)),
+        );
+        const label =
+          score >= 75
+            ? "High durability"
+            : score >= 50
+              ? "Moderate durability"
+              : "Fragile agreement";
+
+        return {
+          score,
+          label,
+          candCushion,
+          mgrCushion,
+        };
+      }
+
+      const SCORE_RANGE_CACHE = {};
+      function getScoreRange(roundDef) {
+        if (SCORE_RANGE_CACHE[roundDef.id])
+          return SCORE_RANGE_CACHE[roundDef.id];
+        let cMin = Infinity;
+        let cMax = -Infinity;
+        let mMin = Infinity;
+        let mMax = -Infinity;
+
+        if (roundDef.termType === "numeric") {
+          for (let w = 15; w <= 22; w += 0.5) {
+            for (let h = 10; h <= 30; h += 1) {
+              const c = numCandPts(+w.toFixed(1), h);
+              const m = numMgrPts(+w.toFixed(1), h);
+              cMin = Math.min(cMin, c);
+              cMax = Math.max(cMax, c);
+              mMin = Math.min(mMin, m);
+              mMax = Math.max(mMax, m);
+            }
+          }
+        } else {
+          roundDef.options.forEach((opt) => {
+            cMin = Math.min(cMin, opt.cPts);
+            cMax = Math.max(cMax, opt.cPts);
+            mMin = Math.min(mMin, opt.mPts);
+            mMax = Math.max(mMax, opt.mPts);
+          });
+        }
+
+        const range = { cMin, cMax, mMin, mMax };
+        SCORE_RANGE_CACHE[roundDef.id] = range;
+        return range;
+      }
+
+      function normalizePts(roundDef, pts, party) {
+        const rg = getScoreRange(roundDef);
+        const min = party === "candidate" ? rg.cMin : rg.mMin;
+        const max = party === "candidate" ? rg.cMax : rg.mMax;
+        if (max === min) return 100;
+        return Math.max(
+          0,
+          Math.min(100, Math.round(((pts - min) / (max - min)) * 100)),
+        );
+      }
+
+      //
+      // REVEAL
+      //
+      function showReveal() {
+        const r = R();
+        showScreen("reveal");
+
+        let dealCPts, dealMPts, actualLabel;
+        if (STATE.dealAccepted && STATE.deal) {
+          dealCPts = offerCandPts(STATE.deal);
+          dealMPts = offerMgrPts(STATE.deal);
+          actualLabel = offerLabel(STATE.deal);
+        } else {
+          dealCPts = r.candidateBatna;
+          dealMPts = r.managerBatna;
+          actualLabel = "No deal (BATNA fallback)";
+        }
+
+        STATE.scores[STATE.roundIndex] = {
+          cPts: dealCPts,
+          mPts: dealMPts,
+          dealLabel: actualLabel,
+        };
+
+        const jointActual = dealCPts + dealMPts;
+        const jointSolver = r.solverCandPts + r.solverMgrPts;
+        const gap = jointSolver - jointActual;
+        const batnaJoint = r.candidateBatna + r.managerBatna;
+        const roundRobustness = calcRoundRobustness(
+          r,
+          dealCPts,
+          dealMPts,
+          STATE.dealAccepted,
+        );
+        const robustnessScore = roundRobustness.score;
+        const robustnessLabel = roundRobustness.label;
+        const candCushion = roundRobustness.candCushion;
+        const mgrCushion = roundRobustness.mgrCushion;
+        const belowC = dealCPts < r.candidateBatna;
+        const belowM = dealMPts < r.managerBatna;
+
+        let reflection;
+        if (!STATE.dealAccepted) {
+          const lastK = lastOfferBy("manager");
+          const lastKPts = lastK ? offerCandPts(lastK) : null;
+          if (STATE.walkAwayBy === "manager") {
+            reflection =
+              "The exchanges ran out and Kwame walked away. Both of you take your BATNA for this round. Next time, make a counter that beats his fallback earlier instead of spending every exchange on tiny moves.";
+          } else if (lastKPts !== null && lastKPts >= r.candidateBatna) {
+            reflection = `You walked away from an offer worth ${lastKPts} pts, which beat your BATNA of ${r.candidateBatna}. Walking away only makes sense when the offer is below your BATNA. You could have accepted it or countered.`;
+          } else {
+            reflection = `You walked away from an offer worth ${lastKPts} pts, below your BATNA of ${r.candidateBatna}. That is a sound call, but a counter might have found a deal that beat your BATNA.`;
+          }
+        } else if (belowC) {
+          reflection = `${STATE.nameCandidate} accepted below their BATNA. They would have been better off walking away. What made them say yes?`;
+        } else if (gap > 40) {
+          reflection = `You protected your BATNA, but left <strong>${gap} total points</strong> on the table. What trade could have helped both sides agree on a stronger deal?`;
+        } else {
+          reflection =
+            "You beat your BATNA and got close to Solver. What extra information might have helped you close the final gap?";
+        }
+
+        const mangoReaction = !STATE.dealAccepted
+          ? { face: "😼", text: "Bold. Wrong or right, but bold." }
+          : belowC
+            ? { face: "🙀", text: "I would have walked. Just saying." }
+            : gap <= 0
+              ? { face: "😸", text: "Okay, I'm impressed. Don't let it go to your head." }
+              : r.id === "break-policy" && STATE.deal.choice !== "twomeal"
+                ? { face: "😾", text: "That meal break was free. FREE." }
+                : gap > 40
+                  ? { face: "😿", text: "You left a lot of points on the table. Look for the trade next time." }
+                  : { face: "😺", text: "Not bad. You beat your BATNA and nearly matched Solver." };
+
+        const isLast = STATE.roundIndex >= ROUNDS.length - 1;
+        const nextBtn = isLast
+          ? `<button class="btn btn-primary btn-full" onclick="showResults()">See Final Score -></button>`
+          : `<button class="btn btn-primary btn-full" onclick="nextRound()">Next Round -></button>`;
+        const managerBatnaReveal = !STATE.dealAccepted
+          ? `<div class="card mb-16 manager-batna-reveal">
+                <div class="card-label">Manager BATNA Revealed (No Deal)</div>
+                <p class="p-muted mb-8">${r.managerBatnaDesc}</p>
+                <div class="mono-sm">Kwame fallback value: <span class="text-orange">${r.managerBatna} pts</span></div>
+              </div>`
+          : "";
+        const robustnessBlock = STATE.dealAccepted
+          ? `<div class="eff-card">
+              <div class="eff-label text-orange">Agreement Robustness Score</div>
+              <div class="big-num text-orange big-num-2">${robustnessScore}</div>
+              <div class="eff-pct">${robustnessLabel} · protects both BATNAs and reduces resentment risk</div>
+              <div class="eff-pct mt-8">Candidate cushion: ${candCushion} · Manager cushion: ${mgrCushion} · Joint above BATNA: ${jointActual - batnaJoint}</div>
+            </div>`
+          : "";
+
+        document.getElementById("reveal-content").innerHTML = `
+          <h2 class="display mb-16 reveal-title">${r.header}</h2>
+
+          <div class="card mb-16">
+            <div class="reveal-grid">
+              <div class="score-box score-box-actual">
+                <div class="mono-kicker kicker-actual">ACTUAL</div>
+                <div class="score-label-md">${actualLabel}</div>
+                <div class="two-col-8">
+                  <div>
+                    <div class="mono-name">Kwame</div>
+                    <div class="big-num big-num-sm text-orange">${dealMPts}</div>
+                    ${belowM ? '<div class="below-batna">! Below BATNA</div>' : ""}
+                  </div>
+                  <div>
+                    <div class="mono-name">${STATE.nameCandidate}</div>
+                    <div class="big-num big-num-sm text-orange">${dealCPts}</div>
+                    ${belowC ? '<div class="below-batna">! Below BATNA</div>' : ""}
+                  </div>
+                </div>
+                <div class="joint-row">Joint: ${jointActual}</div>
+              </div>
+              <div class="score-box score-box-solver">
+                <div class="mono-kicker kicker-solver">🧠SOLVER (Rational Optimum)</div>
+                <div class="score-label-md">${r.solverLabel}</div>
+                <div class="two-col-8">
+                  <div>
+                    <div class="mono-name">Kwame</div>
+                    <div class="big-num big-num-sm text-green">${r.solverMgrPts}</div>
+                  </div>
+                  <div>
+                    <div class="mono-name">${STATE.nameCandidate}</div>
+                    <div class="big-num big-num-sm text-green">${r.solverCandPts}</div>
+                  </div>
+                </div>
+                <div class="joint-row">Joint: ${jointSolver}</div>
+              </div>
+            </div>
+          </div>
+
+          <details class="solver-details">
+            <summary class="solver-summary">How did 🧠Solver find this? ▾</summary>
+            <div class="solver-copy">
+              ${robustnessBlock}
+              ${STATE.roundIndex === 0 ? "<p><strong>Decision variables:</strong> wage (w), hours (h)</p><p><strong>Objective:</strong> maximize combined points (Candidate + Manager)</p><p><strong>Hard constraints:</strong> slider minimum and maximum ($15-$22/hr, 10-30 hrs/week), slider step sizes (0.5 wage, 1 hour), and both BATNA floors.</p><p><strong>Method:</strong> Solver evaluated every grid point allowed by those constraints, then selected the highest-scoring feasible deal.</p><p>You negotiated locally from anchors; Solver searched the full constrained space.</p>" : "<p><strong>Decision variable:</strong> which option to select</p><p><strong>Objective:</strong> maximize combined points (Candidate + Manager)</p><p><strong>Hard constraints:</strong> only listed options are feasible, and both BATNA floors must be met.</p><p><strong>Method:</strong> Solver scored every feasible option and picked the best one under those constraints.</p><p>You sampled a subset; Solver exhaustively checked the full feasible set.</p>"}
+            </div>
+          </details>
+
+          <div class="mango-react">
+            <span class="mango-react-face">${mangoReaction.face}</span>
+            <span><strong>Mango:</strong> "${mangoReaction.text}"</span>
+          </div>
+
+          <div class="tradeoff-card">
+            <div class="card-label">Trade-off Example</div>
+            <p>${r.tradeoff}</p>
+            <p class="mt-8"><strong>Coach tip:</strong> ${r.nextTime}</p>
+          </div>
+
+          <div class="reflection-block mb-16">
+            <div class="card-label">Take a Moment</div>
+            <p class="p-body">${reflection}</p>
+            ${STATE.roundIndex === 2 ? '<div class="prospect-note">Same gap, different frame: losing something feels worse than not getting it in the first place. That\'s prospect theory.</div>' : ""}
+            ${mangoHTML(r.tips.reveal)}
+          </div>
+
+          ${managerBatnaReveal}
+
+          ${nextBtn}`;
+      }
+
+      function nextRound() {
+        STATE.roundIndex++;
+        showCandidateBrief();
+      }
+
+      //
+      // RESULTS
+      //
+      function showResults() {
+        showScreen("results");
+
+        const totalCandidate = STATE.scores.reduce((s, r) => s + r.cPts, 0);
+        const totalManager = STATE.scores.reduce((s, r) => s + r.mPts, 0);
+        const solverCandidate = ROUNDS.reduce((s, r) => s + r.solverCandPts, 0);
+        const solverManager = ROUNDS.reduce((s, r) => s + r.solverMgrPts, 0);
+        const solverJoint = solverCandidate + solverManager;
+        const batnaTotal = ROUNDS.reduce((s, r) => s + r.candidateBatna, 0);
+        const dealScores = STATE.scores
+          .map((s, i) => ({ s, i }))
+          .filter(({ s }) => s.dealLabel !== "No deal (BATNA fallback)");
+        const noDealRounds = STATE.scores.length - dealScores.length;
+        const showRobustness = dealScores.length > 0;
+        const avgRobustness = showRobustness
+          ? Math.round(
+              dealScores.reduce(
+                (sum, { s, i }) =>
+                  sum + calcRoundRobustness(ROUNDS[i], s.cPts, s.mPts, true).score,
+                0,
+              ) / dealScores.length,
+            )
+          : null;
+        const robustnessLabel =
+          avgRobustness >= 75
+            ? "High durability"
+            : avgRobustness >= 50
+              ? "Moderate durability"
+              : "Fragile agreement";
+        const cat =
+          totalCandidate >= solverCandidate
+            ? "&#x1F638;"
+            : totalCandidate >= batnaTotal
+              ? "&#x1F63C;"
+              : "&#x1F640;";
+        const packageRows = ROUNDS.map((roundDef, i) => {
+          const score = STATE.scores[i] || {
+            cPts: roundDef.candidateBatna,
+            mPts: roundDef.managerBatna,
+            dealLabel: "No deal (BATNA fallback)",
+          };
+          return `<div class="package-item">
+              <div class="package-title">${roundDef.header}</div>
+              <div class="package-term"><strong>Term:</strong> ${score.dealLabel}</div>
+              <div class="package-points">
+                <div class="score-box">
+                  <div class="score-label">${STATE.nameCandidate}</div>
+                  <div class="score-num">${score.cPts}</div>
+                </div>
+                <div class="score-box">
+                  <div class="score-label">Kwame</div>
+                  <div class="score-num">${score.mPts}</div>
+                </div>
+              </div>
+            </div>`;
+        }).join("");
+        const walkAwayNote = noDealRounds
+          ? `<p class="p-note mt-8">${noDealRounds} round${noDealRounds > 1 ? "s ended" : " ended"} with no deal, so ${noDealRounds > 1 ? "those rounds use" : "that round uses"} BATNA fallback values.</p>`
+          : "";
+        const heroBenchmarkNote = `Best joint value via Solver: ${solverJoint} pts · Split: ${STATE.nameCandidate} ${solverCandidate} | Kwame ${solverManager}`;
+        const heroRobustnessNote = showRobustness
+          ? `<div class="result-solver-note">Overall robustness: <span class="text-orange">${avgRobustness}</span> (${robustnessLabel})</div>`
+          : "";
+
+        document.getElementById("result-hero-content").innerHTML = `
+          <div class="result-hero">
+            <div class="result-kicker">FINAL SCORE - 4 ROUNDS</div>
+            <div class="text-center">
+              <div class="cat-emoji">${cat}</div>
+              <div class="final-score-big">${totalCandidate}</div>
+              <div class="final-pct">${STATE.nameCandidate} Total Points</div>
+              <div class="result-solver-note">${heroBenchmarkNote}</div>
+              <div class="result-solver-note">Out of ${solverCandidate} possible. Walking away every round = ${batnaTotal}.</div>
+            </div>
+          </div>`;
+
+        document.getElementById("results-content").innerHTML = `
+          <div class="card mb-16">
+            <div class="card-label">Package Summary</div>
+            <div class="package-summary-grid">${packageRows}</div>
+            ${walkAwayNote}
+          </div>
+
+          <div class="card mb-16">
+            <div class="card-label">Final Totals</div>
+            <div class="package-item">
+              <div class="package-term"><strong>Term:</strong> Combined results across all 4 rounds</div>
+              <div class="totals-grid">
+                <div class="score-box">
+                  <div class="score-label">${STATE.nameCandidate}</div>
+                  <div class="score-num">${totalCandidate}</div>
+                </div>
+                <div class="score-box">
+                  <div class="score-label">Kwame</div>
+                  <div class="score-num">${totalManager}</div>
+                </div>
+                <div class="score-box">
+                  <div class="score-label">Joint Value</div>
+                  <div class="score-num">${totalCandidate + totalManager}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card mb-16">
+            <div class="card-label">Quick Takeaways</div>
+            <p class="p-note mb-8">BATNA sets your floor. Integrative trades improve joint value. Anchoring can hide better options.</p>
+            <p class="p-note">Trades that worked in this game: extra hours for a higher wage, a balanced shift mix, 1 week of notice, and the meal break. Each cost Kwame little and was worth a lot to you.</p>
+          </div>
+
+          <button class="btn btn-secondary btn-full" onclick="location.reload()">Play Again</button>
+          <p class="text-sm text-center mt-16">Created by Brett Whysel with Copilot.</p>
+        `;
+      }
+    </script>
+  </body>
+</html>

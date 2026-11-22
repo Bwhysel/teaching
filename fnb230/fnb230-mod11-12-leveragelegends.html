@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Leverage Legends</title>
+<style>
+:root{--bg:#0E1630;--panel:#18233F;--panel2:#22305A;--ink:#FFF6E0;--dim:#B9C2DC;--orange:#FF8A1F;--green:#3DDC84;--red:#FF7B7B;--yellow:#FFD23F;--blue:#6BB6FF;--awn:#E63946;--ac:#4DA3FF}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:17px;line-height:1.4;-webkit-text-size-adjust:100%}
+body{min-height:100vh}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;border:0;border-radius:12px;min-height:48px;padding:10px 14px;background:var(--panel2);color:var(--ink);font-weight:700;touch-action:manipulation;min-width:0}
+button:disabled{opacity:.45;cursor:default}
+button:focus-visible,input:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+.btn-go{background:var(--green);color:#06210F}
+.btn-ghost{background:transparent;border:2px solid var(--panel2)}
+.num{font-variant-numeric:tabular-nums}
+#app{max-width:560px;margin:0 auto;padding:0 14px 40px}
+.awning{height:22px;background:repeating-linear-gradient(90deg,var(--yellow) 0 28px,var(--awn) 28px 56px);border-radius:0 0 10px 10px;margin:0 -14px 12px}
+.top{position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 0;margin-bottom:10px;display:flex;align-items:center;gap:8px;border-bottom:2px solid var(--panel2)}
+.chip{display:flex;align-items:center;gap:6px;background:var(--panel);border-radius:999px;padding:6px 12px;font-weight:700;min-width:0}
+.chip .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:110px}
+.prog{font-size:.85rem;color:var(--dim);white-space:nowrap}
+.cash{margin-left:auto;font-weight:800;font-size:1.15rem;color:var(--green)}
+.iconbtn{min-width:48px;padding:6px;background:var(--panel)}
+.card{background:var(--panel);border-radius:16px;padding:14px;margin:0 0 12px;border-left:6px solid var(--ac)}
+.card.plain{border-left:0}
+.pill{display:inline-block;background:var(--ac);color:#06122B;font-weight:800;border-radius:999px;padding:3px 12px;font-size:.85rem;margin-bottom:8px}
+h1{font-size:2rem;line-height:1.1;margin:.2em 0}
+h2{font-size:1.25rem;margin:.1em 0 .3em;line-height:1.2}
+h3{font-size:1.02rem;margin:.1em 0 .5em}
+p{margin:.35em 0}
+h1,h2,h3,p,td,th,.bubble,button{overflow-wrap:break-word}
+.dim{color:var(--dim)}
+.big{font-size:2rem;font-weight:900;line-height:1.15}
+.forecast{background:#0B1228;border-radius:12px;padding:10px 12px;margin-top:8px}
+.forecast b{display:block;font-size:1.6rem}
+.mets{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.met{background:#0B1228;border-radius:10px;padding:8px 10px;min-width:0}
+.met span{display:block;font-size:.8rem;color:var(--dim)}
+.met b{font-size:1.15rem}
+.mix{display:flex;align-items:center;gap:14px}
+.mix svg{width:104px;height:104px;flex:0 0 104px}
+.legend{font-size:.88rem;line-height:1.75;margin:6px 0 0}
+.sw{display:inline-block;width:22px;height:4px;border-radius:2px;vertical-align:middle;margin-right:6px}
+.dot{display:inline-block;width:11px;height:11px;border-radius:3px;vertical-align:middle;margin-right:6px}
+.chart svg{width:100%;height:auto;display:block}
+.gauge{background:#0B1228;border-left:4px solid var(--yellow);border-radius:8px;padding:8px 10px;margin-top:8px;font-size:.95rem}
+.moves{display:grid;gap:8px}
+.mv{text-align:left;font-weight:600;border:2px solid transparent;padding:10px 12px}
+.mv b{display:block}
+.mv small{display:block;font-weight:500;margin-top:2px}
+.mv.on{background:var(--orange);color:#231000}
+.mango{display:flex;gap:10px;align-items:flex-start;margin:0 0 12px}
+.mface{flex:0 0 52px;height:52px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;font-size:1.8rem;position:relative}
+.mface:before,.mface:after{content:"";position:absolute;top:-6px;border:9px solid transparent;border-bottom:13px solid var(--orange)}
+.mface:before{left:2px;transform:rotate(-25deg)}.mface:after{right:2px;transform:rotate(25deg)}
+.bubble{background:var(--ink);color:#1B1B2A;border-radius:14px;padding:10px 12px;flex:1;font-weight:600;min-width:0}
+.ticker{font-size:3rem;font-weight:900;text-align:center;margin:4px 0}
+.up{color:var(--green)}.down{color:var(--red)}
+.bars{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+.bar{background:#0B1228;border-radius:12px;padding:10px;text-align:center;min-width:0}
+.bar .col{height:80px;display:flex;align-items:flex-end;justify-content:center;margin:6px 0}
+.bar .fill{width:56px;border-radius:8px 8px 0 0;background:var(--green);min-height:4px;transition:height .8s}
+.bar .fill.neg{background:var(--red)}
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+th,td{padding:6px 4px;text-align:left;border-bottom:1px solid var(--panel2)}
+td.r,th.r{text-align:right}
+.overlay{position:fixed;inset:0;z-index:20;background:rgba(6,10,24,.97);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
+.hold{width:220px;height:8px;background:var(--panel2);border-radius:4px;overflow:hidden;margin-top:22px}
+.hold i{display:block;height:100%;background:var(--ink);width:0}
+.receipt{background:var(--ink);color:#1B1B2A;border-radius:6px;padding:18px 16px;margin-bottom:12px}
+.receipt h2{text-align:center;letter-spacing:2px}
+.receipt .line{display:flex;justify-content:space-between;gap:10px;border-bottom:1px dashed #9A957F;padding:5px 0}
+.receipt .line b{text-align:right}
+.receipt .total{font-size:2.2rem;font-weight:900;text-align:center;margin:10px 0 2px}
+.receipt th,.receipt td{border-bottom:1px dashed #9A957F}
+.receipt .copy{background:#1B1B2A;color:var(--ink);border-radius:8px;padding:10px;text-align:center;font-weight:800;margin-top:12px}
+.field{display:block;margin:10px 0}
+.field span{display:block;font-weight:700;margin-bottom:4px}
+.field input{width:100%;min-height:50px;border-radius:12px;border:2px solid var(--panel2);background:#0B1228;padding:8px 12px;font-size:1.15rem}
+.hgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.hgrid button{display:flex;flex-direction:column;align-items:center;font-size:.85rem;padding:8px 2px}
+.hgrid button i{font-style:normal;font-size:1.8rem}
+.hgrid button.on{background:var(--orange);color:#231000}
+.err{color:var(--yellow);font-weight:700;min-height:1.4em}
+.confetti{position:fixed;top:-20px;width:10px;height:16px;z-index:30;pointer-events:none;animation:fall 2s linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
+.pop{animation:pop .35s ease-out}
+@keyframes pop{0%{transform:scale(.7)}70%{transform:scale(1.12)}100%{transform:scale(1)}}
+.amt{background:#0B1228;border-radius:12px;padding:10px 12px;margin-top:10px}
+.amt input[type=range]{width:100%;height:44px;accent-color:var(--orange)}
+.amtrow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.amtrow button{padding:8px 2px;font-size:.85rem;white-space:nowrap}
+.mixbar{display:flex;height:40px;border-radius:10px;overflow:hidden;margin:10px 0 6px;border:2px solid #0B1228}
+.mixbar div{display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.8rem;color:#0B1228;white-space:nowrap;overflow:hidden}
+.mixleg{display:flex;justify-content:space-between;gap:6px;font-size:.8rem;flex-wrap:wrap}
+.ends{display:flex;justify-content:space-between;font-size:.8rem;color:var(--dim);margin:-6px 0 8px}
+#mix{width:100%;height:44px;accent-color:#B9C2DC;margin-top:6px}
+.mixbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.mixbtns button{min-height:44px;padding:6px 4px;font-size:.9rem}
+.tipbtn{min-height:44px;min-width:44px;padding:0;background:transparent;color:var(--blue);font-size:1.15rem;vertical-align:middle;margin:-10px 0 -10px 2px}
+.tip{background:#0B1228;border-left:4px solid var(--blue);border-radius:8px;padding:8px 10px;margin:4px 0 8px;font-size:.92rem;font-weight:500}
+.new{display:inline-block;background:var(--yellow);color:#231000;border-radius:6px;padding:0 6px;font-size:.75rem;font-weight:800;margin-left:6px}
+@media(max-width:380px){html,body{font-size:16px}#app{padding:0 10px 32px}.awning{margin:0 -10px 10px}.card{padding:12px}.ticker{font-size:2.5rem}.big{font-size:1.6rem}.receipt{padding:14px 10px}table{font-size:.8rem}.chip .nm{max-width:70px}.mix svg{width:88px;height:88px;flex-basis:88px}}
+@media(min-width:900px){html,body{font-size:19px}#app{max-width:720px}.awning{margin:0 0 12px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="ov"></div>
+
+<script id="core">
+/* ======================= CONSTANTS: tune here ======================= */
+var CONFIG = {
+  REFLECT_SECONDS: 6,          // held screen after the big loss
+  S1: {
+    START: 500,                // what the business is worth at the start
+    RATES: [0.06, 0.075, 0.09], // card rate per season (24%, 30%, 36% a year) on each slice of debt, one slice = 1x your stake; borrowing more costs more
+    MIN_MOVE: 50,              // the sliders move in steps of this much
+    SIZE: 4,                   // each season the business invests this many times your stake; you fund the rest with card debt or a partner's money
+    CHART_FROM: 0,             // the stake chart (EBIT-EPS style), shown from this season
+    TIP_COST: 30,              // Mango's tip: a narrower, true forecast range, paid from your stake
+    SEASONS: [                 // forecast range, result, and Mango's tip (never makes a result certain when the forecast does not)
+      { lo: 0.10, hi: 0.30, ret: 0.18, tip: [0.15, 0.25] },
+      { lo: 0.00, hi: 0.12, ret: 0.03, tip: [0.00, 0.08] },
+      { lo: 0.15, hi: 0.40, ret: 0.30, tip: [0.25, 0.35] },
+      { lo: -0.40, hi: 0.20, ret: -0.35, tip: [-0.40, 0.08] },
+      { lo: -0.25, hi: 0.25, ret: 0.07, tip: [-0.05, 0.20] },
+      { lo: 0.10, hi: 0.40, ret: 0.26, tip: [0.20, 0.32] }
+    ]
+  },
+  S2: {
+    START: 500,                // cash for anyone with no Stage 1 result on this device, and the floor for those who have one
+    PRICE: 800, COST: 560, APP_FEE: 120,  // all Stage 2 dollar amounts are 4 times the original 200/140/30/300/270, so Stage 2 swings outweigh the Stage 1 head start
+    RENT: 1200,                // stall rent, one month at a time
+    LEASE_RENT: 1080,          // rent per month if you sign a lease
+    LEASE_MONTHS: 3,
+    LEASE_FROM: 1,             // the lease option opens in this month (0 = first month)
+    STOCK: 20, CARD_STOCK: 40, CARD_APR: 0.24,
+    CARD_FROM: 4,              // the credit card option opens in this month (0 = first month)
+    TIP_COST: 120,             // Mango's tip, paid from cash
+    MONTHS: [
+      { lo: 8, hi: 18, buyers: 12, tip: [9, 15] },
+      { lo: 4, hi: 12, buyers: 6, tip: [4, 11] },
+      { lo: 0, hi: 16, buyers: 1, tip: [0, 11] },
+      { lo: 12, hi: 24, buyers: 20, tip: [17, 22] },
+      { lo: 6, hi: 16, buyers: 8, tip: [7, 11] },
+      { lo: 5, hi: 40, buyers: 12, tip: [9, 18] }
+    ]
+  }
+};
+/* ======================= PURE GAME LOGIC ======================= */
+function cents(x){ return Math.round(x * 100 + (x < 0 ? -1e-6 : 1e-6)) / 100; }
+function roundCount(stage){ return stage === 2 ? CONFIG.S2.MONTHS.length : CONFIG.S1.SEASONS.length; }
+
+/* ---- Stage 1: one business, six seasons. st = { E: business value, s: your share (0-1), D: debt, failed: 1 once broke, broke: season it happened, owed: what is still owed to the card } ---- */
+function s1Rate(){ return CONFIG.S1.RATES[0]; }
+/* Interest on debt D for an owner with stake own: each slice of debt (1x own) costs the next rate. */
+function s1Interest(D, own){ var R = CONFIG.S1.RATES, t = 0, left = D, k; for (k = 0; k < R.length && left > 0; k++){ var sl = k === R.length - 1 ? left : Math.min(left, own); t += sl * R[k]; left -= sl; } return t; }
+function s1Own(st){ return st.E * st.s; }
+function s1NextRate(D, own){ var R = CONFIG.S1.RATES; return R[Math.min(R.length - 1, own > 0 ? Math.floor(D / own + 1e-9) : 0)]; }
+function s1New(){ return { E: CONFIG.S1.START, s: 1, D: 0, failed: 0 }; }
+function s1Stake(st){ return cents(st.E * st.s); }
+function s1Partner(st){ return cents(st.E * (1 - st.s)); }
+/* Each season the business invests SIZE x your stake. Your money goes in first; debt D pays for part of
+   the rest and a partner's money pays for whatever is left. pre = { E: all owners' money, s: your share, D }.
+   After the season the partner is paid out at value, so you start the next season owning 100%. */
+function s1DebtMax(st){ return cents((CONFIG.S1.SIZE - 1) * s1Stake(st)); }
+function s1Mix(st, D){
+  var own = s1Stake(st), K = CONFIG.S1.SIZE * own, d = Math.max(0, Math.min(s1DebtMax(st), D || 0)), E = cents(K - d);
+  return { E: E, s: E > 0 ? own / E : 1, D: cents(d), failed: st.failed };
+}
+function s1Run(st, i){
+  var r = CONFIG.S1.SEASONS[i].ret, K = st.E + st.D, ebit = cents(K * r), interest = cents(s1Interest(st.D, s1Own(st))), net = cents(ebit - interest), E2 = cents(st.E + net), failed = E2 <= 0;
+  return { ret: r, capital: cents(K), ebit: ebit, interest: interest, net: net, failed: failed, mine: cents(failed ? -st.E * st.s : net * st.s), unlev: cents(st.E * st.s * r),
+    st: failed ? { E: 0, s: st.s, D: 0, failed: 1, broke: i + 1, owed: cents(-E2) } : { E: cents(E2 * st.s), s: 1, D: 0, failed: st.failed || 0 } };
+}
+/* path: list of debt amounts, one per season */
+function s1Play(path){ var st = s1New(), i; for (i = 0; i < path.length; i++){ st = s1Run(s1Mix(st, path[i]), i).st; if (st.failed) return st; } return st; }
+/* Best possible follows the rule: keep borrowing while your stake's return beats the rate on the next slice of debt. */
+function s1Best(){
+  var n = CONFIG.S1.SEASONS.length, st = s1New(), path = [], i, k;
+  for (i = 0; i < n; i++){
+    var own = s1Stake(st), mx = s1DebtMax(st), best = 0, bv = -1e9;
+    for (k = 0; k <= CONFIG.S1.SIZE - 1; k++){ var d = Math.min(mx, k * own), v = s1StakeReturn(s1Mix(st, d), CONFIG.S1.SEASONS[i].ret); if (v > bv + 1e-9){ bv = v; best = d; } }
+    path.push(best); st = s1Run(s1Mix(st, best), i).st;
+  }
+  return { v: s1Stake(st), path: path };
+}
+/* Return on your stake for a season return r, with and without the debt. The two lines cross where r equals the card's rate. */
+function s1StakeReturn(st, r){ return ((st.E + st.D) * r - s1Interest(st.D, s1Own(st))) / st.E; }
+function s1DFL(st, r){ var ebit = (st.E + st.D) * r, int = s1Interest(st.D, s1Own(st)); return ebit > int ? ebit / (ebit - int) : null; }
+
+/* ---- Stage 2: one shop, six months. st = { cash, lease: months left on a lease } ---- */
+function s2CardCost(){ var c = CONFIG.S2; return cents(c.CARD_APR / 12 * (c.CARD_STOCK - c.STOCK) * c.COST); }
+function s2Margins(){ var c = CONFIG.S2; return { app: c.PRICE - c.COST - c.APP_FEE, stall: c.PRICE - c.COST }; }
+function s2New(base){ return { cash: base == null ? CONFIG.S2.START : base, lease: 0 }; }
+function s2Options(st, i){ if (st.lease > 0) return ['leased']; var o = ['app', 'stall']; if (i >= CONFIG.S2.LEASE_FROM && i + CONFIG.S2.LEASE_MONTHS <= CONFIG.S2.MONTHS.length) o.push('lease'); return o; }
+function s2Rent(st, way){ return st.lease > 0 || way === 'lease' ? CONFIG.S2.LEASE_RENT : CONFIG.S2.RENT; }
+function s2ProfitAt(buyers, sell, rent, card){
+  var c = CONFIG.S2, m = s2Margins(), sales = Math.min(buyers, card ? c.CARD_STOCK : c.STOCK);
+  return (sell === 'app' ? m.app * sales : m.stall * sales - rent) - (card ? s2CardCost() : 0);
+}
+function s2Play(st, i, way, card){
+  var c = CONFIG.S2, M = c.MONTHS[i], sell = (way === 'app' && st.lease <= 0) ? 'app' : 'stall', rent = s2Rent(st, way), cd = i >= c.CARD_FROM && !!card;
+  var profit = s2ProfitAt(M.buyers, sell, rent, cd), alt = s2ProfitAt(M.buyers, sell === 'app' ? 'stall' : 'app', c.RENT, cd);
+  return { buyers: M.buyers, sell: sell, rent: sell === 'stall' ? rent : 0, card: cd, profit: profit, alt: alt, st: { cash: st.cash + profit, lease: way === 'lease' ? c.LEASE_MONTHS - 1 : Math.max(0, st.lease - 1) } };
+}
+function s2Range(){
+  var n = CONFIG.S2.MONTHS.length, lo = 1e9, hi = -1e9, bestPath = null;
+  (function go(st, i, path){
+    if (i === n){ if (st.cash < lo) lo = st.cash; if (st.cash > hi){ hi = st.cash; bestPath = path.slice(); } return; }
+    s2Options(st, i).forEach(function(w){ (i >= CONFIG.S2.CARD_FROM ? [false, true] : [false]).forEach(function(cd){ path.push(w + (cd ? '+card' : '')); go(s2Play(st, i, w, cd).st, i + 1, path); path.pop(); }); });
+  })(s2New(), 0, []);
+  return { lo: lo, hi: hi, path: bestPath };
+}
+function s2DOL(buyers, sell, rent, card){
+  var m = s2Margins(), c = CONFIG.S2, sales = Math.min(buyers, card ? c.CARD_STOCK : c.STOCK), cm = (sell === 'app' ? m.app : m.stall) * sales, ebit = cm - (sell === 'app' ? 0 : rent), ebt = ebit - (card ? s2CardCost() : 0);
+  return { dol: ebit > 0 ? cm / ebit : null, dtl: ebt > 0 ? cm / ebt : null };
+}
+if (typeof module !== 'undefined') module.exports = { CONFIG: CONFIG, cents: cents, s1Rate: s1Rate, s1New: s1New, s1DebtMax: s1DebtMax, s1Mix: s1Mix, s1Interest: s1Interest, s1NextRate: s1NextRate, s1Stake: s1Stake, s1Partner: s1Partner, s1Run: s1Run, s1Play: s1Play, s1Best: s1Best, s1StakeReturn: s1StakeReturn, s1DFL: s1DFL, s2CardCost: s2CardCost, s2Margins: s2Margins, s2New: s2New, s2Options: s2Options, s2Rent: s2Rent, s2ProfitAt: s2ProfitAt, s2Play: s2Play, s2Range: s2Range, s2DOL: s2DOL };
+</script>
+
+<script id="ui">
+(function(){
+'use strict';
+/* ======================= TEXT ======================= */
+var HUSTLES = {
+  sneakers: { icon: '👟', label: 'Sneakers', item: 'a pair of rare sneakers' },
+  thrift: { icon: '🧥', label: 'Thrifted clothes', item: 'a vintage leather jacket' },
+  bags: { icon: '👜', label: 'Designer bags', item: 'a designer bag' }
+};
+var S1T = [
+  { name: 'Steady Seller', ac: '#4DA3FF', story: 'A popular release. Everybody wants it.', items: { sneakers: "Cloud Runner 'Subway Tile'", thrift: '90s varsity jackets, no stains', bags: 'The Everyday Tote in Deli Green' } },
+  { name: 'The Re-release', ac: '#B9C2DC', story: 'A common re-release. Easy to sell, thin profit.', items: { sneakers: 'Plain White Lows (re-release number 9)', thrift: 'Gray hoodies, a bale of 12', bags: 'Canvas totes everybody already has' } },
+  { name: 'Hype Drop', ac: '#C77DFF', story: 'A limited release. The line goes around the block.', items: { sneakers: "Air Stoop 'Chopped Cheese', only 500 made", thrift: "Tour tees from a band's last show ever", bags: "The 'Bacon Egg and Chain' mini bag" } },
+  { name: 'Risky Collab', ac: '#FF8A1F', story: 'Two brands made one strange item. Nobody knows if people want it.', items: { sneakers: 'Pigeon x Parking Ticket collab', thrift: 'Designer x Laundromat capsule', bags: 'Luxury house x Dollar Slice clutch' } },
+  { name: 'Fakes Everywhere', ac: '#FF7B7B', story: 'The market is full of fakes. Buyers are nervous.', items: { sneakers: "'Real' Cloud Runners (the box says Clowd)", thrift: 'Vintage tees printed last Tuesday', bags: 'Bags with one extra letter in the logo' } },
+  { name: 'Holiday Rush', ac: '#3DDC84', story: 'Holiday season. People are buying gifts.', items: { sneakers: "Winter 'Hot Cocoa' high-tops", thrift: 'Puffer jackets, first cold week', bags: 'Gift-ready crossbody in holiday red' } }
+];
+var S2T = [
+  { name: 'Street Fair Month', ac: '#FFD23F', story: 'Sunny month. A street fair is two blocks away.' },
+  { name: 'Ordinary Month', ac: '#B9C2DC', story: 'Nothing special is going on.' },
+  { name: 'Rain Every Weekend', ac: '#4DA3FF', story: 'The forecast says rain. Every weekend.' },
+  { name: 'Back to School', ac: '#3DDC84', story: 'School starts. Everybody needs a new look.' },
+  { name: 'Block Party Month', ac: '#C77DFF', story: 'Two block parties near the market.' },
+  { name: 'The Big Maybe', ac: '#FF8A1F', story: 'A big month might be coming. Or it might not.' }
+];
+
+/* ======================= HELPERS ======================= */
+var $ = function(s, el){ return (el || document).querySelector(s); };
+var app = $('#app'), ov = $('#ov');
+var REDUCED = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function money(x){ var n = Math.abs(x), s = (Math.round(n * 100) % 100 === 0) ? n.toFixed(0) : n.toFixed(2); s = s.replace(/\B(?=(\d{3})+(?!\d))/g, ','); return (x < 0 ? '−$' : '$') + s; }
+function m0(x){ return (x < 0 ? '−$' : '$') + Math.round(Math.abs(x)).toLocaleString(); }
+function signed(x){ return (x > 0 ? '▲ +' : x < 0 ? '▼ ' : '') + money(x); }
+function pct(x){ var v = Math.round(x * 100); return (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v) + '%'; }
+function pr(x){ return (Math.round(Math.abs(x) * 1000) / 10) + '%'; }
+function p0(x){ return Math.round(Math.abs(x) * 100) + '%'; }
+function lsGet(k){ try { return JSON.parse(localStorage.getItem(k)); } catch (e){ return null; } }
+function lsSet(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch (e){} }
+function cleanName(s){ return String(s || '').replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, 20); }
+
+/* ======================= SOUND ======================= */
+var muted = !!lsGet('ll_mute'), actx = null;
+function tone(freq, t0, dur, type, vol){
+  if (muted) return;
+  try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); var o = actx.createOscillator(), g = actx.createGain(), t = actx.currentTime + t0; o.type = type || 'triangle'; o.frequency.setValueAtTime(freq, t); g.gain.setValueAtTime(vol || 0.15, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur); o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t + dur); } catch (e){}
+}
+var SFX = {
+  win: function(){ [523, 659, 784, 1047].forEach(function(f, i){ tone(f, i * 0.09, 0.22); }); },
+  loss: function(){ [392, 330, 262].forEach(function(f, i){ tone(f, i * 0.14, 0.3, 'sawtooth', 0.09); }); },
+  bust: function(){ tone(150, 0, 0.5, 'sawtooth', 0.14); tone(95, 0.3, 0.8, 'sawtooth', 0.14); },
+  tick: function(){ tone(880, 0, 0.03, 'square', 0.04); },
+  pick: function(){ tone(660, 0, 0.06); }
+};
+function buzz(p){ if (!muted && navigator.vibrate) try { navigator.vibrate(p); } catch (e){} }
+
+/* ======================= STATE ======================= */
+var S = lsGet('ll3'), ui = { hustle: 'sneakers', name: '', err: '', over: 0, tips: {} };
+if (S && S.v !== 3) S = null;
+function save(){ lsSet('ll3', S); }
+function H(){ return HUSTLES[S.hustle] || HUSTLES.sneakers; }
+function N(){ return roundCount(S.stage); }
+var bestCache = {};
+function best1(){ return bestCache.s1 || (bestCache.s1 = s1Best()); }
+function range2(){ return bestCache.s2 || (bestCache.s2 = s2Range()); }
+function headline(){ return S.stage === 1 ? s1Stake(S.st) : S.st.cash; }
+
+/* ======================= SHARED UI ======================= */
+var FACE = { smug: '😼', wow: '😸', meh: '😾', wince: '🙀', quiet: '🐱' };
+function mango(face, html){ return '<div class="mango"><div class="mface" aria-hidden="true">' + face + '</div><div class="bubble">' + html + '</div></div>'; }
+function confetti(){ if (REDUCED) return; var cols = ['#FF8A1F', '#3DDC84', '#FFD23F', '#FFF6E0', '#E63946', '#4DA3FF']; for (var i = 0; i < 44; i++){ (function(i){ var d = document.createElement('div'); d.className = 'confetti'; d.style.left = Math.random() * 100 + 'vw'; d.style.background = cols[i % cols.length]; d.style.animationDelay = Math.random() * 0.6 + 's'; document.body.appendChild(d); setTimeout(function(){ d.remove(); }, 2800); })(i); } }
+function header(){
+  var prog = S.phase === 'decide' || S.phase === 'reveal' ? (S.stage === 1 ? 'Season ' : 'Month ') + (S.i + 1) + ' of ' + N() : '';
+  return '<div class="top"><div class="chip"><span aria-hidden="true">' + H().icon + '</span><span class="nm">' + esc(S.name) + '</span></div><span class="prog">' + prog + '</span><div class="cash num" id="cash">' + money(headline()) + '</div><button class="iconbtn" data-act="mute" aria-label="' + (muted ? 'Turn sound on' : 'Turn sound off') + '">' + (muted ? '🔇' : '🔊') + '</button></div>';
+}
+function footer(){ return '<p style="text-align:center;margin-top:18px"><button class="btn-ghost" data-act="over" style="min-height:44px;font-size:.85rem;color:var(--dim)">' + (ui.over ? 'Press again to start over' : 'Start over') + '</button></p>'; }
+function tip(id, text){ var open = !!ui.tips[id]; return '<button class="tipbtn" data-act="tip" data-v="' + id + '" aria-expanded="' + open + '" aria-label="' + (open ? 'Hide tip' : 'What does this mean?') + '">ⓘ</button>' + (open ? '<span class="tip" style="display:block" role="note">' + text + '</span>' : ''); }
+function dshare(e){ var K = e.pre.E + e.pre.D; return K > 0 ? Math.round(e.pre.D / K * 100) + '%' : '0%'; }
+var TOYS = ['feather wand', 'laser pointer', 'catnip mouse', 'crinkle ball', 'fancy cardboard box', 'string on a stick'];
+function tipBox(i){
+  var one = S.stage === 1, c = one ? CONFIG.S1 : CONFIG.S2, R = one ? c.SEASONS[i].tip : c.MONTHS[i].tip, cost = c.TIP_COST;
+  if (S.tipped && S.tipped[i]) return '<div class="mango" style="margin:10px 0 0">' + '<div class="mface" aria-hidden="true">' + FACE.smug + '</div><div class="bubble">' + (one ? 'This one lands between <b>' + pct(R[0]) + ' and ' + pct(R[1]) + '</b>.' : '<b>' + R[0] + ' to ' + R[1] + '</b> buyers. Count on it.') + ' You did not hear it from me.</div></div>';
+  var can = headline() >= cost * 2;
+  return '<button data-act="mango" style="width:100%;margin-top:10px"' + (can ? '' : ' disabled') + '>😼 Ask Mango: ' + money(cost) + ' for a ' + TOYS[i % TOYS.length] + '<small style="display:block;font-weight:500">' + (can ? 'A narrower forecast.' : 'Not enough cash for a tip.') + '</small></button>';
+}
+/* Sliders move in MIN_MOVE steps from $0; the last stop is the exact maximum, so Max goes all the way right. */
+function sliderTop(mx){ return Math.max(1, Math.ceil(mx / CONFIG.S1.MIN_MOVE - 1e-9)); }
+function toStop(a, mx){ return a >= mx - 0.005 ? sliderTop(mx) : Math.round(a / CONFIG.S1.MIN_MOVE); }
+function fromStop(i, mx){ return i >= sliderTop(mx) ? mx : Math.min(mx, i * CONFIG.S1.MIN_MOVE); }
+function mixBar(pre){
+  var K = pre.E + pre.D, own = pre.E * pre.s, P = pre.E - own, seg = function(v, col, txt){ return v > 0 ? '<div style="width:' + (v / K * 100) + '%;background:' + col + '">' + (v / K >= 0.18 ? txt + ' ' + m0(v) : '') + '</div>' : ''; };
+  return '<div class="mixbar">' + seg(own, '#3DDC84', 'You') + seg(pre.D, '#FF8A1F', 'Debt') + seg(P, '#6BB6FF', 'Partner') + '</div>' +
+    '<div class="mixleg"><span><i class="dot" style="background:#3DDC84"></i>Your money</span><span><i class="dot" style="background:#FF8A1F"></i>Card debt</span><span><i class="dot" style="background:#6BB6FF"></i>Partner\'s money</span></div>';
+}
+function mixSlider(st, D){
+  var mx = s1DebtMax(st), st50 = CONFIG.S1.MIN_MOVE, top = sliderTop(mx), P = mx - D;
+  return '<input type="range" id="mix" min="0" max="' + top + '" step="1" value="' + (top - toStop(D, mx)) + '" data-max="' + mx + '" aria-label="How to fund the rest: card debt or partner money" aria-valuetext="' + money(D) + ' card debt, ' + money(P) + ' partner money">' +
+    '<div class="ends"><span>All card debt</span><span>All partner</span></div>' +
+    '<div class="mixbtns"><button data-act="mix" data-v="max">All debt</button><button data-act="mix" data-v="0">All partner</button><button data-act="mix" data-v="+">More debt</button><button data-act="mix" data-v="-">More partner</button></div>';
+}
+function s1D(){ var mx = s1DebtMax(S.st); return Math.max(0, Math.min(mx, S.dt == null ? 0 : S.dt)); }
+function midWord(i){ return tipRange(i) ? 'At the middle of Mango\'s range' : 'At the middle of the forecast'; }
+function tipRange(i){ var one = S.stage === 1, c = one ? CONFIG.S1 : CONFIG.S2; return S.tipped && S.tipped[i] ? (one ? c.SEASONS[i] : c.MONTHS[i]).tip : null; }
+/* Dollar amount with its percentage return on what you started with, e.g. "$2,517.96 (+404%)" */
+function withRet(v, base){ return money(v) + ' <span class="dim" style="font-weight:600">(' + pct((v - base) / base) + ')</span>'; }
+function terms(rows){ return '<table><thead><tr><th>What you did</th><th>What it\'s called</th></tr></thead><tbody>' + rows.map(function(r){ return '<tr><td>' + r[0] + '</td><td><b>' + r[1] + '</b></td></tr>'; }).join('') + '</tbody></table>'; }
+function met(l, v){ return '<div class="met"><span>' + l + '</span><b class="num">' + v + '</b></div>'; }
+/* One chart helper for both stages: lines over a shaded forecast band. */
+function plot(o){
+  var W = 320, L = 52, R = 312, T = 10, B = 172, h = '';
+  function px(x){ return L + (x - o.x0) / (o.x1 - o.x0) * (R - L); }
+  function py(y){ return B - (Math.max(o.y0, Math.min(o.y1, y)) - o.y0) / (o.y1 - o.y0) * (B - T); }
+  h += '<rect x="' + px(o.band[0]) + '" y="' + T + '" width="' + Math.max(2, px(o.band[1]) - px(o.band[0])) + '" height="' + (B - T) + '" fill="#FFD23F" fill-opacity="' + (o.tip ? '.08' : '.22') + '"><title>The forecast range</title></rect>';
+  if (o.tip) h += '<rect x="' + px(o.tip[0]) + '" y="' + T + '" width="' + Math.max(2, px(o.tip[1]) - px(o.tip[0])) + '" height="' + (B - T) + '" fill="#FFD23F" fill-opacity=".35" stroke="#FFD23F" stroke-width="2"><title>Mango\'s tip</title></rect>';
+  o.yt.forEach(function(v){ h += '<line x1="' + L + '" y1="' + py(v) + '" x2="' + R + '" y2="' + py(v) + '" stroke="' + (v ? '#2A3760' : '#7C8BBB') + '"/><text x="' + (L - 5) + '" y="' + (py(v) + 4) + '" text-anchor="end" fill="#B9C2DC">' + o.yf(v) + '</text>'; });
+  o.xt.forEach(function(v){ h += '<text x="' + px(v) + '" y="' + (B + 16) + '" text-anchor="middle" fill="#B9C2DC">' + o.xf(v) + '</text>'; });
+  if (o.vline != null) h += '<line x1="' + px(o.vline) + '" y1="' + T + '" x2="' + px(o.vline) + '" y2="' + B + '" stroke="#B9C2DC" stroke-dasharray="4 4"/>';
+  o.lines.forEach(function(ln){ var pts = ln.pts.map(function(p){ return px(p[0]).toFixed(1) + ',' + py(p[1]).toFixed(1); }).join(' '); h += '<polyline points="' + pts + '" fill="none" stroke="' + ln.col + '" stroke-width="' + (ln.w || 3) + '" stroke-linecap="round" stroke-linejoin="round"' + (ln.dash ? ' stroke-dasharray="6 5"' : '') + '>' + (ln.title ? '<title>' + ln.title + '</title>' : '') + '</polyline>'; });
+  if (o.mark) o.mark.forEach(function(mk){ h += '<circle cx="' + px(mk[0]) + '" cy="' + py(mk[1]) + '" r="6" fill="' + mk[2] + '" stroke="#0B1228" stroke-width="2"/>'; });
+  h += '<text x="' + ((L + R) / 2) + '" y="' + (B + 34) + '" text-anchor="middle">' + o.xl + '</text>';
+  if (o.yl) h += '<text x="' + (L + 4) + '" y="' + (T + 12) + '" fill="#B9C2DC">↑ ' + o.yl + '</text>';
+  if (o.lab) o.lines.forEach(function(ln, k){ var e = ln.pts[ln.pts.length - 1], y = py(e[1]); h += '<text x="' + (R - 2) + '" y="' + (y + (k ? -8 : 16)) + '" text-anchor="end" fill="' + o.lab[k][1] + '" font-weight="700">' + o.lab[k][0] + '</text>'; });
+  return '<div class="chart"><svg viewBox="0 0 ' + W + ' 212" role="img" aria-label="' + esc(o.label) + '"><g font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="12" fill="#FFF6E0">' + h + '</g></svg></div>';
+}
+
+/* ======================= START + INTRO ======================= */
+function startScreen(){
+  var hs = Object.keys(HUSTLES).map(function(k){ var h = HUSTLES[k]; return '<button data-act="hustle" data-v="' + k + '" class="' + (ui.hustle === k ? 'on' : '') + '" aria-pressed="' + (ui.hustle === k) + '"><i>' + h.icon + '</i>' + h.label + '</button>'; }).join('');
+  return '<div class="awning"></div><h1>LEVERAGE<br>LEGENDS</h1>' + mango(FACE.smug, 'You want to run a business? Fine. Sign in at my counter.') +
+    '<div class="card plain"><label class="field"><span>Your name</span><input id="f-name" maxlength="20" autocomplete="off" placeholder="Up to 20 letters" value="' + esc(ui.name) + '"></label><div class="field"><span>What you sell</span><div class="hgrid">' + hs + '</div></div><p class="err" role="alert">' + esc(ui.err) + '</p>' +
+    '<div style="display:grid;gap:8px"><button class="btn-go" data-act="start" data-v="1">Stage 1 · Financial leverage and capital structure</button><button class="btn-go" data-act="start" data-v="2">Stage 2 · Adds operating leverage</button></div></div>';
+}
+function startLine(){ var c2 = CONFIG.S2; return S.from1 == null ? 'No Stage 1 result on this device, so you start with <b>' + money(S.base) + '</b>.' : S.from1 >= c2.START ? 'Your best Stage 1 result was <b>' + money(S.from1) + '</b>. That is your starting cash.' : 'Your best Stage 1 result was ' + money(S.from1) + '. Mango tops you up to <b>' + money(S.base) + '</b> to start.'; }
+function introScreen(){
+  var c1 = CONFIG.S1, c2 = CONFIG.S2, m = s2Margins(), body = S.stage === 1 ?
+    '<h2>Six seasons. One resale business.</h2><p>Your business starts with <b>' + money(c1.START) + '</b>, all yours. Each season you <b>flip</b> product: buy it and resell it for more.</p><p><b>Goal:</b> end Season 6 with the biggest <b>stake</b> (what your share of the business is worth) you can, without going broke.</p><p><b>Each season:</b></p><ol style="margin:.3em 0 .5em;padding-left:1.3em"><li>Read the forecast: what the flip might earn.</li><li>Your business invests ' + c1.SIZE + '× your stake. Choose how to pay for the part you do not cover: card debt, a partner\'s money, or a mix.</li><li>Run the season and see what happened.</li></ol><p>The card costs ' + p0(s1Rate()) + ' a season, more if you borrow more. Go broke and the game ends.</p>' :
+    '<h2>Six months. One shop.</h2><p>' + startLine() + ' You sell ' + H().item + ' for ' + money(c2.PRICE) + '. Your supplier gives you ' + c2.STOCK + ' a month on credit: you pay ' + money(c2.COST) + ' for each one you sell and send back the rest.</p><p><b>Goal:</b> make the most profit in six months.</p><p><b>Each month:</b></p><ol style="margin:.3em 0 .5em;padding-left:1.3em"><li>Read the forecast: how many buyers might come.</li><li>Choose how to sell: the <b>app</b> (' + money(c2.APP_FEE) + ' fee a sale, no rent) or a market <b>stall</b> (keep ' + money(m.stall) + ' a sale, ' + money(c2.RENT) + ' rent). A lease and borrowing for extra product open later.</li><li>Run the month and see who came.</li></ol><p>Starting cash differs, so compare your <b>profit</b> with classmates.</p>';
+  var cost = (S.stage === 1 ? c1 : c2).TIP_COST;
+  return header() + '<div class="card plain">' + body + '</div>' + mango(FACE.smug, 'You can trust my advice. It costs fancy cat toys: ' + money(cost) + ' a ' + (S.stage === 1 ? 'season' : 'month') + '.') + '<button class="btn-go" data-act="go" style="width:100%">Open for business</button>' + footer();
+}
+
+/* ======================= STAGE 1 ======================= */
+function fcLine(i){ var F = CONFIG.S1.SEASONS[i]; return pct(F.lo) + ' to ' + pct(F.hi); }
+function chart1(st, i, mark){
+  var F = CONFIG.S1.SEASONS[i], X0 = -0.45, X1 = 0.45, a = s1StakeReturn(st, X0), b = s1StakeReturn(st, X1), cap = CONFIG.S1.SIZE - 1, rt = s1Interest(cap, 1) / cap, m = Math.ceil(Math.max(Math.abs(X0 + cap * (X0 - rt)), X1 + cap * (X1 - rt)) * 2 - 1e-9) / 2, avg = st.D > 0 ? s1Interest(st.D, s1Own(st)) / st.D : s1Rate(), step = m > 1.6 ? 1 : m > 0.8 ? 0.5 : 0.25, /* fixed at the widest possible debt so lines can be compared */ yt = [], v;
+  for (v = -Math.floor(m / step) * step; v <= m + 1e-9; v += step) yt.push(Math.round(v * 100) / 100);
+  return plot({ x0: X0, x1: X1, y0: -m, y1: m, band: [F.lo, F.hi], tip: tipRange(i), yt: yt, xt: [-0.4, -0.2, 0, 0.2, 0.4], vline: avg,
+    yf: function(y){ return pct(y) || '0%'; }, xf: function(x){ return pct(x) || '0%'; }, xl: 'How the business does →', yl: 'How your money does', lab: [['No debt', '#FFF6E0'], ['With debt', '#FF8A1F']],
+    label: 'Return on your stake against the season return. The line with debt and the line with no debt cross at 6 percent.',
+    lines: [{ pts: [[X0, X0], [X1, X1]], col: '#FFF6E0', title: 'The same business with no debt' }, { pts: [[X0, a], [X1, b]], col: '#FF8A1F', w: 4, title: 'Your business, with its debt' }],
+    mark: mark != null ? [[mark, mark, '#FFF6E0'], [mark, s1StakeReturn(st, mark), '#FF8A1F']] : null });
+}
+function guide1(i){
+  var c = CONFIG.S1, rate = s1Rate();
+  if (i === 0) return mango(FACE.smug, 'Debt starts at ' + p0(rate) + ' a season and costs more the more you borrow. A partner shares every win and every loss.');
+  return '';
+}
+function decide1(){
+  var i = S.i, st = S.st, c = CONFIG.S1, T = S1T[i], D = s1D(), pv = s1Mix(st, D), F = c.SEASONS[i], TR = tipRange(i), lo = TR ? TR[0] : F.lo, hi = TR ? TR[1] : F.hi, mid = (lo + hi) / 2, dfl = s1DFL(pv, mid), rate = s1Rate(), K = pv.E + pv.D, own = s1Stake(st);
+  var nxt = i + 1 < N() ? '' : '<p class="dim" style="margin-top:8px">This is the last season.</p>';
+  var h = guide1(i) + '<div class="card" style="--ac:' + T.ac + '"><span class="pill">Season ' + (i + 1) + ' of ' + N() + ' · ' + T.name + '</span><h2>' + esc(T.items[S.hustle]) + '</h2><p>' + T.story + '</p><div class="forecast"><span class="dim">Forecast: this season\'s return</span><b class="num">' + fcLine(i) + '</b>' + (i === 0 ? '<small>For example, +20% means $100 of product sells for $120 after fees.</small>' : '') + '</div>' + tipBox(i) + nxt + '</div>';
+  h += '<div class="card plain"><h3>This season the business invests <span style="color:var(--orange)">' + money(K) + '</span></h3><p class="dim" style="margin:0">That is ' + c.SIZE + '× your stake. Your ' + money(own) + ' goes in first. Choose how to pay for the other ' + money(K - own) + '.' + tip('cost', 'Card debt costs ' + c.RATES.map(pr).join(', then ') + ' a season on each ' + money(own) + ' you borrow, owed win or lose. A partner costs nothing up front, but takes their share of every win and shares every loss. Keep borrowing while your stake earns more than the rate on your next dollar.') + '</p>' +
+    mixBar(pv) + '<p class="dim" style="margin:0 0 4px;font-size:.85rem">Card rate: ' + c.RATES.map(function(x, k){ return pr(x) + ' on the ' + (k === 0 ? 'first' : k === c.RATES.length - 1 ? 'last' : 'next') + ' ' + money(own); }).join(', ') + '.</p>' + mixSlider(st, D) +
+    '<div class="mets">' + met('Card debt', money(pv.D)) + met('Partner\'s money', money(pv.E - own)) + met('You own', Math.round(pv.s * 100) + '%') + met('Interest this season', money(cents(s1Interest(pv.D, own)))) + met('Rate on your next dollar', pr(s1NextRate(pv.D, own))) + '</div>' +
+    (pv.D > 0 ? '<div class="gauge"><b>Degree of financial leverage (DFL): ' + (dfl ? dfl.toFixed(2) + '×' : 'very high') + '.</b>' + tip('g1', 'How much harder your result moves than the business\'s profit. With no debt it is 1.00×. More debt, bigger number.') + ' ' + (dfl ? midWord(i) + ', a 10% change in the season\'s profit moves your result ' + Math.round(dfl * 10) + '%.' : midWord(i) + ', the season would not even cover your interest.') + '</div>' : '') + '</div>';
+  h += '<div class="card plain"><h3>What this season could do to your stake' + tip('c1', 'Across: how the season goes for the whole business. Up: what happens to your money. The white line is no debt. The orange line is the debt you chose. They cross at the average rate on your debt. The yellow band is the forecast; a brighter band is Mango\'s tip.') + '</h3>' + chart1(pv, i) +
+    '<p style="margin:.4em 0 0;font-weight:700">Your stake could change ' + pct(s1StakeReturn(pv, lo)) + ' to ' + pct(s1StakeReturn(pv, hi)) + ' (' + signed(cents(own * s1StakeReturn(pv, lo))) + ' to ' + signed(cents(own * s1StakeReturn(pv, hi))) + ').</p></div>';
+  return h + '<button class="btn-go" data-act="run" style="width:100%;font-size:1.1rem">Run the season</button>';
+}
+function reveal1(){
+  var e = S.hist[S.i], i = S.i, T = S1T[i], r = e.ret, rate = e.debt > 0 ? e.interest / e.debt : s1Rate(), mx = Math.max(Math.abs(e.mine), Math.abs(e.unlev), 1);
+  function bar(label, v){ var hgt = Math.max(4, Math.round(Math.abs(v) / mx * 76)); return '<div class="bar"><div class="dim">' + label + '</div><div class="col"><div class="fill' + (v < 0 ? ' neg' : '') + '" data-h="' + hgt + '" style="height:' + (REDUCED ? hgt : 4) + 'px"></div></div><b class="num ' + (v < 0 ? 'down' : 'up') + '">' + signed(v) + '</b></div>'; }
+  var line = 'The business had ' + money(e.capital) + ' of product. It ' + (e.ebit >= 0 ? 'made ' : 'lost ') + '<b>' + money(Math.abs(e.ebit)) + '</b>.' + (e.interest > 0 ? ' Interest took <b>' + money(e.interest) + '</b>.' : ' No interest to pay.') + (e.own < 0.999 && !e.failed ? ' You own ' + Math.round(e.own * 100) + '%, so your part is <b>' + signed(e.mine) + '</b>.' : '');
+  var say, face;
+  if (e.failed){ say = 'That wiped out the business. You still owe the card ' + money(e.owed) + '. Game over.'; face = FACE.wince; }
+  else if (e.debt <= 0){ say = r >= 0 ? 'A clean win. No bill to pay.' : 'Your partner took part of that hit. No interest on top.'; face = r >= 0 ? FACE.smug : FACE.meh; }
+  else if (r > rate){ say = 'The business earned ' + p0(r) + '. Your debt cost ' + pr(rate) + ' on average. Debt made the win bigger.'; face = FACE.wow; }
+  else if (r >= 0){ say = 'The business earned ' + p0(r) + '. Your debt cost ' + pr(rate) + ' on average. It cost more than it earned.'; face = FACE.meh; }
+  else { say = 'Your debt made the loss bigger.'; face = FACE.wince; }
+  return '<div class="card" style="--ac:' + T.ac + '"><span class="pill">Season ' + (i + 1) + ' · ' + T.name + '</span><p class="dim" style="text-align:center;margin:0">The season returned</p><div class="ticker num ' + (r >= 0 ? 'up' : 'down') + '" id="tick" data-final="' + pct(r) + '">' + pct(r) + '</div>' +
+    '<div class="bars">' + bar('Your stake', e.mine) + bar('With no debt', e.unlev) + '</div>' + (i === 0 ? '<p class="dim">Left: what you made. Right: what you would have made with no debt. The gap is what the debt did.</p>' : '') + '<p>' + line + '</p>' + (e.failed ? '<p><b>You went broke.</b></p>' : '') + '</div>' + mango(face, say) +
+    (i >= CONFIG.S1.CHART_FROM ? '<div class="card plain"><h3>Where the result landed</h3>' + chart1(e.pre, i, r) + '</div>' : '');
+}
+function debrief1(){
+  var st = S.st, b = best1(), rate = s1Rate(), nd = s1Stake(s1Play([0, 0, 0, 0, 0, 0]));
+  return header() + (st.failed ? mango(FACE.wince, 'Broke in Season ' + st.broke + '. Read this, then try again.') : '') + '<div class="card plain"><span class="pill" style="background:var(--yellow)">What just happened</span>' +
+    '<p><b>The rule:</b> keep borrowing while your stake earns more than the rate on your next dollar of debt (' + CONFIG.S1.RATES.map(pr).join(', ') + '). Use a partner\'s money for the rest. Debt makes wins and losses bigger; a partner shares them.</p>' +
+    '<p><b>Your capital structure</b> (share of the business paid for with debt), season by season: ' + S.hist.map(dshare).join(' → ') + '</p>' +
+    terms([['What the whole business earned in a season', 'Return on capital employed (ROCE)'], ['The card\'s rate on your next dollar', 'Marginal cost of debt'], ['Where borrowing more stops paying', 'Optimal capital structure'], ['Debt made wins and losses bigger', 'Financial leverage'], ['Your mix of card debt and owners\' money', 'Capital structure (debt and equity)'], ['Changing the mix from season to season', 'Capital restructuring'], ['The stake chart, and where its lines cross', 'EBIT-EPS chart, indifference point']]) +
+    '<p class="dim">This game ignores taxes. Interest lowers a tax bill, so real debt costs a little less than its rate.</p></div>' +
+    '<div class="card plain"><h3>Compare</h3><div class="mets">' + met('Your stake', withRet(s1Stake(st), CONFIG.S1.START)) + met('No debt, all six seasons', withRet(nd, CONFIG.S1.START)) + met('Best possible', withRet(b.v, CONFIG.S1.START)) + (st.failed ? met('Went broke in', 'Season ' + st.broke) : '') + '</div></div>' +
+    '<button class="btn-go" data-act="results" style="width:100%">See your receipt</button>' + footer();
+}
+
+/* ======================= STAGE 2 ======================= */
+function chart2(st, i, way, card, mark){
+  var c = CONFIG.S2, M = c.MONTHS[i], cd = i >= c.CARD_FROM && card, xmax = i >= c.CARD_FROM ? 40 : 24, rent = s2Rent(st, way), cap = cd ? c.CARD_STOCK : c.STOCK, sell = st.lease > 0 ? 'stall' : way === 'app' ? 'app' : way ? 'stall' : null;
+  function ln(s){ return [[0, s2ProfitAt(0, s, rent, cd)], [cap, s2ProfitAt(cap, s, rent, cd)], [xmax, s2ProfitAt(xmax, s, rent, cd)]]; }
+  var top = Math.max(s2ProfitAt(xmax, 'stall', c.LEASE_RENT, cd), s2ProfitAt(xmax, 'app', 0, cd)), low = Math.min(0, s2ProfitAt(0, 'stall', c.RENT, cd)), raw = (top - low) / 5, mag = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10)), step = [1, 2, 2.5, 5, 10].map(function(f){ return f * mag; }).filter(function(s){ return s >= raw; })[0], yt = [], v;
+  for (v = Math.floor(low / step) * step; v <= top + step / 2; v += step) yt.push(v);
+  return plot({ x0: 0, x1: xmax, y0: yt[0] - step * 0.3, y1: yt[yt.length - 1], band: [M.lo, M.hi], tip: tipRange(i), yt: yt, xt: xmax === 40 ? [0, 10, 20, 30, 40] : [0, 6, 12, 18, 24],
+    yf: function(y){ return m0(y); }, xf: function(x){ return x; }, xl: 'Buyers this month',
+    label: 'Breakeven diagram: profit against buyers for the app and the stall.',
+    lines: [{ title: 'App profit', pts: ln('app'), col: '#FFF6E0', w: !sell ? 3 : sell === 'app' ? 4 : 2, dash: sell && sell !== 'app' }, { title: 'Stall profit', pts: ln('stall'), col: '#FF8A1F', w: !sell ? 3 : sell === 'stall' ? 4 : 2, dash: sell && sell !== 'stall' }],
+    mark: mark != null ? [[mark, s2ProfitAt(mark, 'app', rent, cd), '#FFF6E0'], [mark, s2ProfitAt(mark, 'stall', rent, cd), '#FF8A1F']] : null });
+}
+function guide2(i){
+  var c = CONFIG.S2, m = s2Margins();
+  if (i === 0) return mango(FACE.smug, money(c.RENT) + ' rent at ' + money(m.stall) + ' a sale takes ' + (c.RENT / m.stall) + ' sales just to pay the rent.');
+  if (i === c.LEASE_FROM) return mango(FACE.smug, 'New: a <b>' + c.LEASE_MONTHS + '-month lease</b>. Cheaper rent, owed every month.');
+  if (i === c.CARD_FROM) return mango(FACE.smug, 'New: <b>borrow</b> for ' + (c.CARD_STOCK - c.STOCK) + ' more items. Interest is owed even if they do not sell.');
+  return '';
+}
+function decide2(){
+  var i = S.i, st = S.st, c = CONFIG.S2, M = c.MONTHS[i], T = S2T[i], m = s2Margins(), opts = s2Options(st, i), way = S.move, cardOpen = i >= c.CARD_FROM, card = cardOpen && S.card, rent = s2Rent(st, way), sell = (way === 'app' && st.lease <= 0) ? 'app' : 'stall', TR2 = tipRange(i), mid = TR2 ? (TR2[0] + TR2[1]) / 2 : (M.lo + M.hi) / 2, g = s2DOL(mid, sell, rent, card), be = rent / m.stall;
+  var look = c.MONTHS.slice(i + 1).map(function(x, k){ return 'Month ' + (i + 2 + k) + ': ' + x.lo + ' to ' + x.hi; }).join(' · ');
+  var h = guide2(i) + '<div class="card" style="--ac:' + T.ac + '"><span class="pill">Month ' + (i + 1) + ' of ' + N() + ' · ' + T.name + '</span><h2>' + T.story + '</h2><div class="forecast"><span class="dim">Forecast: buyers this month</span><b class="num">' + M.lo + ' to ' + M.hi + '</b></div>' + tipBox(i) + (look ? '<p class="dim" style="margin-top:8px">Coming up. ' + look + '</p>' : '<p class="dim" style="margin-top:8px">This is the last month.</p>') + '</div>';
+  h += ('<div class="card plain"><h3>What this month could earn' + tip('c2', 'Across: buyers this month. Up: profit. Where the orange stall line crosses $0, you have paid the rent. Where the two lines cross, the stall and the app pay the same. The yellow band is the forecast; a brighter band is Mango\'s tip.') + '</h3>' + chart2(st, i, way, card) +
+    '<p class="legend"><i class="sw" style="background:#FFF6E0"></i>App: keep ' + money(m.app) + ' a sale<br><i class="sw" style="background:#FF8A1F"></i>Stall: keep ' + money(m.stall) + ' a sale, pay ' + money(rent) + ' rent</p>' +
+    '<div class="gauge"><b>The stall covers its rent by sale ' + Math.ceil(be) + '.</b> It beats the app after ' + (rent / (m.stall - m.app)) + ' sales.</div>' +
+    (!way && st.lease <= 0 ? '<div class="gauge"><b>Degree of operating leverage (DOL).</b> Choose the app or the stall below to see it.</div>' : '<div class="gauge"><b>' + (card ? 'Degree of total leverage (DTL): ' : 'Degree of operating leverage (DOL): ') + (sell === 'app' && !card ? '1.00×' : g.dtl ? g.dtl.toFixed(2) + '×' : 'very high') + '.</b>' + tip('g2', card ? 'How much harder profit moves than sales, counting both rent and card interest. Both are owed no matter what.' : 'How much harder profit moves than sales. Rent is owed no matter what, so it makes the number bigger. With no rent it is 1.00×.') + ' ' + (sell === 'app' && !card ? 'With no rent, profit moves exactly with sales.' : g.dtl ? midWord(i) + ', 10% fewer buyers means ' + Math.round(g.dtl * 10) + '% less profit.' : midWord(i) + ' you would not cover your fixed costs.') + '</div>') + '</div>');
+  h += '<div class="card plain"><h3>How do you sell this month?</h3><div class="moves">';
+  if (st.lease > 0) h += '<button class="mv on" disabled><b>⛱️ Stall, on your lease</b><small>' + money(c.LEASE_RENT) + ' rent is owed. ' + st.lease + ' month' + (st.lease === 1 ? '' : 's') + ' left, this one included.</small></button>';
+  else {
+    h += '<button class="mv' + (way === 'app' ? ' on' : '') + '" data-act="move" data-v="app" aria-pressed="' + (way === 'app') + '"><b>📱 The app</b><small>' + money(c.APP_FEE) + ' fee on each sale. No rent.</small></button>';
+    h += '<button class="mv' + (way === 'stall' ? ' on' : '') + '" data-act="move" data-v="stall" aria-pressed="' + (way === 'stall') + '"><b>⛱️ Stall, this month only</b><small>' + money(c.RENT) + ' rent, owed even if nobody comes.</small></button>';
+    if (opts.indexOf('lease') >= 0) h += '<button class="mv' + (way === 'lease' ? ' on' : '') + '" data-act="move" data-v="lease" aria-pressed="' + (way === 'lease') + '"><b>📝 Stall, sign a ' + c.LEASE_MONTHS + '-month lease' + (i === c.LEASE_FROM ? '<span class="new">NEW</span>' : '') + '</b><small>' + money(c.LEASE_RENT) + ' rent a month. You owe it for all ' + c.LEASE_MONTHS + ' months.</small></button>';
+  }
+  h += '</div>';
+  if (cardOpen) h += '<h3 style="margin-top:14px">Product' + (i === c.CARD_FROM ? '<span class="new">NEW</span>' : '') + '</h3><div class="moves"><button class="mv' + (!card ? ' on' : '') + '" data-act="card" data-v="0" aria-pressed="' + !card + '"><b>📦 ' + c.STOCK + ' items</b><small>The usual. No borrowing.</small></button><button class="mv' + (card ? ' on' : '') + '" data-act="card" data-v="1" aria-pressed="' + !!card + '"><b>💳 ' + c.CARD_STOCK + ' items</b><small>Borrow for the extra ' + (c.CARD_STOCK - c.STOCK) + '. ' + money(s2CardCost()) + ' interest, owed no matter how many sell.</small></button></div>';
+  return h + '</div><p class="err" id="hint" role="alert"></p><button class="btn-go" data-act="run" style="width:100%;font-size:1.1rem">Run the month</button>';
+}
+function reveal2(){
+  var e = S.hist[S.i], i = S.i, c = CONFIG.S2, T = S2T[i], m = s2Margins(), mx = Math.max(Math.abs(e.profit), Math.abs(e.alt), 1), sales = Math.min(e.buyers, e.card ? c.CARD_STOCK : c.STOCK);
+  function bar(label, v){ var hgt = Math.max(4, Math.round(Math.abs(v) / mx * 76)); return '<div class="bar"><div class="dim">' + label + '</div><div class="col"><div class="fill' + (v < 0 ? ' neg' : '') + '" data-h="' + hgt + '" style="height:' + (REDUCED ? hgt : 4) + 'px"></div></div><b class="num ' + (v < 0 ? 'down' : 'up') + '">' + signed(v) + '</b></div>'; }
+  var math = e.sell === 'stall' ? sales + ' × ' + money(m.stall) + ' − ' + money(e.rent) + ' rent' : sales + ' × ' + money(m.app);
+  if (e.card) math += ' − ' + money(s2CardCost()) + ' interest';
+  var say = e.sell === 'stall' ? (e.profit < 0 ? 'Rent does not check the weather.' : e.profit >= e.alt ? 'Enough buyers to cover the rent, and then ' + money(m.stall) + ' on each sale.' : 'You covered the rent. The app would still have paid more.') : (e.profit >= e.alt ? 'Slow month, no rent. Good.' : 'The app took ' + money(c.APP_FEE) + ' from every sale. ' + sales + ' times.');
+  if (e.card && e.buyers <= c.STOCK) say = 'You bought ' + c.CARD_STOCK + ' items and ' + e.buyers + ' people came. The interest was still due.';
+  return '<div class="card" style="--ac:' + T.ac + '"><span class="pill">Month ' + (i + 1) + ' · ' + T.name + '</span><p class="dim" style="text-align:center;margin:0">Buyers who showed up</p><div class="ticker num" id="tick" data-final="' + e.buyers + '">' + e.buyers + '</div>' +
+    '<div class="bars">' + bar(e.sell === 'stall' ? 'Your stall' : 'Your app sales', e.profit) + bar(e.sell === 'stall' ? 'The app instead' : 'The stall instead', e.alt) + '</div>' + (i === 0 ? '<p class="dim">Left: what you made. Right: what the other choice would have made.</p>' : '') + '<p class="num">' + math + ' = <b>' + money(e.profit) + '</b></p></div>' + mango(e.profit < 0 ? FACE.wince : e.profit >= e.alt ? FACE.wow : FACE.meh, say) +
+    ('<div class="card plain"><h3>Where the result landed</h3>' + chart2(e.pre, i, e.way, e.card, e.buyers) + '</div>');
+}
+function debrief2(){
+  var c = CONFIG.S2, m = s2Margins(), r = range2();
+  return header() + '<div class="card plain"><span class="pill" style="background:var(--yellow)">What just happened</span>' +
+    '<p><b>The rule:</b> fixed costs make good months better and slow months worse. Take them on when you expect enough buyers.</p>' +
+    terms([['Rent, owed with 1 buyer or 20', 'Fixed cost'], ['The ' + money(m.stall) + ' you keep from each stall sale', 'Contribution margin'], [money(c.RENT) + ' ÷ ' + money(m.stall) + ' = ' + (c.RENT / m.stall) + ' sales to pay the rent', 'Breakeven'], ['Profit swinging harder than sales', 'Operating leverage'], ['Card interest, also owed no matter what', 'Financial leverage'], ['The chart you used each month', 'Breakeven diagram']]) + '</div>' +
+    '<div class="card plain"><h3>Compare</h3><div class="mets">' + met('Your profit', signed(S.st.cash - S.base)) + met('The app every month', signed(c.MONTHS.reduce(function(a, M){ return a + s2ProfitAt(M.buyers, 'app', 0, false); }, 0))) + met('Best possible', signed(r.hi - c.START)) + met('Lowest possible', signed(r.lo - c.START)) + '</div></div>' +
+    '<button class="btn-go" data-act="results" style="width:100%">See your receipt</button>' + footer();
+}
+
+/* ======================= REVEAL ANIMATION + REFLECTION ======================= */
+function animateReveal(e){
+  var el = $('#tick'), cashEl = $('#cash'); if (!el) return;
+  var fin = el.getAttribute('data-final'), from = e.before, to = e.after, t0 = performance.now(), done = false, last = 0;
+  function land(){
+    if (done) return; done = true; el.textContent = fin; el.classList.add('pop'); if (cashEl) cashEl.textContent = money(headline());
+    document.querySelectorAll('.bar .fill').forEach(function(f){ f.style.height = f.getAttribute('data-h') + 'px'; });
+    if (e.failed){ SFX.bust(); buzz([80, 60, 200]); } else if (to > from){ SFX.win(); buzz(40); } else if (to < from){ SFX.loss(); buzz([60, 40, 60]); }
+    app.removeEventListener('click', land);
+  }
+  if (REDUCED){ land(); return; }
+  if (cashEl) cashEl.textContent = money(from);
+  app.addEventListener('click', land); setTimeout(land, 1500);
+  (function frame(t){ if (done) return; var x = (t - t0) / 1300; if (x >= 1){ land(); return; } if (t - last > 70){ last = t; SFX.tick(); el.textContent = S.stage === 1 ? pct(Math.random() * 0.8 - 0.4) : Math.floor(Math.random() * 30); } requestAnimationFrame(frame); })(t0);
+}
+var ovTimer = null;
+function closeOv(){ ov.innerHTML = ''; clearTimeout(ovTimer); ui.ov = 0; }
+function showReflect(e){
+  var txt = S.stage === 1 ? (e.failed ? 'Your stake went from ' + money(e.before) + ' to nothing.' : 'Your stake fell from ' + money(e.before) + ' to ' + money(e.after) + '.') + '<br>' + (e.debt > 0 ? 'With no debt it would have fallen to ' + money(cents(e.before + e.unlev)) + '.' : 'You had no debt, so the loss stopped there.') : 'You paid ' + money(e.rent) + ' rent.<br>' + (e.buyers === 1 ? 'One person came.' : e.buyers + ' people came.');
+  ui.ov = 1;
+  ov.innerHTML = '<div class="overlay" role="alertdialog" aria-live="assertive"><div class="big">' + txt + '</div><p class="dim" style="margin-top:14px">' + (S.stage === 1 ? 'Debt changes the size of the loss.' : 'A fixed cost is owed whether anyone shows up or not.') + '</p><div class="hold"><i id="holdbar"></i></div><div id="rc" style="margin-top:20px;min-height:48px"></div></div>';
+  var hb = $('#holdbar'); if (REDUCED) hb.style.width = '100%'; else { hb.style.transition = 'width ' + CONFIG.REFLECT_SECONDS + 's linear'; requestAnimationFrame(function(){ requestAnimationFrame(function(){ hb.style.width = '100%'; }); }); }
+  ovTimer = setTimeout(function(){ S.seen.reflect = 1; save(); var r = $('#rc'); if (r) r.innerHTML = '<button class="btn-go" data-act="closeov">Keep going</button>'; }, CONFIG.REFLECT_SECONDS * 1000);
+}
+
+/* ======================= RECEIPT ======================= */
+/* Compared with the safe choice: never borrowing (Stage 1) or the app every month (Stage 2). */
+function labelVsSafe(v, safe){ return v > safe + 1 ? 'Hustler' : v >= safe - 1 ? 'Played it safe' : 'Learned the hard way'; }
+function resultsScreen(){
+  var L = function(k, v){ return '<div class="line"><span>' + k + '</span><b>' + v + '</b></div>'; }, rows, head, extra, total = headline(), label;
+  if (S.stage === 1){
+    var b = best1().v, st = S.st;
+    var safe = s1Stake(s1Play([0, 0, 0, 0, 0, 0]));
+    label = st.failed ? 'Learned the hard way' : total >= b * 0.75 ? 'Legend' : labelVsSafe(total, safe);
+    head = '<tr><th>#</th><th>Move</th><th class="r">Return</th><th class="r">Debt share</th><th class="r">Stake</th></tr>';
+    rows = S.hist.map(function(e, i){ return '<tr><td>' + (i + 1) + '</td><td>' + e.label + '</td><td class="r num">' + pct(e.ret) + '</td><td class="r num">' + dshare(e) + '</td><td class="r num">' + (e.failed ? 'broke' : m0(e.after)) + '</td></tr>'; }).join('');
+    extra = (S.tipSpent ? L('Mango\'s tips', money(S.tipSpent)) : '') + (st.failed ? L('Went broke in', 'Season ' + st.broke) + L('Still owed to the card', money(st.owed)) : '');
+  } else {
+    var r = range2(), base = S.base == null ? CONFIG.S2.START : S.base, prof = total - base, plo = r.lo - CONFIG.S2.START, phi = r.hi - CONFIG.S2.START; safe = CONFIG.S2.MONTHS.reduce(function(a, M){ return a + s2ProfitAt(M.buyers, 'app', 0, false); }, 0); label = prof >= phi - (phi - plo) / 3 ? 'Legend' : labelVsSafe(prof, safe);
+    head = '<tr><th>#</th><th>Sold</th><th class="r">Buyers</th><th class="r">Profit</th><th class="r">Cash</th></tr>';
+    rows = S.hist.map(function(e, i){ return '<tr><td>' + (i + 1) + '</td><td>' + e.label + '</td><td class="r num">' + e.buyers + '</td><td class="r num">' + m0(e.profit) + '</td><td class="r num">' + m0(e.after) + '</td></tr>'; }).join('');
+    extra = L('Started with', money(base)) + (S.tipSpent ? L('Mango\'s tips', money(S.tipSpent)) : '') + L('Profit over six months', signed(prof)) + L('Months at the stall', S.hist.filter(function(e){ return e.sell === 'stall'; }).length + ' of ' + N()) + L('Months you lost money', S.hist.filter(function(e){ return e.profit < 0; }).length);
+  }
+  return '<div class="awning"></div><div class="receipt"><h2>' + esc(S.name.toUpperCase()) + '\'S RESALE CO.</h2><p style="text-align:center;margin:-6px 0 8px;font-size:.8rem;letter-spacing:1px">LEVERAGE LEGENDS</p>' + L('Name', H().icon + ' ' + esc(S.name)) + L('Stage', S.stage === 2 ? '2 · Operating leverage' : '1 · Financial leverage') + L('Played', new Date(S.doneAt || Date.now()).toLocaleDateString() + ' · try ' + (S.attempt || 1)) + extra +
+    '<p style="color:#555;text-align:center;margin:12px 0 0">' + (S.stage === 1 ? 'YOUR STAKE' : 'YOUR CASH') + '</p><div class="total num">' + money(total) + '</div><p style="text-align:center;margin:0;font-weight:800">' + (S.stage === 1 ? pct((total - CONFIG.S1.START) / CONFIG.S1.START) + ' on your ' + money(CONFIG.S1.START) : 'Profit: ' + signed(total - S.base)) + '</p><p style="text-align:center;font-weight:800">' + label + '</p><table><thead>' + head + '</thead><tbody>' + rows + '</tbody></table>' +
+    '<div class="copy">Compare with a classmate: same market, different choices. Then copy this receipt onto your handout, or take a screenshot.</div></div>' +
+    mango(label === 'Legend' ? FACE.wow : FACE.smug, label === 'Legend' ? 'Okay. Legend. Do not get loud about it.' : label === 'Played it safe' ? 'Safe. Nothing wrong with that. Now find someone who took a smart risk and ask how they knew.' : 'Find someone who ended higher. Ask what they did in ' + (S.stage === 1 ? 'season 4.' : 'month 3.')) + (S.stage === 1 ? '<button class="btn-go" data-act="stage2" style="width:100%;margin-bottom:8px">Go on to Stage 2 with ' + money(Math.max(CONFIG.S2.START, total, lsGet('ll3_s1_' + S.name.toLowerCase()) || 0)) + '</button>' : '') + '<button data-act="again" style="width:100%">Play again</button><button class="btn-ghost" data-act="home" style="width:100%;margin-top:8px">Back to the counter</button>';
+}
+
+/* ======================= RENDER ======================= */
+function render(){
+  var html, scr;
+  if (!S){ html = startScreen(); scr = 'start'; }
+  else if (S.phase === 'intro'){ html = introScreen(); scr = 'intro'; }
+  else if (S.phase === 'decide'){ html = header() + (S.stage === 1 ? decide1() : decide2()) + footer(); scr = 'dec' + S.i; }
+  else if (S.phase === 'reveal'){ html = header() + (S.stage === 1 ? reveal1() : reveal2()) + '<button class="btn-go" data-act="next" style="width:100%">' + (S.stage === 1 && S.hist[S.i].failed ? 'See what happened' : S.i === N() - 1 ? 'Finish' : (S.stage === 1 ? 'Next season' : 'Next month')) + '</button>' + footer(); scr = 'rev' + S.i; }
+  else if (S.phase === 'debrief'){ html = S.stage === 1 ? debrief1() : debrief2(); scr = 'debrief'; }
+  else { html = resultsScreen(); scr = 'results'; }
+  var fe = document.activeElement, fk = fe && app.contains(fe) ? (fe.id ? '#' + fe.id : fe.getAttribute('data-act') ? '[data-act="' + fe.getAttribute('data-act') + '"]' + (fe.getAttribute('data-v') != null ? '[data-v="' + fe.getAttribute('data-v') + '"]' : '') : null) : null;
+  app.innerHTML = html;
+  if (fk){ var nf = $(fk); if (nf && !nf.disabled) try { nf.focus({ preventScroll: true }); } catch (e){} }
+  if (scr !== ui.scr){ ui.scr = scr; window.scrollTo(0, 0); }
+  if (ui.ov && !(S && S.phase === 'reveal')) closeOv();
+  if (!S) return;
+  if (S.phase === 'reveal'){
+    var e = S.hist[S.i], k = 'a' + S.i;
+    if (!S.seen[k]){ S.seen[k] = 1; save(); animateReveal(e); } else document.querySelectorAll('.bar .fill').forEach(function(f){ f.style.height = f.getAttribute('data-h') + 'px'; });
+    var bad = S.stage === 1 ? (S.i === 3 && e.after < e.before) : (S.i === 2 && e.profit < 0);
+    if (bad && !S.seen.reflect && !ui.ov){ ui.ov = 1; ovTimer = setTimeout(function(){ if (ui.ov && S && S.phase === 'reveal') showReflect(e); }, REDUCED || S.seen.rw ? 50 : 2300); S.seen.rw = 1; save(); }
+  }
+  if (S.phase === 'results' && !ui.printed){ ui.printed = 1; confetti(); SFX.win(); }
+}
+
+/* ======================= ACTIONS ======================= */
+function begin(stage, name, hustle){
+  var k = 'll3_n' + stage + '_' + name.toLowerCase(), n = (lsGet(k) || 0) + 1; lsSet(k, n);
+  var from1 = stage === 2 ? lsGet('ll3_s1_' + name.toLowerCase()) : null, base = stage === 2 ? Math.max(CONFIG.S2.START, from1 || 0) : null;
+  S = { v: 3, name: name, hustle: hustle, stage: stage, from1: from1, base: base, i: 0, phase: 'intro', st: stage === 1 ? s1New() : s2New(base), move: stage === 1 ? 'hold' : null, card: false, hist: [], seen: {}, attempt: n };
+  ui.printed = 0; ui.over = 0; save(); render();
+}
+var acts = {
+  mute: function(){ muted = !muted; lsSet('ll_mute', muted); render(); },
+  hustle: function(v){ ui.hustle = v; ui.name = $('#f-name').value; render(); },
+  start: function(v){ var n = cleanName($('#f-name').value); ui.name = n; if (!n){ ui.err = 'Type your name first.'; render(); return; } ui.err = ''; begin(+v, n, ui.hustle); },
+  go: function(){ S.phase = 'decide'; save(); render(); },
+  move: function(v){ if (S.phase !== 'decide' || S.stage !== 2) return; S.move = v; save(); SFX.pick(); render(); },
+  mix: function(v){
+    if (S.phase !== 'decide' || S.stage !== 1) return; var mx = s1DebtMax(S.st), st = CONFIG.S1.MIN_MOVE, a = s1D();
+    a = v === 'max' ? mx : v === '0' ? 0 : v === '+' ? Math.min(mx, Math.floor(a / st + 1e-9) * st + st) : Math.max(0, Math.ceil(a / st - 1e-9) * st - st);
+    S.dt = a; save(); SFX.pick(); render();
+  },
+  mango: function(){
+    if (S.phase !== 'decide') return; S.tipped = S.tipped || {}; if (S.tipped[S.i]) return;
+    var one = S.stage === 1, cost = (one ? CONFIG.S1 : CONFIG.S2).TIP_COST; if (headline() < cost * 2) return;
+    if (one){ S.st = { E: cents(s1Stake(S.st) - cost), s: 1, D: 0, failed: S.st.failed }; }
+    else S.st = { cash: cents(S.st.cash - cost), lease: S.st.lease };
+    S.tipped[S.i] = 1; S.tipSpent = (S.tipSpent || 0) + cost; save(); SFX.pick(); render();
+  },
+  tip: function(v){ ui.tips[v] = !ui.tips[v]; render(); },
+  card: function(v){ if (S.phase !== 'decide') return; S.card = v === '1'; save(); SFX.pick(); render(); },
+  run: function(){
+    if (S.phase !== 'decide') return; var i = S.i, e;
+    if (S.stage === 1){
+      var pre = s1Mix(S.st, s1D()), r = s1Run(pre, i), Pp = s1Partner(pre);
+      e = { ret: r.ret, capital: r.capital, ebit: r.ebit, interest: r.interest, net: r.net, mine: r.mine, unlev: r.unlev, failed: r.failed, owed: r.failed ? r.st.owed : 0, pre: pre, own: pre.s, debt: pre.D, before: s1Stake(pre), after: r.failed ? 0 : s1Stake(r.st), label: 'Debt ' + m0(pre.D) + ' · partner ' + m0(Pp) };
+      S.st = r.st;
+    } else {
+      var way = S.st.lease > 0 ? 'leased' : S.move;
+      if (!way){ var h = $('#hint'); if (h) h.textContent = 'Choose the app or the stall first.'; return; }
+      var p = s2Play(S.st, i, way, S.card);
+      e = { buyers: p.buyers, sell: p.sell, rent: p.rent, card: p.card, profit: p.profit, alt: p.alt, way: way, pre: { cash: S.st.cash, lease: S.st.lease }, before: S.st.cash, after: p.st.cash, label: (p.sell === 'app' ? 'App' : way === 'lease' ? 'Stall, new lease' : way === 'leased' ? 'Stall, lease' : 'Stall') + (p.card ? ' + card' : '') };
+      S.st = p.st;
+    }
+    S.hist[i] = e; S.phase = 'reveal'; save(); render();
+  },
+  next: function(){ if (S.phase !== 'reveal') return; if (ui.ov){ if (!ov.innerHTML){ clearTimeout(ovTimer); showReflect(S.hist[S.i]); } return; } closeOv(); if (S.i + 1 < N() && !(S.stage === 1 && S.hist[S.i].failed)){ S.i++; S.phase = 'decide'; S.dt = null; S.move = S.stage === 1 ? 'hold' : null; S.card = false; } else S.phase = 'debrief'; save(); render(); },
+  closeov: function(){ closeOv(); },
+  results: function(){ S.phase = 'results'; S.doneAt = Date.now(); if (S.stage === 1){ var k1 = 'll3_s1_' + S.name.toLowerCase(), prev = lsGet(k1); lsSet(k1, Math.max(prev || 0, s1Stake(S.st))); } save(); render(); },
+  stage2: function(){ begin(2, S.name, S.hustle); },
+  again: function(){ begin(S.stage, S.name, S.hustle); },
+  home: function(){ ui.name = S.name; ui.hustle = S.hustle; S = null; save(); render(); },
+  over: function(){ if (!ui.over){ ui.over = 1; render(); setTimeout(function(){ if (ui.over){ ui.over = 0; if (!ui.ov) render(); } }, 4000); return; } ui.over = 0; if (S){ ui.name = S.name; ui.hustle = S.hustle; } S = null; save(); closeOv(); render(); }
+};
+document.addEventListener('click', function(e){ var b = e.target.closest('[data-act]'); if (!b || b.disabled) return; var h = acts[b.getAttribute('data-act')]; if (h) h(b.getAttribute('data-v'), b); });
+document.addEventListener('input', function(e){ if (e.target.id === 'mix'){ var mx = +e.target.getAttribute('data-max'), d = fromStop(+e.target.max - +e.target.value, mx); e.target.setAttribute('aria-valuetext', money(d) + ' card debt'); } });
+document.addEventListener('change', function(e){ if (e.target.id === 'mix' && S && S.phase === 'decide' && S.stage === 1){ S.dt = fromStop(+e.target.max - +e.target.value, +e.target.getAttribute('data-max')); save(); render(); } });
+render();
+window.__LL = { acts: acts, state: function(){ return S; } };
+})();
+</script>
+</body>
+</html>
