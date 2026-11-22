@@ -122,7 +122,7 @@ var CONFIG = {
   S1: {
     START: 500,                // what the business is worth at the start
     RATES: [0.06, 0.09, 0.12], // credit card rate per season on each step of debt; one step = 1x your stake
-    PARTNER_RATE: 0.10,        // the partner sizes their share to expect this gain, using the public forecast only
+    PARTNER_RATE: 0.10,        // the partner sizes their share to expect this return, using the same forecast the student has (Mango's, once bought)
     SIZE: 4,                   // each season the business invests this many times your stake
     MIN_MOVE: 50,              // the slider moves in steps of this much
     TIP_PCT: 0.08,             // Mango's tip costs this share of your stake, every season
@@ -187,7 +187,7 @@ function s1StakeReturn(own, D, r, mu){ var K = CONFIG.S1.SIZE * own, P = K - own
 function s1DFL(own, D, m){ var ebit = CONFIG.S1.SIZE * own * m, int = s1Interest(D, own); return ebit > int ? ebit / (ebit - int) : null; }
 function s1Actions(own){ var a = ['sit'], k; for (k = 0; k <= CONFIG.S1.SIZE - 1; k++) a.push(k * own); return a; }
 /* The taught strategy: best expected stake given what you believe (public forecast, or Mango's tip). Payoffs are straight lines in debt, so the best mix sits on a step edge. */
-function s1RuleChoice(own, i, belief){ var mu = caseOf(CONFIG.S1.SEASONS[i]).base, m = belief == null ? mu : belief, best = 'sit', bv = own;
+function s1RuleChoice(own, i, belief){ var m = belief == null ? caseOf(CONFIG.S1.SEASONS[i]).base : belief, mu = m, best = 'sit', bv = own;
   s1Actions(own).forEach(function(a){ var r = s1Season(own, a, m, mu), v = r ? r.stake : -1; if (v > bv + 1e-6){ bv = v; best = a; } }); return best; }
 function s1BreakEven(){ var R = CONFIG.S1.RATES; return (R[0] + R[1] + CONFIG.S1.PARTNER_RATE) / CONFIG.S1.SIZE; }
 /* Play a whole run with a policy(own, i, draw) -> { a, tip }. Used for the "best strategy" line and for tests. */
@@ -195,7 +195,7 @@ function s1Sim(draws, policy){
   var own = CONFIG.S1.START, tips = 0, hist = [];
   for (var i = 0; i < draws.length; i++){
     var mu = caseOf(CONFIG.S1.SEASONS[i]).base, p = policy(own, i, draws[i]);
-    if (p.tip){ own = cents(own * (1 - CONFIG.S1.TIP_PCT)); tips++; }
+    if (p.tip){ own = cents(own * (1 - CONFIG.S1.TIP_PCT)); tips++; mu = tipCase(CONFIG.S1.SEASONS[i], draws[i].sig).base; }
     var a = p.a === 'sit' ? 'sit' : Math.min(p.a, s1DebtMax(own)), r = s1Season(own, a, draws[i].ret, mu);
     if (!r) r = s1Season(own, s1DebtMax(own), draws[i].ret, mu);
     hist.push({ a: a, ret: draws[i].ret, before: own, after: r.stake, broke: r.broke });
@@ -206,7 +206,7 @@ function s1Sim(draws, policy){
 var S1P = {
   rule: function(own, i){ return { a: s1RuleChoice(own, i) }; },
   hindsight: function(own, i, d){ var mu = caseOf(CONFIG.S1.SEASONS[i]).base, best = 'sit', bv = own; s1Actions(own).forEach(function(a){ var r = s1Season(own, a, d.ret, mu); if (r && r.stake > bv){ bv = r.stake; best = a; } }); return { a: best }; },
-  tipAlways: function(own, i, d){ return { a: s1RuleChoice(own * (1 - CONFIG.S1.TIP_PCT), i, tipCase(CONFIG.S1.SEASONS[i], d.sig).base), tip: 1 }; },
+  tipAlways: function(own, i, d){ var o = own * (1 - CONFIG.S1.TIP_PCT), play = s1RuleChoice(o, i, tipCase(CONFIG.S1.SEASONS[i], d.sig).base) !== 'sit'; return { a: play ? 2 * o : 'sit', tip: 1 }; }, /* the student follows Mango's play-or-sit advice with the taught mix */
   tipUnclear: function(own, i, d){ var c = caseOf(CONFIG.S1.SEASONS[i]); return Math.abs(c.base - s1BreakEven()) < c.sd ? S1P.tipAlways(own, i, d) : S1P.rule(own, i); },
   allDebt: function(own){ return { a: s1DebtMax(own) }; },
   allPartner: function(){ return { a: 0 }; },
@@ -369,9 +369,7 @@ function tipBox(i){
   if (tipped(i)){
     var f = fcast(i), say;
     if (one){
-      var a = s1RuleChoice(S.st.own, i, f.base), own = S.st.own, k = a === 'sit' ? -1 : Math.round(a / own);
-      say = 'I checked what these sold for on three resale apps. Likely <b>' + pct(f.base) + '</b>, between <b>' + pct(f.lo) + ' and ' + pct(f.hi) + '</b>. ' +
-        (a === 'sit' ? 'Not enough to pay for the money. Sit this one out.' : k >= 3 ? 'Use all debt. The partner would take too much of a season this good.' : k === 2 ? 'Use debt at 6% and 9%. Use the partner for the rest.' : k === 1 ? 'Use debt at 6% only. Use the partner for the rest.' : 'Use the partner only.');
+      say = 'I checked what these sold for on three resale apps. Likely <b>' + pct(f.base) + '</b>, between <b>' + pct(f.lo) + ' and ' + pct(f.hi) + '</b>. ' + (s1RuleChoice(S.st.own, i, f.base) === 'sit' ? 'Sit this one out.' : 'Play this season.');
     } else {
       var w = s2RuleChoice(i, S.st.lease, f).split('+');
       say = 'I counted foot traffic at the market last Saturday. Likely <b>' + n0(f.base) + '</b> buyers, between <b>' + n0(f.lo) + ' and ' + n0(f.hi) + '</b>. ' +
@@ -415,7 +413,7 @@ function introScreen(){
 }
 
 /* ======================= STAGE 1 ======================= */
-function mu1(i){ return caseOf(CONFIG.S1.SEASONS[i]).base; }
+function mu1(i){ return fcast(i).base; }
 function s1D(){ var mx = s1DebtMax(S.st.own); return Math.max(0, Math.min(mx, S.dt == null ? 0 : S.dt)); }
 /* Slider stops are MIN_MOVE apart; the last stop is the exact maximum. Left = all debt, right = all partner. */
 function sliderTop(mx){ return Math.max(1, Math.ceil(mx / CONFIG.S1.MIN_MOVE - 1e-9)); }
@@ -477,7 +475,7 @@ function debrief1(){
   var st = S.st;
   return header() + (st.failed ? mango(FACE.wince, 'Broke in Season ' + st.broke + '. Read this, then try again.') : '') + '<div class="card plain"><span class="pill" style="background:var(--yellow)">What just happened</span>' +
     '<p><b>The rule:</b> use debt while it costs less than the partner\'s ' + p0(CONFIG.S1.PARTNER_RATE) + '. Sit out seasons that look weak.</p>' +
-    terms([['What the whole business earned in a season', 'Return on capital employed (ROCE)'], ['The debt rate on your next dollar', 'Marginal cost of debt'], ['What the partner expects (+' + p0(CONFIG.S1.PARTNER_RATE) + ')', 'Cost of equity'], ['Where more debt stops paying', 'Optimal capital structure'], ['Debt made wins and losses bigger', 'Financial leverage'], ['Your mix of debt and partner money', 'Capital structure'], ['The stake chart', 'EBIT-EPS chart'], ['Mango knew more than the partner', 'Information asymmetry']]) +
+    terms([['What the whole business earned in a season', 'Return on capital employed (ROCE)'], ['The debt rate on your next dollar', 'Marginal cost of debt'], ['What the partner expects (+' + p0(CONFIG.S1.PARTNER_RATE) + ')', 'Cost of equity'], ['Where more debt stops paying', 'Optimal capital structure'], ['Debt made wins and losses bigger', 'Financial leverage'], ['Your mix of debt and partner money', 'Capital structure'], ['The stake chart', 'EBIT-EPS chart']]) +
     '<p class="dim">This game ignores taxes. Interest lowers a tax bill, so real debt costs a little less.</p></div>' +
     '<button class="btn-go" data-act="results" style="width:100%">See your receipt</button>' + footer();
 }
