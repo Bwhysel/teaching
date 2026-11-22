@@ -77,6 +77,7 @@ td.r,th.r{text-align:right}
 .receipt .total{font-size:2.2rem;font-weight:900;text-align:center;margin:10px 0 2px}
 .receipt th,.receipt td{border-bottom:1px dashed #9A957F}
 .receipt .copy{background:#1B1B2A;color:var(--ink);border-radius:8px;padding:10px;text-align:center;font-weight:800;margin-top:12px}
+.receipt .copy .tip{text-align:left;font-weight:500;margin-top:8px}
 .field{display:block;margin:10px 0}
 .field span{display:block;font-weight:700;margin-bottom:4px}
 .field input{width:100%;min-height:50px;border-radius:12px;border:2px solid var(--panel2);background:#0B1228;padding:8px 12px;font-size:1.15rem}
@@ -85,6 +86,7 @@ td.r,th.r{text-align:right}
 .hgrid button i{font-style:normal;font-size:1.8rem}
 .hgrid button.on{background:var(--orange);color:#231000}
 .err{color:var(--yellow);font-weight:700;min-height:1.4em}
+.err:empty{min-height:0;margin:0}
 .confetti{position:fixed;top:-20px;width:10px;height:16px;z-index:30;pointer-events:none;animation:fall 2s linear forwards}
 @keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
 .pop{animation:pop .35s ease-out}
@@ -362,18 +364,18 @@ function tipped(i){ return !!(S.tipped && S.tipped[i]); }
 function fcast(i){ var R = S.stage === 1 ? CONFIG.S1.SEASONS[i] : CONFIG.S2.MONTHS[i]; return tipped(i) ? tipCase(R, S.draws[i].sig) : caseOf(R); }
 function n0(x){ return Math.max(0, Math.round(x)); }
 function forecastBox(i){
-  var R = S.stage === 1 ? CONFIG.S1.SEASONS[i] : CONFIG.S2.MONTHS[i], c = caseOf(R), one = S.stage === 1;
-  return '<div class="forecast"><span class="dim">' + (one ? 'Likely return' : 'Likely buyers') + (one && i === 0 ? tip('ret', '+20% means $100 of product sells for $120, after fees.') : '') + '</span><b class="num">' + (one ? pct(c.base) : n0(c.base)) + '</b><small style="display:block;color:var(--dim);font-size:.85rem">1 in 10 chance ' + (one ? 'below ' + pct(c.lo) : c.lo <= 0 ? 'of none' : 'below ' + n0(c.lo)) + ', 1 in 10 above ' + (one ? pct(c.hi) : n0(c.hi)) + '</small></div>';
+  var c = fcast(i), one = S.stage === 1, mg = tipped(i); /* once Mango's tip is bought, her forecast replaces the public one */
+  return '<div class="forecast"' + (mg ? ' style="border:2px solid var(--yellow)"' : '') + '><span class="dim">' + (mg ? '😼 Mango\'s forecast: ' : '') + (one ? (mg ? 'likely return' : 'Likely return') : (mg ? 'likely buyers' : 'Likely buyers')) + (one && i === 0 ? tip('ret', '+20% means $100 of product sells for $120, after fees.') : '') + '</span><b class="num">' + (one ? pct(c.base) : n0(c.base)) + '</b><small style="display:block;color:var(--dim);font-size:.85rem">1 in 10 chance ' + (one ? 'below ' + pct(c.lo) : c.lo <= 0 ? 'of none' : 'below ' + n0(c.lo)) + ', 1 in 10 above ' + (one ? pct(c.hi) : n0(c.hi)) + '</small></div>';
 }
 function tipBox(i){
   var one = S.stage === 1, cost = tipCost();
   if (tipped(i)){
     var f = fcast(i), say;
     if (one){
-      say = 'I checked what these sold for on three resale apps. Likely <b>' + pct(f.base) + '</b>, between <b>' + pct(f.lo) + ' and ' + pct(f.hi) + '</b>. ' + (s1RuleChoice(S.st.own, i, f.base) === 'sit' ? 'Sit this one out. You need about +' + p0(s1BreakEven()) + ' to cover the debt and the partner. ' + pct(f.base) + ' doesn\'t.' : 'Play this season. You need about +' + p0(s1BreakEven()) + ' to cover the debt and the partner. ' + pct(f.base) + ' beats that.');
+      say = (i === 0 ? 'I checked what these sold for on three resale apps. ' : '') + (s1RuleChoice(S.st.own, i, f.base) === 'sit' ? 'Sit this one out. You need about +' + p0(s1BreakEven()) + ' to cover the debt and the partner. ' + pct(f.base) + ' doesn\'t.' : 'Play this season. You need about +' + p0(s1BreakEven()) + ' to cover the debt and the partner. ' + pct(f.base) + ' beats that.');
     } else {
       var w = s2RuleChoice(i, S.st.lease, f).split('+'); var m2 = s2Margins(), even = Math.ceil(CONFIG.S2.RENT / (m2.stall - m2.app));
-      say = 'I counted foot traffic at the market last Saturday. Likely <b>' + n0(f.base) + '</b> buyers, between <b>' + n0(f.lo) + ' and ' + n0(f.hi) + '</b>. ' +
+      say = (i === 0 ? 'I counted foot traffic at the market last Saturday. ' : '') +
         (S.st.lease > 0 && w[0] === 'leased' ? 'Your lease is running, so sell at the stall.' : w[0] === 'app' ? 'Use the app. The stall needs ' + even + ' buyers to beat it, and I expect ' + n0(f.base) + '.' : w[0] === 'stall' ? 'Use the stall. It beats the app at ' + even + ' buyers, and I expect ' + n0(f.base) + '.' : w[0] === 'lease' ? 'Sign the lease. The rent is lower, and the next months look busy.' : 'Close this month.') + (w[1] ? ' Borrow for 40 items: I expect more than 20 buyers.' : '');
     }
     return '<div class="mango" style="margin:10px 0 0"><div class="mface" aria-hidden="true">' + FACE.smug + '</div><div class="bubble">' + say + '</div></div>';
@@ -444,7 +446,7 @@ function chart1(own, D, sit, i, mark){
 }
 function decide1(){
   var i = S.i, own = S.st.own, c = CONFIG.S1, T = S1T[i], sit = !!S.sit, D = s1D(), mu = mu1(i), f = fcast(i), K = c.SIZE * own, sp = s1PartnerShare(own, D, mu), dfl = s1DFL(own, D, f.base);
-  var h = (i === 0 ? mango(FACE.smug, 'Slide to choose debt or partner. Tap ⓘ if you\'re stuck.') : '') +
+  var h = (i === 0 && !S.picked && !tipped(0) ? mango(FACE.smug, 'Slide to choose debt or partner. Tap ⓘ if you\'re stuck.') : '') +
     '<div class="card" style="--ac:' + T.ac + '"><span class="pill">Season ' + (i + 1) + ' of ' + N() + ' · ' + T.name + '</span><h2>' + esc(T.items[S.hustle]) + '</h2><p>' + T.story + '</p>' + forecastBox(i) + tipBox(i) + (i + 1 < N() ? '' : '<p class="dim" style="margin-top:8px">This is the last season.</p>') + '</div>';
   h += '<div class="card plain"><h3>The business invests <span style="color:var(--orange)">' + m0(K) + '</span>. You need ' + m0(K - own) + ' more.' + tip('cost', 'Your ' + m0(own) + ' goes in first. Pay for the rest with debt, a partner, or both. Debt costs ' + c.RATES.map(p0).join(', then ') + ' on each ' + m0(own) + ' you borrow. You owe it, win or lose. A partner expects to get back +' + p0(c.PARTNER_RATE) + ' on average, so they take a share of the business. They share losses too.') + '</h3>' +
     mixBar(own, D, sit, sp) + mixSlider(own, D) +
@@ -600,7 +602,7 @@ function resultsScreen(){
   return '<div class="awning"></div><div class="receipt"><h2>' + esc(S.name.toUpperCase()) + '\'S RESALE CO.</h2><p style="text-align:center;margin:-6px 0 8px;font-size:.8rem;letter-spacing:1px">LEVERAGE LEGENDS</p>' + L('Name', H().icon + ' ' + esc(S.name)) + L('Stage', S.stage === 2 ? '2 · Operating leverage' : '1 · Financial leverage') + L('Played', new Date(S.doneAt || Date.now()).toLocaleDateString() + ' · try ' + (S.attempt || 1)) + extra +
     '<p style="color:#555;text-align:center;margin:12px 0 0">' + (S.stage === 1 ? 'YOUR STAKE' : 'YOUR PROFIT') + '</p><div class="total num">' + (S.stage === 1 ? money(total) : signed(cents(total - S.base))) + '</div>' + (S.stage === 1 ? '<p style="text-align:center;margin:0;font-weight:800">' + pct((total - CONFIG.S1.START) / CONFIG.S1.START) + ' on your ' + money(CONFIG.S1.START) + '</p>' : '') + '<p style="text-align:center;font-weight:800;font-size:1.2rem">' + label + '</p>' +
     '<p style="border-top:1px dashed #9A957F;padding-top:8px">' + best + '</p><table><thead>' + head + '</thead><tbody>' + rows + '</tbody></table>' +
-    '<div class="copy">Take a screenshot of this receipt.</div></div>' +
+    '<div class="copy">Take a screenshot of this receipt.' + tip('shot', '<b>iPhone:</b> press the side button and volume up together. Older iPhones with a Home button: side or top button and Home.<br><b>Android:</b> press power and volume down together.<br><b>Windows:</b> press Windows + Shift + S, then drag over the receipt.<br><b>Mac:</b> press Shift + Command + 4, then drag over the receipt.<br><b>Chromebook:</b> press Ctrl + Show windows.') + '</div></div>' +
     mango(label === 'Legend' ? FACE.wow : FACE.smug, label === 'Legend' ? 'Okay. Legend. Don\'t brag.' : label === 'Played it safe' ? 'Safe is fine. But your money did not grow.' : 'Your classmates had different outcomes. Compare your choices with theirs, not your totals.') + (S.stage === 1 ? '<button class="btn-go" data-act="stage2" style="width:100%;margin-bottom:8px">Go on to Stage 2 with ' + money(Math.max(CONFIG.S2.START, total)) + '</button>' : '') + '<button data-act="again" style="width:100%">Play again</button><button class="btn-ghost" data-act="home" style="width:100%;margin-top:8px">Back to the counter</button>';
 }
 
