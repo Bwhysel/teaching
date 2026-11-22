@@ -487,7 +487,7 @@ function chart2(st, i, way, card, mark){
   var top = Math.max(s2ProfitAt(xmax, 'stall', c.LEASE_RENT, cd), s2ProfitAt(xmax, 'app', 0, cd)), low = Math.min(0, s2ProfitAt(0, 'stall', c.RENT, cd)), raw = (top - low) / 5, mag = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10)), step = [1, 2, 2.5, 5, 10].map(function(x){ return x * mag; }).filter(function(s){ return s >= raw; })[0], yt = [], v;
   for (v = Math.floor(low / step) * step; v <= top + step / 2; v += step) yt.push(v);
   return plot({ x0: 0, x1: xmax, y0: yt[0] - step * 0.3, y1: yt[yt.length - 1], band: [Math.max(0, f.lo), f.hi], tip: tipped(i), likely: f.base, yt: yt, xt: xmax === 40 ? [0, 10, 20, 30, 40] : [0, 6, 12, 18, 24],
-    yf: function(y){ return m0(y); }, xf: function(x){ return x; }, xl: 'Buyers this month',
+    yf: function(y){ return m0(y); }, xf: function(x){ return x; }, xl: 'Buyers this month', lab: [['App', '#FFF6E0'], ['Stall', '#FF8A1F']],
     label: 'Breakeven chart: profit against buyers for the app and the stall.',
     lines: [{ title: 'App profit', pts: ln('app'), col: '#FFF6E0', w: !sell ? 3 : sell === 'app' ? 4 : 2, dash: sell && sell !== 'app' }, { title: 'Stall profit', pts: ln('stall'), col: '#FF8A1F', w: !sell ? 3 : sell === 'stall' ? 4 : 2, dash: sell && sell !== 'stall' }],
     mark: mark != null ? [[mark, s2ProfitAt(mark, 'app', rent, cd), '#FFF6E0'], [mark, s2ProfitAt(mark, 'stall', rent, cd), '#FF8A1F']] : null });
@@ -504,15 +504,15 @@ function decide2(){
   var i = S.i, st = S.st, c = CONFIG.S2, T = S2T[i], m = s2Margins(), opts = s2Options(st.lease, i), way = S.move, sit = way === 'sit', cardOpen = i >= c.CARD_FROM && !sit, card = cardOpen && S.card, rent = s2Rent(st.lease, way), sell = way === 'app' ? 'app' : 'stall', f = fcast(i), g = s2DOL(f.base, sell, rent, card), be = rent / m.stall;
   var look = c.MONTHS.slice(i + 1).map(function(x){ return n0(caseOf(x).base); }).join(' · ');
   var h = guide2(i) + '<div class="card" style="--ac:' + T.ac + '"><span class="pill">Month ' + (i + 1) + ' of ' + N() + ' · ' + T.name + '</span><h2>' + T.story + '</h2>' + forecastBox(i) + tipBox(i) + '<p class="dim" style="margin-top:8px">' + (look ? 'Coming up, likely buyers: ' + look : 'This is the last month.') + '</p></div>';
-  h += '<div class="card plain"><h3>What this month could earn' + tip('c2', 'Across: buyers. Up: profit. Where the orange stall line crosses $0, you have paid the rent. Where the two lines cross, the stall and the app pay the same. The yellow band is the forecast; the dashed line is the likely number.') + '</h3>' + chart2(st, i, way, card) +
-    '<p class="legend"><i class="sw" style="background:#FFF6E0"></i>App: ' + money(m.app) + ' a sale<br><i class="sw" style="background:#FF8A1F"></i>Stall: ' + money(m.stall) + ' a sale, minus ' + money(rent) + ' rent</p>' +
+  h += '<div class="card plain"><h3>What this month could earn' + tip('c2', 'The app keeps ' + money(m.app) + ' a sale. The stall keeps ' + money(m.stall) + ' a sale, minus ' + money(rent) + ' rent. Across: buyers. Up: profit. Where the orange stall line crosses $0, you have paid the rent. Where the two lines cross, the stall and the app pay the same. The yellow band is the forecast; the dashed line is the likely number.') + '</h3>' + chart2(st, i, way, card) +
+
     '<div class="gauge"><b>Stall: pays its rent at ' + Math.ceil(be) + ' sales.</b> Beats the app at ' + Math.ceil(rent / (m.stall - m.app)) + '.</div>' +
     (sit ? '' : '<div class="gauge"><b>' + (card ? 'Degree of total leverage: ' : 'Degree of operating leverage: ') + (!way ? 'choose how to sell' : sell === 'app' && !card ? '1.00×' : g.dtl ? g.dtl.toFixed(1) + '×' : 'very high') + '</b>' + tip('g2', card ? 'How much harder profit moves than sales, counting rent and card interest. Both are owed no matter what.' : 'How much harder profit moves than sales. Rent is owed no matter what, so it makes the number bigger. With no rent it is 1.00×.') + '</div>') + '</div>';
   h += '<div class="card plain"><h3>How do you sell this month?</h3><div class="moves">';
   if (st.lease > 0) h += mvBtn('leased', way === 'leased', '⛱️ Stall, on your lease', money(c.LEASE_RENT) + ' rent. ' + st.lease + ' month' + (st.lease === 1 ? '' : 's') + ' left, this one included.');
   else {
     h += mvBtn('app', way === 'app', '📱 The app', money(c.APP_FEE) + ' fee on each sale. No rent.');
-    h += mvBtn('stall', way === 'stall', '⛱️ Stall, this month only', money(c.RENT) + ' rent, owed even if nobody comes.');
+    h += mvBtn('stall', way === 'stall', '⛱️ Stall, this month only', money(c.RENT) + ' rent' + (i === 0 ? ', owed even if nobody comes.' : '.'));
     if (opts.indexOf('lease') >= 0) h += mvBtn('lease', way === 'lease', '📝 Stall, sign a ' + c.LEASE_MONTHS + '-month lease', money(c.LEASE_RENT) + ' a month. You owe all ' + c.LEASE_MONTHS + ' months.', i === c.LEASE_FROM);
   }
   h += mvBtn('sit', sit, '🔒 Close this month', money(c.SIT_COST) + ' storage' + (st.lease > 0 ? ', plus the lease rent' : '') + '. No sales.');
