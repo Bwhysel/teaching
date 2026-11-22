@@ -488,10 +488,10 @@ function chart2(st, i, way, card, mark){
   var top = Math.max(s2ProfitAt(xmax, 'stall', c.LEASE_RENT, cd), s2ProfitAt(xmax, 'app', 0, cd)), low = Math.min(0, s2ProfitAt(0, 'stall', c.RENT, cd)), raw = (top - low) / 5, mag = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10)), step = [1, 2, 2.5, 5, 10].map(function(x){ return x * mag; }).filter(function(s){ return s >= raw; })[0], yt = [], v;
   for (v = Math.floor(low / step) * step; v <= top + step / 2; v += step) yt.push(v);
   return plot({ x0: 0, x1: xmax, y0: yt[0] - step * 0.3, y1: yt[yt.length - 1], band: [Math.max(0, f.lo), f.hi], tip: tipped(i), likely: f.base, yt: yt, xt: xmax === 40 ? [0, 10, 20, 30, 40] : [0, 5, 10, 15, 20],
-    yf: function(y){ return m0(y); }, xf: function(x){ return x; }, xl: 'Buyers this month', lab: [['App', '#FFF6E0'], ['Stall', '#FF8A1F']],
+    yf: function(y){ return m0(y); }, xf: function(x){ return x; }, xl: 'Buyers this month', lab: st.lease > 0 ? [['Stall', '#FF8A1F']] : [['App', '#FFF6E0'], ['Stall', '#FF8A1F']],
     label: 'Breakeven chart: profit against buyers for the app and the stall.',
-    lines: [{ title: 'App profit', pts: ln('app'), col: '#FFF6E0', w: !sell ? 3 : sell === 'app' ? 4 : 2, dash: sell && sell !== 'app' }, { title: 'Stall profit', pts: ln('stall'), col: '#FF8A1F', w: !sell ? 3 : sell === 'stall' ? 4 : 2, dash: sell && sell !== 'stall' }],
-    mark: mark != null ? [[mark, s2ProfitAt(mark, 'app', rent, cd), '#FFF6E0'], [mark, s2ProfitAt(mark, 'stall', rent, cd), '#FF8A1F']] : null });
+    lines: (st.lease > 0 ? [] : [{ title: 'App profit', pts: ln('app'), col: '#FFF6E0', w: !sell ? 3 : sell === 'app' ? 4 : 2, dash: sell && sell !== 'app' }]).concat([{ title: 'Stall profit', pts: ln('stall'), col: '#FF8A1F', w: !sell ? 3 : sell === 'stall' ? 4 : 2, dash: sell && sell !== 'stall' }]), /* on a lease the app is not a choice, so only the stall is drawn */
+    mark: mark != null ? (st.lease > 0 ? [] : [[mark, s2ProfitAt(mark, 'app', rent, cd), '#FFF6E0']]).concat([[mark, s2ProfitAt(mark, 'stall', rent, cd), '#FF8A1F']]) : null });
 }
 function guide2(i){
   var c = CONFIG.S2;
@@ -507,7 +507,7 @@ function decide2(){
   var h = guide2(i) + '<div class="card" style="--ac:' + T.ac + '"><span class="pill">Month ' + (i + 1) + ' of ' + N() + ' · ' + T.name + '</span><h2>' + T.story + '</h2>' + forecastBox(i) + tipBox(i) + (i === N() - 1 ? '<p class="dim" style="margin-top:8px">This is the last month.</p>' : '') + '</div>';
   h += '<div class="card plain"><h3>What this month could earn' + tip('c2', 'The app keeps ' + m0(m.app) + ' a sale. The stall keeps ' + m0(m.stall) + ' a sale, minus ' + m0(rent) + ' rent. Across: buyers. Up: profit. Where the orange stall line crosses $0, you have paid the rent. Where the two lines cross, the stall and the app pay the same. The yellow band is the forecast; the dashed line is the likely number.') + '</h3>' + chart2(st, i, way, card) +
 
-    '<div class="gauge"><b>Stall: pays its rent at ' + Math.ceil(be) + ' sales.</b> Beats the app at ' + Math.ceil(rent / (m.stall - m.app)) + '.</div>' +
+    '<div class="gauge"><b>Stall: pays its rent at ' + Math.ceil(be) + ' sales.</b>' + (st.lease > 0 ? '' : ' Beats the app at ' + Math.ceil(rent / (m.stall - m.app)) + '.') + '</div>' +
     (sit ? '' : '<div class="gauge"><b>' + (card ? 'Degree of total leverage: ' : 'Degree of operating leverage: ') + (!way ? 'choose how to sell' : sell === 'app' && !card ? '1.00×' : g.dtl ? g.dtl.toFixed(1) + '×' : 'very high') + '</b>' + tip('g2', card ? 'How much more profit moves than sales, counting rent and card interest. Both are owed no matter what.' : 'How much more profit moves than sales. Rent is owed no matter what, so it makes the number bigger. With no rent it is 1.00×.') + '</div>') + '</div>';
   h += '<div class="card plain"><h3>How do you sell this month?</h3><div class="moves">';
   if (st.lease > 0) h += mvBtn('leased', way === 'leased', '⛱️ Stall, on your lease', m0(c.LEASE_RENT) + ' rent. ' + st.lease + ' month' + (st.lease === 1 ? '' : 's') + ' left, this one included.');
@@ -530,7 +530,7 @@ function reveal2(){
     say = e.sell === 'stall' ? (e.profit < 0 ? 'You still paid the full rent.' : e.profit >= e.alt ? 'Enough buyers to cover the rent, and then ' + m0(m.stall) + ' on each sale.' : 'You covered the rent. The app would still have paid more.') : (e.profit >= e.alt ? 'Slow month, no rent. Good.' : 'The app took ' + m0(c.APP_FEE) + ' from every sale. ' + sales + ' times.');
     if (e.card && e.buyers <= c.STOCK) say = 'You bought ' + c.CARD_STOCK + ' items and ' + e.buyers + ' people came. The interest was still due.';
   }
-  var mine = e.sell === 'sit' ? 'Closed' : e.sell === 'stall' ? 'Your stall' : 'Your app sales', other = e.sell === 'app' ? 'The stall instead' : 'The app instead';
+  var mine = e.sell === 'sit' ? 'Closed' : e.sell === 'stall' ? 'Your stall' : 'Your app sales', other = e.altLabel || (e.sell === 'app' ? 'The stall instead' : 'The app instead');
   return '<div class="card" style="--ac:' + T.ac + '"><span class="pill">Month ' + (i + 1) + ' · ' + T.name + '</span><p class="dim" style="text-align:center;margin:0">Buyers who showed up</p><div class="ticker num" id="tick" data-final="' + e.buyers + '">' + e.buyers + '</div>' +
     bars(mx, [mine, e.profit], [other, e.alt]) + (i === 0 ? '<p class="dim">Left: what you made. Right: what the other choice would have made.</p>' : '') + '<p class="num">' + math + ' = <b>' + m0(e.profit) + '</b></p></div>' + mango(e.profit < 0 ? FACE.wince : e.profit >= e.alt ? FACE.wow : FACE.meh, say) +
     '<div class="card plain"><h3>Where the result landed</h3>' + chart2(e.pre, i, e.way, e.card, e.buyers) + '</div>';
@@ -661,8 +661,9 @@ var acts = {
       var way = S.move, lease = S.st.lease;
       if (!way){ hint('Choose how to sell first.'); return; }
       var cd = i >= CONFIG.S2.CARD_FROM && !!S.card && way !== 'sit', profit = s2Profit(d.buyers, way, lease, cd), sell = way === 'app' ? 'app' : way === 'sit' ? 'sit' : 'stall';
-      var alt = sell === 'app' ? s2ProfitAt(d.buyers, 'stall', CONFIG.S2.RENT, cd) : s2Profit(d.buyers, 'app', 0, cd && sell !== 'sit');
-      e = { buyers: d.buyers, sell: sell, way: way, card: cd, profit: profit, alt: alt, rent: sell === 'stall' ? s2Rent(lease, way) : sell === 'sit' && lease > 0 ? CONFIG.S2.LEASE_RENT : 0, pre: { cash: S.st.cash, lease: lease }, before: S.st.cash, after: cents(S.st.cash + profit), big: profit < 0,
+      var alt = sell === 'app' ? s2ProfitAt(d.buyers, 'stall', CONFIG.S2.RENT, cd) : s2Profit(d.buyers, 'app', 0, cd && sell !== 'sit'), altLabel = null;
+      if (lease > 0){ alt = sell === 'sit' ? s2Profit(d.buyers, 'leased', lease, false) : s2Profit(d.buyers, 'sit', lease, false); altLabel = sell === 'sit' ? 'The stall instead' : 'Closed instead'; } /* on a lease the app is not a choice */
+      e = { buyers: d.buyers, sell: sell, way: way, card: cd, profit: profit, alt: alt, altLabel: altLabel, rent: sell === 'stall' ? s2Rent(lease, way) : sell === 'sit' && lease > 0 ? CONFIG.S2.LEASE_RENT : 0, pre: { cash: S.st.cash, lease: lease }, before: S.st.cash, after: cents(S.st.cash + profit), big: profit < 0,
         label: (sell === 'sit' ? 'Closed' : sell === 'app' ? 'App' : way === 'lease' ? 'Stall, new lease' : way === 'leased' ? 'Stall, lease' : 'Stall') + (cd ? ' + 40 items' : '') };
       S.st = { cash: e.after, lease: s2NextLease(way, lease) };
     }
