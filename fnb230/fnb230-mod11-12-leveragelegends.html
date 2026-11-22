@@ -394,7 +394,7 @@ function plot(o){
   if (o.mark) o.mark.forEach(function(mk){ h += '<circle cx="' + px(mk[0]) + '" cy="' + py(mk[1]) + '" r="6" fill="' + mk[2] + '" stroke="#0B1228" stroke-width="2"/>'; });
   h += '<text x="' + ((L + R) / 2) + '" y="' + (B + 34) + '" text-anchor="middle">' + o.xl + '</text>';
   if (o.yl) h += '<text x="' + (L + 4) + '" y="' + (T + 12) + '" fill="#B9C2DC">↑ ' + o.yl + '</text>';
-  if (o.lab) o.lines.forEach(function(ln, k){ var e = ln.pts[ln.pts.length - 1], y = py(e[1]); h += '<text x="' + (R - 2) + '" y="' + Math.min(B - 4, y + (k ? -8 : 16) < T + 12 ? y + 20 : y + (k ? -8 : 16)) + '" text-anchor="end" fill="' + o.lab[k][1] + '" font-weight="700">' + o.lab[k][0] + '</text>'; });
+  if (o.lab) o.lines.forEach(function(ln, k){ var e = ln.pts[ln.pts.length - 1], y = py(e[1]); h += '<text x="' + (px(e[0]) - 2) + '" y="' + Math.min(B - 4, y + (k ? -8 : 16) < T + 12 ? y + 20 : y + (k ? -8 : 16)) + '" text-anchor="end" fill="' + o.lab[k][1] + '" font-weight="700">' + o.lab[k][0] + '</text>'; });
   return '<div class="chart"><svg viewBox="0 0 ' + W + ' 212" role="img" aria-label="' + esc(o.label) + '"><g font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="12" fill="#FFF6E0">' + h + '</g></svg></div>';
 }
 
@@ -483,15 +483,19 @@ function debrief1(){
 
 /* ======================= STAGE 2 ======================= */
 function chart2(st, i, way, card, mark){
-  var c = CONFIG.S2, f = fcast(i), cd = i >= c.CARD_FROM && card, xmax = cd ? c.CARD_STOCK : c.STOCK, rent = s2Rent(st.lease, way), cap = cd ? c.CARD_STOCK : c.STOCK, sell = way === 'sit' ? null : st.lease > 0 ? 'stall' : way === 'app' ? 'app' : way ? 'stall' : null;
-  function ln(s){ return [[0, s2ProfitAt(0, s, rent, cd)], [cap, s2ProfitAt(cap, s, rent, cd)]]; }
-  var top = Math.max(s2ProfitAt(xmax, 'stall', c.LEASE_RENT, cd), s2ProfitAt(xmax, 'app', 0, cd)), low = Math.min(0, s2ProfitAt(0, 'stall', c.RENT, cd)), raw = (top - low) / 5, mag = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10)), step = [1, 2, 2.5, 5, 10].map(function(x){ return x * mag; }).filter(function(s){ return s >= raw; })[0], yt = [], v;
+  var c = CONFIG.S2, f = fcast(i), opt = i >= c.CARD_FROM, cd = opt && card, xmax = opt ? c.CARD_STOCK : c.STOCK, rent = s2Rent(st.lease, way), sell = way === 'sit' ? null : st.lease > 0 ? 'stall' : way === 'app' ? 'app' : way ? 'stall' : null;
+  /* each line ends where its stock runs out: 20 items, or 40 when borrowing */
+  function ln(s, big){ var cap = big ? c.CARD_STOCK : c.STOCK; return [[0, s2ProfitAt(0, s, rent, big)], [cap, s2ProfitAt(cap, s, rent, big)]]; }
+  var L = [], lab = [], mk = [];
+  function add(s, big, title, col, name, on){ L.push({ title: title, pts: ln(s, big), col: col, w: !sell ? 3 : on ? 4 : 2, dash: sell && !on }); lab.push([name, col]); if (mark != null) mk.push([Math.min(mark, big ? c.CARD_STOCK : c.STOCK), s2ProfitAt(mark, s, rent, big), col]); }
+  if (!(st.lease > 0)) add('app', false, 'App profit', '#FFF6E0', 'App', sell === 'app');   /* on a lease the app is not a choice */
+  add('stall', false, 'Stall profit, 20 items', '#FF8A1F', 'Stall', sell === 'stall' && !cd);
+  if (opt) add('stall', true, 'Stall profit, 40 items (borrowed)', '#C77DFF', 'Stall, 40 items', sell === 'stall' && cd);
+  var top = Math.max(s2ProfitAt(xmax, 'stall', c.LEASE_RENT, opt), s2ProfitAt(c.STOCK, 'app', 0, false)), low = Math.min(0, s2ProfitAt(0, 'stall', c.RENT, opt)), raw = (top - low) / 5, mag = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10)), step = [1, 2, 2.5, 5, 10].map(function(x){ return x * mag; }).filter(function(s){ return s >= raw; })[0], yt = [], v;
   for (v = Math.floor(low / step) * step; v <= top + step / 2; v += step) yt.push(v);
   return plot({ x0: 0, x1: xmax, y0: yt[0] - step * 0.3, y1: yt[yt.length - 1], band: [Math.max(0, f.lo), f.hi], tip: tipped(i), likely: f.base, yt: yt, xt: xmax === 40 ? [0, 10, 20, 30, 40] : [0, 5, 10, 15, 20],
-    yf: function(y){ return m0(y); }, xf: function(x){ return x; }, xl: 'Buyers this month', lab: st.lease > 0 ? [['Stall', '#FF8A1F']] : [['App', '#FFF6E0'], ['Stall', '#FF8A1F']],
-    label: 'Breakeven chart: profit against buyers for the app and the stall.',
-    lines: (st.lease > 0 ? [] : [{ title: 'App profit', pts: ln('app'), col: '#FFF6E0', w: !sell ? 3 : sell === 'app' ? 4 : 2, dash: sell && sell !== 'app' }]).concat([{ title: 'Stall profit', pts: ln('stall'), col: '#FF8A1F', w: !sell ? 3 : sell === 'stall' ? 4 : 2, dash: sell && sell !== 'stall' }]), /* on a lease the app is not a choice, so only the stall is drawn */
-    mark: mark != null ? (st.lease > 0 ? [] : [[mark, s2ProfitAt(mark, 'app', rent, cd), '#FFF6E0']]).concat([[mark, s2ProfitAt(mark, 'stall', rent, cd), '#FF8A1F']]) : null });
+    yf: function(y){ return m0(y); }, xf: function(x){ return x; }, xl: 'Buyers this month', lab: lab,
+    label: 'Breakeven chart: profit against buyers for each way of selling.', lines: L, mark: mark != null ? mk : null });
 }
 function guide2(i){
   var c = CONFIG.S2;
