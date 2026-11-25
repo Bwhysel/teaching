@@ -248,3 +248,6 @@ Everything in [§13], plus:
 | — | Engine method | **Brief's engine as written (option A)**: dollar debt = w × model firm value, solved by iteration. Most consistent with Lasher Ch. 14, §14.4e / Example 14-9, where k_d depends only on % debt. Damodaran-style fixed-value method rejected. Consequence: earnings news cannot move the best debt level; news flashes must change lender rates (spreads), tax rate, beta, rf, or MRP. |
 | — | Risk-free rate | Keep the 10-year Treasury (4.85%), though Lasher p. 623 uses short-term T-bills. |
 | — | News flashes (revised Nov 25 after engine run) | 1 Nike: lenders cut rates at every debt level (spreads ×0.7) → best level 63% → 75%. 2 Delta: lenders double airline spreads (×2) → 68% → 62%. 3 Con Ed: regulatory headline, beta +10% → 39% → 39%. 4 Charter: cord-cutting, lenders double spreads (×2) → 39% → 14% (from current 84%). 5 Alphabet: tax rate to 28% → 68% → 81% (from current −4%). All five targets hold. |
+| — | Two-tier questions | Brett reviewed the draft (`fnb230-mod13-mangos-millions-MCQ-DRAFT.md`): all fine. Tier 1 = more / less / about the same (brief's "moved a lot" dropped; engine gives no clean answer). |
+| — | Partial credit | Tier 1 only = **2 of 5** points. |
+| — | Model limits | Add **one Mango line** in the debrief: real CFOs borrow less than this model says (room for bad years, credit rating). |
