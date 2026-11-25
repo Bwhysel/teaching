@@ -243,3 +243,4 @@ Everything in [§13], plus:
 | — | Rating-table kinks | **Keep the kinks.** V(w) shows the steps from the Damodaran synthetic rating table; do not smooth. |
 | — | Step-3 bet baseline | Measure the step-3 move (and its transaction cost) from **where the student left the slider in step 1**, compared with the best move available from that spot. |
 | — | Engine-first check | Run all five curves (especially Alphabet and Con Edison) and show Brett before building any screens. |
+| — | Companies with more cash than debt (Nike, Alphabet) | Extend the slider **below 0%** with a small "more cash than debt" zone, so net-cash companies start where they really are. |
