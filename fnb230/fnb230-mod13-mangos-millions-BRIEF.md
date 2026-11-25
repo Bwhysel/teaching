@@ -1,6 +1,6 @@
 # Game Brief: M&M: Mango's Millions (FNB 230 Module 13)
 
-**Status:** Open questions resolved by Brett, November 25, 2026 (see §17). Engine run with real inputs pending; build not started.
+**Status:** First build done, November 25, 2026 (see §17 and `fnb230-mod13-mangos-millions-BUILD-REPORT.md`). Awaiting Brett's play-test. Where this brief and §17 disagree, §17 is current.
 **Read first:** `GAME_DESIGN_SYSTEM.md` (attach the full file). This brief covers only what is specific to this game. Section numbers in brackets, such as [§5], refer to the design system.
 **Output file:** `fnb230-mod13-mangos-millions.html` [§14].
 **Title:** "M&M: Mango's Millions." The second meaning of M&M (Modigliani and Miller) is revealed in the debrief, not on the start page. Write the title as plain text; do not style it like the candy brand's logo.
