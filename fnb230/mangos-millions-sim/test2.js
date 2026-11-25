@@ -58,7 +58,7 @@ const FILE = 'file:///home/user/teaching/fnb230/fnb230-mod13-mangos-millions.htm
   await q.goto(FILE); await q.fill('#nm', 'RM'); await q.click('[data-act=start]'); await q.click('[data-act=keep]'); await q.click('[data-act=confirm]');
   console.log('reduced motion counter:', await q.$eval('#cu1', e => e.textContent), '| 320 sideways:', await q.evaluate(() => document.documentElement.scrollWidth > innerWidth));
   // 7. Offline / external refs
-  const ext = await p.evaluate(() => [...document.querySelectorAll('script[src],link[href],img[src]')].map(e => e.outerHTML));
+  const ext = await p.evaluate(() => [...document.querySelectorAll('script[src],link[href],img[src]')].filter(e => !/^data:/.test(e.getAttribute('src') || e.getAttribute('href'))).map(e => e.outerHTML.slice(0,80)));
   console.log('external refs:', ext.length ? ext : 'none');
   console.log('errors:', errs.length ? errs : 'none');
   await b.close();
