@@ -1,6 +1,6 @@
 # M&M: Mango's Millions — two-tier questions (DRAFT for Brett's review)
 
-Drafted by Claude after the engine run, Nov 25, 2026 (decision 6, option B). Brett reviewed: all fine. Rounds 1, 2 and 5 revised the same day for small/big move sizes; Brett has not yet reviewed those revisions.
+Drafted by Claude after the engine run, Nov 25, 2026 (decision 6, option B). Brett reviewed: all fine. Rounds 1, 2 and 5 revised the same day for small/big move sizes; Brett approved Round 1's revised correct answer (Nov 25); Rounds 2 and 5 revisions not yet reviewed.
 
 > **Update, Nov 25:** Tier 1 was dropped (Brett: the slider bet already captures direction and size). Only the **Tier 2 "Why?"** question is used, worth 5 points, no partial credit. Tier 1 lines below are kept for reference only.
 
