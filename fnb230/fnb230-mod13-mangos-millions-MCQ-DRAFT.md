@@ -21,7 +21,7 @@ Vocabulary used throughout: debt, debt level, firm value, tax benefit, cost of r
 
 **Tier 2 — Why?**
 - ✓ Borrowing got cheaper at every debt level, so the cost of rising rates stays below the tax benefit for longer.
-- ✗ Lower rates make the tax benefit bigger. *(Misconception: the tax benefit here is tax rate × debt; it doesn't grow when rates fall.)*
+- ✗ Lower rates make each dollar of debt save more tax. *(Misconception: the tax benefit is tax rate × debt (Lasher Eq. 14.21); the interest rate cancels out, so lower rates don't change it.)*
 - ✗ A stronger company should use less debt because it doesn't need the money. *(Misconception: debt is only for companies that need cash.)*
 - ✗ Nike's earnings went up, so it can borrow more. *(Misconception: the news changed lender rates, not earnings; earnings don't move the best debt level in this model.)*
 
@@ -37,7 +37,7 @@ Vocabulary used throughout: debt, debt level, firm value, tax benefit, cost of r
 
 **Tier 2 — Why?**
 - ✓ Rates now climb faster as Delta borrows, so the cost of rising rates catches up with the tax benefit at a lower debt level.
-- ✗ Higher rates mean each dollar of interest saves more tax, so Delta should borrow more. *(Misconception: confusing the tax benefit per dollar of interest with the tax benefit per dollar of debt.)*
+- ✗ Higher rates mean more interest to deduct, so the tax benefit grows and Delta should borrow more. *(Misconception: the tax benefit is tax rate × debt; the interest rate cancels out. Higher rates only raise the cost side.)*
 - ✗ In a recession, a company should borrow more to get through it. *(Misconception: mixing up needing cash with the best mix of debt and equity.)*
 - ✗ The tax rate went down. *(Misconception: misreading which assumption changed.)*
 
