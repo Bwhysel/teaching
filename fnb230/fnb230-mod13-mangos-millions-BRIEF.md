@@ -251,3 +251,4 @@ Everything in [§13], plus:
 | — | Two-tier questions | Brett reviewed the draft (`fnb230-mod13-mangos-millions-MCQ-DRAFT.md`): all fine. Tier 1 = more / less / about the same (brief's "moved a lot" dropped; engine gives no clean answer). |
 | — | Partial credit | Tier 1 only = **2 of 5** points. |
 | — | Model limits | Add **one Mango line** in the debrief: real CFOs borrow less than this model says (room for bad years, credit rating). |
+| — | Move sizes (Brett, Nov 25) | The set must include **small up, small down, and no change**, plus the brief's big moves. Revised flashes: 1 Nike **small up** — market risk premium 4.41% → 4.91% (63% → 66%); lender-rate cuts can't make a small move for Nike because of the rating kinks. 2 Delta **small down** — lenders charge 25% more (68% → 66%). 3 Con Ed **no change** (39%). 4 Charter **big down** — lenders double rates (39% → 14%). 5 Alphabet **big up** — tax rate restored to 35% (68% → 88%). |

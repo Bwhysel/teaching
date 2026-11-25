@@ -225,35 +225,35 @@ var CONFIG = {
 /* Company inputs. $ billions. Sources: Yahoo Finance quote pages (market value, 5Y monthly beta) and latest SEC filings. */
 var COMPANIES = [
   { id:'NKE', name:'Nike', what:'Sneakers and sportswear', E:54.45, ND:-0.475, beta:1.03, T:0.203, EBIT:3.853, filing:'10-Q, Aug 31, 2026',
-    shock:{ spreadMult:0.7 } },
+    shock:{ MRP:0.0491 } },       // small increase
   { id:'DAL', name:'Delta Air Lines', what:'Airline. Planes cost a lot, and travel drops in bad times', E:54.57, ND:8.318, beta:1.42, T:0.191, EBIT:5.286, filing:'10-Q, Sep 30, 2026',
-    shock:{ spreadMult:2 } },
+    shock:{ spreadMult:1.25 } },  // small decrease
   { id:'ED', name:'Con Edison', what:'Electric and gas utility for New York City', E:44.68, ND:27.386, beta:0.22, T:0.221, EBIT:3.387, filing:'10-Q, Sep 30, 2026',
-    shock:{ bUMult:1.10 } },
+    shock:{ bUMult:1.10 } },      // no change
   { id:'CHTR', name:'Charter (Spectrum)', what:'Cable and internet. Borrowed heavily, then merged with Cox in August 2026', E:148.05*0.13587, ND:106.479, beta:0.73, T:0.227, EBIT:12.332, filing:'10-Q, Sep 30, 2026 (EBIT before a one-time $6.3B write-down)',
-    shock:{ spreadMult:2 } },
+    shock:{ spreadMult:2 } },     // big decrease
   { id:'GOOGL', name:'Alphabet', what:'Google and YouTube. Huge profits, huge cash pile', E:3357, ND:-138.98, beta:1.23, T:0.168, EBIT:156.976, filing:'10-Q, Sep 30, 2026',
-    shock:{ T:0.28 } }
+    shock:{ T:0.35 } }             // big increase
 ];
 
 /* Round copy. Each decision screen stays near 200 words. */
 var ROUNDS = [
-  { news:{ head:'Nike turnaround wins over lenders', body:'Banks compete for Nike\'s business. They cut the rates they charge Nike at every debt level.', tick:'NKE ▲ · Lenders line up · Rates cut at every debt level · NKE ▲' },
+  { news:{ head:'Stock market jitters spread', body:'Investors now demand a higher return for owning stocks. The market risk premium rises from 4.4% to 4.9%. What lenders charge stays the same.', tick:'S&P 500 ▼ · Investors want more for owning stocks · Risk premium 4.9% · S&P 500 ▼' },
     intro:null,
-    hint:'Cheaper loans. Think about what that does to the cost of rising rates. I\'ll wait. 😼',
-    why:'Borrowing got cheaper at every debt level, so the cost of rising rates stays below the tax benefit for longer.',
+    hint:'Shareholders want more now. Lenders didn\'t change. Think about which kind of money just got pricier. I\'ll wait. 😼',
+    why:'Shareholders now demand a higher return, so debt is a little cheaper by comparison. A small move toward more debt pays off.',
     tier1:'more',
-    tier2:[['Borrowing got cheaper at every debt level, so the cost of rising rates stays below the tax benefit for longer.',true],
-           ['Lower rates make each dollar of debt save more tax.',false],
-           ['A stronger company should use less debt because it doesn\'t need the money.',false],
-           ['Nike\'s earnings went up, so it can borrow more.',false]] },
-  { news:{ head:'Recession fears hit airlines', body:'Lenders now charge Delta about twice as much above the Treasury rate, at every debt level.', tick:'DAL ▼ · Airline bonds slide · Lenders pull back · DAL ▼' },
+    tier2:[['Shareholders now demand a higher return, so debt is a little cheaper by comparison. A small move toward more debt pays off.',true],
+           ['When stocks get riskier, every company should borrow less.',false],
+           ['Lenders cut the rates they charge Nike.',false],
+           ['A higher risk premium makes the tax benefit of debt bigger.',false]] },
+  { news:{ head:'Recession fears hit airlines', body:'Lenders now charge Delta about 25% more above the Treasury rate, at every debt level.', tick:'DAL ▼ · Airline bonds slide · Lenders pull back · DAL ▼' },
     intro:{ face:'🐱', text:'Purr. Not in the mood. Airlines make me nervous. You take this one.' },
     unlock:'New this round: the breakdown. It shows what your move did to the tax benefit and to the cost of rising rates.',
     hint:'Lenders got nervous. When lenders get nervous, they charge more. Your move.',
-    why:'Rates now climb faster as Delta borrows, so the cost of rising rates catches up with the tax benefit at a lower debt level.',
+    why:'Rates now climb a bit faster as Delta borrows, so the cost of rising rates catches up with the tax benefit a little sooner.',
     tier1:'less',
-    tier2:[['Rates now climb faster as Delta borrows, so the cost of rising rates catches up with the tax benefit at a lower debt level.',true],
+    tier2:[['Rates now climb a bit faster as Delta borrows, so the cost of rising rates catches up with the tax benefit a little sooner.',true],
            ['Higher rates mean more interest to deduct, so the tax benefit grows and Delta should borrow more.',false],
            ['In a recession, a company should borrow more to get through it.',false],
            ['The tax rate went down.',false]] },
@@ -275,7 +275,7 @@ var ROUNDS = [
            ['Charter should keep its debt because paying it down is too expensive.',false],
            ['Cord-cutting cuts Charter\'s earnings, so it has less income to protect from taxes.',false],
            ['Big companies can always carry more debt than small ones.',false]] },
-  { news:{ head:'Congress raises corporate tax rate to 28%', body:'Alphabet\'s tax rate goes from about 17% to 28%.', tick:'GOOGL · Tax bill passes · Corporate rate 28% · GOOGL' },
+  { news:{ head:'Congress restores the 35% corporate tax rate', body:'Alphabet\'s tax rate goes from about 17% to 35%.', tick:'GOOGL · Tax bill passes · Corporate rate back to 35% · GOOGL' },
     intro:{ face:'😼', text:'Alphabet has more cash than debt. A lot more. That\'s the zone left of zero.' },
     hint:'Listen, tax rates just went up. Every dollar of interest saves you more now. You do the math on what that means for debt. I\'ll wait. 😼',
     why:'A higher tax rate makes the tax benefit of each dollar of debt bigger, so more debt pays off before rising rates catch up.',
@@ -297,7 +297,7 @@ function buildCurve(s){
   for (var i = 0; i <= n; i++){
     var w = Math.round(s.wmin * 100 + i) / 100;
     var bL = s.bU * (1 + (1 - s.T) * w / (1 - w));     // Hamada (Eq. 14.23)
-    var ke = CONFIG.RF + bL * CONFIG.MRP;              // SML (Eq. 14.22)
+    var ke = CONFIG.RF + bL * (s.MRP || CONFIG.MRP);   // SML (Eq. 14.22)
     var kd, ka, V, rt = 'none', cov = Infinity;
     if (w <= 0){ kd = CONFIG.RF; ka = w * kd * (1 - s.T) + (1 - w) * ke; V = s.EBIT * (1 - s.T) / ka; }
     else {
@@ -332,7 +332,7 @@ function shareOf(m, best){ var scale = Math.max(best.net, CONFIG.SCORE_FLOOR * b
 /* Precompute every round once. Deterministic: reloads cannot change results. */
 var MODEL = COMPANIES.map(function(c){
   var bU = unlever(c), wmin = wMin(c), base = { bU:bU, T:c.T, EBIT:c.EBIT, spreadMult:1, wmin:wmin };
-  var sh = c.shock, news = { bU:bU * (sh.bUMult || 1), T:sh.T || c.T, EBIT:c.EBIT, spreadMult:sh.spreadMult || 1, wmin:wmin };
+  var sh = c.shock, news = { bU:bU * (sh.bUMult || 1), T:sh.T || c.T, EBIT:c.EBIT, spreadMult:sh.spreadMult || 1, MRP:sh.MRP || CONFIG.MRP, wmin:wmin };
   var p0 = buildCurve(base), p1 = buildCurve(news);
   return { c:c, w0:Math.round(c.ND / (c.ND + c.E) * 100) / 100, p0:p0, p1:p1, band0:holdBand(p0), band1:holdBand(p1), news:news };
 });
@@ -540,7 +540,7 @@ function revealScreen(){
       '<tr class="tot"><td>Value created</td><td class="num">' + bnT(mv.net) + '</td><td class="num">' + bnT(best.net) + '</td></tr></tbody></table><p class="small dim">$B = billions of dollars.</p>';
   }
   var unlock = R.unlock ? mango('😼', R.unlock) : '';
-  var flat = S.r === 1 ? '<p class="small dim">See how flat the new top is? Many debt levels are almost equally good. Once you\'re on it, moving just costs money.</p>' : '';
+  var flat = '';
   var leg = [['#56E0FF', 'After the news'], ['#7D8BB5', 'Before', true]]; if (S.r >= 2){ leg.push(['#FFD23F', 'After transaction costs', true]); leg.push(['rgba(201,210,238,.5)', 'Do-nothing band']); }
   return topBar() + '<div class="card chart" id="chartbox"><p class="eyebrow">The reveal</p><h3>The new curve</h3>' +
     chartSVG({ pts:m.p1, wmin:m.p1.wmin, scale:[m.p0, m.p1], ghost:m.p0, today:r.w1, todayLabel:'Plan', you:r.w2, best:best.to.w, band:S.r >= 2 ? m.band1 : null, net:S.r >= 2 ? r.w1 : null, alt:'New firm value curve. Best debt level ' + pc(best.to.w) + '. Your call ' + pc(r.w2) + '.' }) +

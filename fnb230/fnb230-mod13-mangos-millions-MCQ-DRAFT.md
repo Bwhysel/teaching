@@ -1,6 +1,6 @@
 # M&M: Mango's Millions — two-tier questions (DRAFT for Brett's review)
 
-Drafted by Claude after the engine run, Nov 25, 2026 (decision 6, option B). Not final.
+Drafted by Claude after the engine run, Nov 25, 2026 (decision 6, option B). Brett reviewed: all fine. Rounds 1, 2 and 5 revised the same day for small/big move sizes; Brett has not yet reviewed those revisions.
 
 **Format (every round):** shown after the reveal.
 - **Tier 1:** "After the news, what happened to the best debt level?" — More debt / Less debt / About the same.
@@ -13,39 +13,35 @@ Vocabulary used throughout: debt, debt level, firm value, tax benefit, cost of r
 
 ---
 
-## Round 1 — Nike (guided)
-**News:** Nike's turnaround has lenders competing for its business. They cut the rates they charge at every debt level.
-**Engine:** spreads ×0.7. Best debt level 63% → 75%.
+## Round 1 — Nike (guided) · small increase
+**News:** Stock market jitters spread. Investors now demand a higher return for owning stocks. The market risk premium rises from 4.4% to 4.9%. What lenders charge stays the same.
+**Engine:** MRP 4.41% → 4.91%. Best debt level 63% → 66%.
 
 **Tier 1:** More debt ✓ · Less debt · About the same
 
 **Tier 2 — Why?**
-- ✓ Borrowing got cheaper at every debt level, so the cost of rising rates stays below the tax benefit for longer.
-- ✗ Lower rates make each dollar of debt save more tax. *(Misconception: the tax benefit is tax rate × debt (Lasher Eq. 14.21); the interest rate cancels out, so lower rates don't change it.)*
-- ✗ A stronger company should use less debt because it doesn't need the money. *(Misconception: debt is only for companies that need cash.)*
-- ✗ Nike's earnings went up, so it can borrow more. *(Misconception: the news changed lender rates, not earnings; earnings don't move the best debt level in this model.)*
-
-**Mango, after a wrong tier 2 (draft):** "Close. The tax benefit didn't change. What changed is how fast rates climb as Nike borrows. Slower climb, more room for debt."
+- ✓ Shareholders now demand a higher return, so debt is a little cheaper by comparison. A small move toward more debt pays off.
+- ✗ When stocks get riskier, every company should borrow less. *(Misconception: reacting to market mood instead of the company's own trade-off.)*
+- ✗ Lenders cut the rates they charge Nike. *(Misconception: misreading which assumption changed.)*
+- ✗ A higher risk premium makes the tax benefit of debt bigger. *(Misconception: the tax benefit is tax rate × debt (Lasher Eq. 14.21); the risk premium doesn't enter it.)*
 
 ---
 
-## Round 2 — Delta
-**News:** Recession fears hit airlines. Lenders double what they charge Delta at every debt level.
-**Engine:** spreads ×2. Best debt level 68% → about 32%, with a nearly flat top from 30% to 62%.
+## Round 2 — Delta · small decrease
+**News:** Recession fears hit airlines. Lenders now charge Delta about 25% more above the Treasury rate, at every debt level.
+**Engine:** spreads ×1.25. Best debt level 68% → 66%.
 
 **Tier 1:** More debt · Less debt ✓ · About the same
 
 **Tier 2 — Why?**
-- ✓ Rates now climb faster as Delta borrows, so the cost of rising rates catches up with the tax benefit at a lower debt level.
+- ✓ Rates now climb a bit faster as Delta borrows, so the cost of rising rates catches up with the tax benefit a little sooner.
 - ✗ Higher rates mean more interest to deduct, so the tax benefit grows and Delta should borrow more. *(Misconception: the tax benefit is tax rate × debt; the interest rate cancels out. Higher rates only raise the cost side.)*
 - ✗ In a recession, a company should borrow more to get through it. *(Misconception: mixing up needing cash with the best mix of debt and equity.)*
 - ✗ The tax rate went down. *(Misconception: misreading which assumption changed.)*
 
-**Note for the reveal:** the top of Delta's new curve is flat, so many debt levels between 30% and 62% are almost equally good. Mango can point this out: "See how flat that top is? Once you're on it, moving just costs you money."
-
 ---
 
-## Round 3 — Con Edison ("do nothing" round)
+## Round 3 — Con Edison ("do nothing" round) · no change
 **News:** A loud headline about a regulatory review. Con Ed's business risk barely changes.
 **Engine:** beta +10%. Best debt level 39% → 39%.
 
@@ -59,7 +55,7 @@ Vocabulary used throughout: debt, debt level, firm value, tax benefit, cost of r
 
 ---
 
-## Round 4 — Charter (Spectrum)
+## Round 4 — Charter (Spectrum) · big decrease
 **News:** Cord-cutting speeds up and fiber competition grows. Lenders double what they charge Charter at every debt level.
 **Engine:** spreads ×2. Best debt level 39% → 14% (Charter starts at 84%).
 
@@ -75,9 +71,9 @@ Vocabulary used throughout: debt, debt level, firm value, tax benefit, cost of r
 
 ---
 
-## Round 5 — Alphabet
-**News:** Congress raises the corporate tax rate from about 17% to 28%.
-**Engine:** tax rate 16.8% → 28%. Best debt level 68% → 81% (Alphabet starts at −4%, more cash than debt).
+## Round 5 — Alphabet · big increase
+**News:** Congress restores the 35% corporate tax rate. Alphabet's tax rate goes from about 17% to 35%.
+**Engine:** tax rate 16.8% → 35%. Best debt level 68% → 88% (Alphabet starts at −4%, more cash than debt).
 
 **Tier 1:** More debt ✓ · Less debt · About the same
 

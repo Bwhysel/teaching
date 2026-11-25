@@ -8,13 +8,13 @@ Inputs and sources: `fnb230-mod13-mangos-millions-INPUTS.md`. Decisions: brief �
 
 | Company | Today | Top of curve before news | Top after news | Ideal moves (step 1 → bet) | Do-nothing band (before / after) | Model value vs market EV ($B) | Model rating today |
 |---|---|---|---|---|---|---|---|
-| Nike | −1% | 63% | 75% | 63% → 75% | 63–73% / 75% | 32.5 vs 54.0 (−40%) | net cash |
-| Delta Air Lines | 13% | 68% | 32% (flat top 30–62%) | 68% → 62% | 68–79% / 32–62% | 41.9 vs 62.9 (−33%) | AAA |
-| Con Edison | 38% | 39% | 39% | 39% → 39% | 39% / 39% | 49.7 vs 72.1 (−31%) | A− |
-| Charter (Spectrum) | 84% | 39% | 14% | 39% → 14% | 39% / 14% | 93.6 vs 126.6 (−26%) | CCC |
-| Alphabet | −4% | 68% | 81% | 68% → 81% | 68–79% / 81% | 1,239 vs 3,218 (−61%) | net cash |
+| Nike (small up) | −1% | 63% | 66% | 63% → 66% | 63–73% / 66–76% | 32.5 vs 54.0 (−40%) | net cash |
+| Delta Air Lines (small down) | 13% | 68% | 66% | 68% → 66% | 68–79% / 66% | 41.9 vs 62.9 (−33%) | AAA |
+| Con Edison (no change) | 38% | 39% | 39% | 39% → 39% | 39% / 39% | 49.7 vs 72.1 (−31%) | A− |
+| Charter (big down) | 84% | 39% | 14% | 39% → 14% | 39% / 14% | 93.6 vs 126.6 (−26%) | CCC |
+| Alphabet (big up) | −4% | 68% | 88% | 68% → 88% | 68–79% / 88% | 1,239 vs 3,218 (−61%) | net cash |
 
-Target outcomes: all five held (more / less / no change / pay down most / extreme). Delta's "less debt" holds on the ideal path (68% → 62%); a student who stayed at 13% in step 1 is told to move *up* to 32%.
+Target outcomes: all five held (small up / small down / no change / big down / big up), re-verified after the Nov 25 resizing.
 
 ## Unit test battery (§11)
 
@@ -49,7 +49,7 @@ Target outcomes: all five held (more / less / no change / pay down most / extrem
 
 1. **Labels compare with the best possible move, not the safe choice** (spec §5). Brett's decision; doing nothing is correct in the Con Ed round. A correct hold gets "Right to hold."
 2. **Tier 1 has three options, not four** (brief §4). "Moved a lot" had no clean answer in the engine.
-3. **News flashes changed** from the brief's draft for Nike and Charter: both now change lender rates, because in the textbook's method (Lasher §14.4e) earnings news cannot move the best debt level.
+3. **News flashes changed** from the brief's draft. Earnings news cannot move the best debt level in the textbook's method (Lasher §14.4e). Nike now changes the market risk premium (lender-rate news can't produce a small move because of the rating kinks); Delta, Charter change lender rates; Alphabet's tax rate goes to 35%.
 4. **Slider extends to −10%** for companies with more cash than debt (Nike, Alphabet).
 5. **Firm value uses EBIT × (1 − T) ÷ WACC** (brief), while Lasher p. 623 divides operating income by WACC. Changes levels, not the best debt level.
 6. **Risk-free rate is the 10-year Treasury** (brief), while Lasher p. 623 uses short-term T-bills. Brett chose to keep the 10-year.
