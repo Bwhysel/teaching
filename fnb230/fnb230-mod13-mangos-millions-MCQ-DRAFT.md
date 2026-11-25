@@ -2,6 +2,8 @@
 
 Drafted by Claude after the engine run, Nov 25, 2026 (decision 6, option B). Brett reviewed: all fine. Rounds 1, 2 and 5 revised the same day for small/big move sizes; Brett has not yet reviewed those revisions.
 
+> **Update, Nov 25:** Tier 1 was dropped (Brett: the slider bet already captures direction and size). Only the **Tier 2 "Why?"** question is used, worth 5 points, no partial credit. Tier 1 lines below are kept for reference only.
+
 **Format (every round):** shown after the reveal.
 - **Tier 1:** "After the news, what happened to the best debt level?" — More debt / Less debt / About the same.
   - *Departure from brief §4:* the brief's fourth option ("moved a lot") is dropped. In the engine, Nike (+12 points) and Alphabet (+13 points) move by about the same amount, and Delta's curve is nearly flat from 30% to 62% after the news, so "a lot" has no clean answer. Size of the move shows in the reveal instead.

@@ -56,7 +56,6 @@ const strat = process.argv[2] || 'best';
     const correct = await p.evaluate(r => { return null; }, r);
     const R = await p.evaluate(r => r, r);
     const t1 = ['more', 'less', 'same', 'less', 'more'][r];
-    await p.click(`[data-act=t1][data-v=${strat === 'fast' ? 'same' : t1}]`);
     await p.click(`[data-act=t2][data-v="${strat === 'fast' ? 1 : 0}"]`);
     await p.click('[data-act=submit]');
     await shot(`r${r}-5-explain`);

@@ -37,7 +37,7 @@ Target outcomes: all five held (small up / small down / no change / big down / b
 
 | Profile | Outcome | Label | Notes |
 |---|---|---|---|
-| Fast tapper (keeps every default, picks "About the same" and the second reason) | 16 / 100 | Back to the numbers | Gets points only for the Con Ed hold. Cannot skip the reflection screen. |
+| Fast tapper (keeps every default, picks the second reason) | 14 / 100 | Back to the numbers | Gets points only for the Con Ed hold. Cannot skip the reflection screen. |
 | Default accepter (keeps today's level every time, answers correctly) | 39 / 100 | Back to the numbers | The game never rewards staying put except where it is right (Con Ed). |
 | Careful reader | 100 / 100 possible | Board favorite | All screens under 200 words. |
 | Non-native English speaker | — | — | One word per idea (debt, debt level, firm value, tax benefit, cost of rising rates, transaction costs). "Spread" never appears; written as "charge … above the Treasury rate." Read-aloud check still needed by Brett. |
@@ -48,7 +48,7 @@ Target outcomes: all five held (small up / small down / no change / big down / b
 ## Departures from the spec or brief (with reasons)
 
 1. **Labels compare with the best possible move, not the safe choice** (spec §5). Brett's decision; doing nothing is correct in the Con Ed round. A correct hold gets "Right to hold."
-2. **Tier 1 has three options, not four** (brief §4). "Moved a lot" had no clean answer in the engine.
+2. **No Tier 1 question** (brief §4 asked for a two-tier MCQ). Brett dropped it: the slider bet already records direction and size. One "Why?" question, 5 points; feedback still flags a right call with the wrong reason, using the bet.
 3. **News flashes changed** from the brief's draft. Earnings news cannot move the best debt level in the textbook's method (Lasher §14.4e). Nike now changes the market risk premium (lender-rate news can't produce a small move because of the rating kinks); Delta, Charter change lender rates; Alphabet's tax rate goes to 35%.
 4. **Slider extends to −10%** for companies with more cash than debt (Nike, Alphabet).
 5. **Firm value uses EBIT × (1 − T) ÷ WACC** (brief), while Lasher p. 623 divides operating income by WACC. Changes levels, not the best debt level.

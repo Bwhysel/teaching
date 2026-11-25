@@ -213,7 +213,7 @@ var CONFIG = {
             [1.75,'B+',0.0275],[2.0,'BB',0.0184],[2.25,'BB+',0.0138],[2.5,'BBB',0.0111],[3.0,'A-',0.0089],[4.25,'A',0.0078],
             [5.5,'A+',0.0070],[6.5,'AA',0.0055],[8.5,'AAA',0.0040]],
   W_MAX: 0.90, W_MIN_CASH: -0.10,
-  PTS_STEP1: 5, PTS_BET: 10, PTS_WHY: 5, PTS_TIER1_ONLY: 2,
+  PTS_STEP1: 5, PTS_BET: 10, PTS_WHY: 5,
   SCORE_FLOOR: 0.01,     // when the best move gains little, judge gaps against 1% of firm value
   HOLD_TOL: 0.01,        // "right to hold" if within 1 point of where you started
   LABELS: [[0.9,'Sharp call','good'],[0.6,'Close','mid'],[0.25,'Partway','mid'],[-1,'Missed','bad']],
@@ -242,7 +242,6 @@ var ROUNDS = [
     intro:null,
     hint:'Shareholders want more now. Lenders didn\'t change. Think about which kind of money just got pricier. I\'ll wait. 😼',
     why:'Shareholders now demand a higher return, so debt is a little cheaper by comparison. A small move toward more debt pays off.',
-    tier1:'more',
     tier2:[['Shareholders now demand a higher return, so debt is a little cheaper by comparison. A small move toward more debt pays off.',true],
            ['When stocks get riskier, every company should borrow less.',false],
            ['Lenders cut the rates they charge Nike.',false],
@@ -252,7 +251,6 @@ var ROUNDS = [
     unlock:'New this round: the breakdown. It shows what your move did to the tax benefit and to the cost of rising rates.',
     hint:'Lenders got nervous. When lenders get nervous, they charge more. Your move.',
     why:'Rates now climb a bit faster as Delta borrows, so the cost of rising rates catches up with the tax benefit a little sooner.',
-    tier1:'less',
     tier2:[['Rates now climb a bit faster as Delta borrows, so the cost of rising rates catches up with the tax benefit a little sooner.',true],
            ['Higher rates mean more interest to deduct, so the tax benefit grows and Delta should borrow more.',false],
            ['In a recession, a company should borrow more to get through it.',false],
@@ -261,7 +259,6 @@ var ROUNDS = [
     intro:{ face:'😼', text:'New this round: the gray band. Inside it, moving costs more than it gains. The dashed line shows value after transaction costs.' },
     hint:'Headlines are loud. Numbers are quieter. Check how much really changed.',
     why:'The news barely changed the balance between the tax benefit and the cost of rising rates, and moving costs money.',
-    tier1:'same',
     tier2:[['The news barely changed the balance between the tax benefit and the cost of rising rates, and moving would cost money.',true],
            ['Bad news always means a company should cut its debt.',false],
            ['Utilities should always borrow as much as they can because their earnings are steady.',false],
@@ -269,8 +266,7 @@ var ROUNDS = [
   { news:{ head:'Cord-cutting speeds up as fiber rivals spread', body:'Lenders now charge Charter about twice as much above the Treasury rate, at every debt level.', tick:'CHTR ▼ · Subscribers leave · Fiber expands · CHTR ▼' },
     intro:{ face:'😼', text:'Charter borrowed big for the Cox merger. Look where "Today" sits on that curve.' },
     hint:'Lenders want more from Charter now. Remember where Charter started.',
-    why:'At Charter\'s debt level, the cost of rising rates is far bigger than the tax benefit, even after the cost of issuing new stock.',
-    tier1:'less', reflect:true,
+    why:'At Charter\'s debt level, the cost of rising rates is far bigger than the tax benefit, even after the cost of issuing new stock.', reflect:true,
     tier2:[['At Charter\'s debt level, the cost of rising rates is far bigger than the tax benefit, even after the cost of issuing new stock.',true],
            ['Charter should keep its debt because paying it down is too expensive.',false],
            ['Cord-cutting cuts Charter\'s earnings, so it has less income to protect from taxes.',false],
@@ -279,13 +275,11 @@ var ROUNDS = [
     intro:{ face:'😼', text:'Alphabet has more cash than debt. A lot more. That\'s the zone left of zero.' },
     hint:'Listen, tax rates just went up. Every dollar of interest saves you more now. You do the math on what that means for debt. I\'ll wait. 😼',
     why:'A higher tax rate makes the tax benefit of each dollar of debt bigger, so more debt pays off before rising rates catch up.',
-    tier1:'more',
     tier2:[['A higher tax rate makes the tax benefit of each dollar of debt bigger, so more debt pays off before rising rates catch up.',true],
            ['Higher taxes leave the company less cash, so it should borrow less.',false],
            ['Alphabet has so much cash that it never needs debt.',false],
            ['Higher taxes push interest rates up.',false]] }
 ];
-var TIER1 = [['more','More debt'],['less','Less debt'],['same','About the same']];
 
 /* ======================= ENGINE (Lasher Ch. 14, §14.4c–14.4e) ======================= */
 function unlever(c){ return c.beta / (1 + (1 - c.T) * c.ND / c.E); }
@@ -551,20 +545,19 @@ function revealScreen(){
     '<button class="btn-go wide" data-act="toexplain">Explain what happened</button>';
 }
 
+function readRight(i){ var m = MODEL[i], r = S.res[i], best = bestMove(m.p1, r.w1), db = best.to.w - r.w1, dy = r.w2 - r.w1; return Math.abs(db) < 0.005 ? Math.abs(dy) <= CONFIG.HOLD_TOL : db * dy > 0; }
 function explainScreen(){
   var R = ROUNDS[S.r], r = S.res[S.r], done = r.p3 !== undefined;
-  var t1 = TIER1.map(function(o){ var on = r.t1 === o[0]; var cls = done ? (o[0] === R.tier1 ? ' right' : on ? ' wrong' : '') : ''; return '<button class="opt' + cls + '" data-act="t1" data-v="' + o[0] + '" aria-pressed="' + on + '"' + (done ? ' disabled' : '') + '>' + o[1] + '</button>'; }).join('');
   var t2 = r.order.map(function(i){ var o = R.tier2[i], on = r.t2 === i; var cls = done ? (o[1] ? ' right' : on ? ' wrong' : '') : ''; return '<button class="opt' + cls + '" data-act="t2" data-v="' + i + '" aria-pressed="' + on + '"' + (done ? ' disabled' : '') + '>' + esc(o[0]) + '</button>'; }).join('');
   var fb = '';
   if (done){
-    var ok1 = r.t1 === R.tier1, ok2 = R.tier2[r.t2][1];
-    var msg = ok1 && ok2 ? 'Both right. That\'s the whole idea, in one round.' : ok1 ? 'You read the curve right, but the reason is off. Here\'s the real one: ' + esc(R.why) : 'The market fooled you on that one. Here\'s what happened: ' + esc(R.why);
-    fb = mango(ok1 && ok2 ? '😸' : '😼', msg + ' <b>+' + r.p3 + ' pts</b>') +
+    var read = readRight(S.r), ok = R.tier2[r.t2][1];
+    var msg = ok && read ? 'Right call, right reason. That\'s the whole idea, in one round.' : ok ? 'Right reason. Your slider just didn\'t follow it all the way. Trust the reason next time.' : read ? 'Your slider moved the right way, but the reason is off. Here\'s the real one: ' + esc(R.why) : 'The market fooled you on that one. Here\'s what happened: ' + esc(R.why);
+    fb = mango(ok ? '😸' : '😼', msg + ' <b>+' + r.p3 + ' pts</b>') +
       '<button class="btn-go wide" data-act="next">' + (S.r < 4 ? 'Next boardroom' : 'See the debrief') + '</button>';
   }
-  return topBar() + '<div class="card"><p class="eyebrow">Explain it</p><h3><span class="qn">1</span>After the news, what happened to the best debt level?</h3><div class="seg" role="group" aria-label="Best debt level">' + t1 + '</div></div>' +
-    '<div class="card"><h3><span class="qn">2</span>Why?</h3><div class="opts" role="group" aria-label="Reason">' + t2 + '</div></div>' +
-    (done ? fb : '<button class="btn-go wide" data-act="submit"' + (r.t1 && r.t2 !== undefined ? '' : ' disabled') + '>' + (r.t1 && r.t2 !== undefined ? 'Lock in my answers' : 'Pick one answer in each') + '</button>');
+  return topBar() + '<div class="card"><p class="eyebrow">Explain it</p><h3>Why did the best debt level change the way it did?</h3><div class="opts" role="group" aria-label="Reason">' + t2 + '</div></div>' +
+    (done ? fb : '<button class="btn-go wide" data-act="submit"' + (r.t2 !== undefined ? '' : ' disabled') + '>' + (r.t2 !== undefined ? 'Lock in my answer' : 'Pick one answer') + '</button>');
 }
 
 function totals(){
@@ -711,12 +704,10 @@ document.addEventListener('click', function(e){
     go('explain'); return;
   }
   if (act === 'reflectdone'){ S.res[S.r].reflected = true; ui.reflectOpen = false; save(); go('explain'); return; }
-  if (act === 't1'){ S.res[S.r].t1 = v; save(); render('[data-act=t1][data-v="' + v + '"]'); return; }
   if (act === 't2'){ S.res[S.r].t2 = +v; save(); render('[data-act=t2][data-v="' + v + '"]'); return; }
   if (act === 'submit'){
-    var rr = S.res[S.r], R = ROUNDS[S.r]; if (rr.p3 !== undefined) return;
-    var ok1 = rr.t1 === R.tier1, ok2 = R.tier2[rr.t2][1];
-    rr.p3 = ok1 && ok2 ? CONFIG.PTS_WHY : ok1 ? CONFIG.PTS_TIER1_ONLY : 0; save(); render('[data-act=next]'); return;
+    var rr = S.res[S.r], R = ROUNDS[S.r]; if (rr.p3 !== undefined || rr.t2 === undefined) return;
+    rr.p3 = R.tier2[rr.t2][1] ? CONFIG.PTS_WHY : 0; save(); render('[data-act=next]'); return;
   }
   if (act === 'next'){ busy = true; setTimeout(function(){ busy = false; }, 350); if (S.r < 4){ S.r++; go('set'); } else { S.doneAt = Date.now(); go('debrief'); } return; }
   if (act === 'results'){ S.step = 'done'; save(); render(); window.scrollTo(0, 0); return; }
