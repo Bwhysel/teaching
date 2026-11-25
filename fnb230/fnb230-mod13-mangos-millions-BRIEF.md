@@ -1,0 +1,245 @@
+# Game Brief: M&M: Mango's Millions (FNB 230 Module 13)
+
+**Status:** Open questions resolved by Brett, November 25, 2026 (see §17). Engine run with real inputs pending; build not started.
+**Read first:** `GAME_DESIGN_SYSTEM.md` (attach the full file). This brief covers only what is specific to this game. Section numbers in brackets, such as [§5], refer to the design system.
+**Output file:** `fnb230-mod13-mangos-millions.html` [§14].
+**Title:** "M&M: Mango's Millions." The second meaning of M&M (Modigliani and Miller) is revealed in the debrief, not on the start page. Write the title as plain text; do not style it like the candy brand's logo.
+
+---
+
+## 1. Learning objectives
+
+From the Module 13 SLOs (Brett, Nov 24, 2026). Confirm against the Module 13 agenda slides [§4 Pedagogy].
+
+1. Summarize how the value of a firm is calculated and may depend on the capital structure.
+2. Paraphrase the Miller-Modigliani Independence Hypothesis and its relevance to capital structure strategy.
+3. Illustrate the effect of taxation in MM Theory and how this may explain why certain mergers and acquisitions occur at high premiums.
+4. Estimate the optimal capital structure using levered beta.
+
+**Mapping to game moments**
+
+| SLO | Game moment | Built here or left to assignments |
+|---|---|---|
+| 1 | Every round: firm value moves as the student sets the debt level; the reveal shows where the change came from (tax benefit vs. cost of rising rates) | Built here (feel and breakdown) |
+| 2 | Debrief only: "If there were no taxes and no bankruptcy costs, the curve would be flat and no debt level would beat another." | Feel only; the paraphrase itself is left to assignments |
+| 3 | Tax benefit line in every reveal; the Alphabet tax-hike round | Built here; the M&A premium link is left to the Module 13 Assignment (LBO question) |
+| 4 | The engine uses levered beta at every debt level; students see ke rise as they add debt | Feel built here; the calculation is left to the Module 13 Assignment (Queens Quality question) |
+
+---
+
+## 2. Setting and narrative
+
+The student is a new CFO advisor sent to five real, recognizable companies. At each one, the board asks one question: "Can you make our shareholders richer by changing how much we borrow?" Then the news changes, and the student has to decide whether to change the plan.
+
+Cultural relevance [§3]: Con Edison and Spectrum (Charter) send bills to most BMCC students' homes; Nike and Delta are everyday brands; Alphabet is Google and YouTube.
+
+Start page: narrative, stakes, and Mango only. No learning objectives listed [§2].
+
+---
+
+## 3. Companies and round order
+
+Rounds run in this order. Round 1 is the guided round [§4 UX].
+
+| Round | Company | Profile | Target outcome of the news flash |
+|---|---|---|---|
+| 1 (guided) | Nike | Moderate debt, consumer brand | More debt |
+| 2 | Delta Air Lines | Capital-heavy, cyclical | Less debt |
+| 3 | Con Edison | Regulated utility, already high debt | No change |
+| 4 | Charter Communications (Spectrum) | Very high debt after the Cox merger (closed Aug 2026) | Pay down most debt |
+| 5 | Alphabet | Almost no net debt, very large taxable income | Extreme change: much more debt |
+
+**Let the numbers decide.** The targets above are goals, not facts. After the engine is built, run each scenario. If a news flash does not produce its target outcome with real inputs, report it and propose a different flash or company pairing. Do not tune inputs to force the outcome. The set must keep at least one "more," one "less," one "no change," one "pay down most," and one "extreme" round.
+
+---
+
+## 4. Round structure (every round)
+
+1. **Set the debt level now.** The student sees the company's current debt level and a debt slider. The value chart for the current assumptions is visible. The student picks a debt level. Moving from the current level has a cost (see §6), so staying put is a real choice.
+2. **Breaking news.** An invented but plausible news flash changes **one** assumption. Mango gives one line of context, not the answer.
+3. **Bet.** With the updated chart **hidden**, the student sets the slider to where they think the new best debt level is. This is the prediction.
+4. **Reveal.** The new chart animates in. The result counts up [§4 UX]: net value created by the student's move, compared with the best possible move. The breakdown shows tax benefit, cost of rising rates, and transaction costs.
+5. **Explain (two-tier MCQ).** Tier 1: what happened to the best debt level (moved toward more debt / less debt / stayed about the same / moved a lot). Tier 2: why (pick the reason). Correct tier 1 with wrong tier 2 must be visible in feedback.
+
+Target time per round: 2 to 3 minutes. Keep each decision screen at or under about 200 words [§4 UX].
+
+**Progressive disclosure [§4 UX]**
+- Round 1: debt slider and value chart only. Mango walks through three short numbered steps, then steps back.
+- Round 2: add the breakdown (tax benefit vs. cost of rising rates).
+- Round 3: add the transaction-cost line on the chart (the "do nothing" round).
+- Rounds 4 and 5: everything visible.
+
+---
+
+## 5. Engine (textbook framing)
+
+Follow the course textbook, Chapter 14 (Sections 14.4c to 14.4e): MM with taxes, the benefit of debt (TB), and the Trade-Off Model, where bankruptcy risk shows up as rising required returns. Do not use full APV with a separate distress-cost line.
+
+For each debt ratio w (debt / total value), on a grid from 0% to 90% in 1% steps:
+
+1. **Unlevered beta** from the company's current beta and current market D/E: `bU = bL_current / (1 + (1 - T) * D/E)` (Hamada).
+2. **Levered beta:** `bL(w) = bU * (1 + (1 - T) * w / (1 - w))`.
+3. **Cost of equity:** `ke(w) = rf + bL(w) * MRP`.
+4. **Cost of debt:** Damodaran synthetic rating. Interest coverage = EBIT / interest → rating → default spread → `kd(w) = rf + spread`. Interest depends on kd and on the dollar debt, which depends on firm value, so solve by iteration at each w until it converges.
+5. **WACC:** `ka(w) = w * kd(w) * (1 - T) + (1 - w) * ke(w)`.
+6. **Firm value:** `V(w) = EBIT * (1 - T) / ka(w)` (no-growth perpetuity, as in the textbook).
+7. **Breakdown for the reveal:**
+   - Tax benefit = T × D(w) (textbook Eq. 14.21)
+   - Cost of rising rates = Tax benefit − (V(w) − V(0))
+   - Transaction costs (see §6)
+8. **Net value created by a move** from w_old to w_new = V(w_new) − V(w_old) − transaction costs.
+
+**Open issue to raise before building:** model V at the current debt level will not equal the company's market enterprise value. Propose one of these to Brett and wait for his choice: (a) scale EBIT so model V matches market EV at the current debt level, or (b) report all results as changes from the current value, not as levels.
+
+---
+
+## 6. Transaction costs (asymmetric)
+
+A recapitalization changes both debt and equity:
+- **Levering up:** issue debt and buy back stock.
+- **Levering down:** issue stock (or use cash) and retire debt.
+
+Use two rates, each applied to the dollar amount of debt moved:
+- `COST_UP` (levering up)
+- `COST_DOWN` (levering down), higher than `COST_UP`, because issuing equity is the most expensive step.
+
+**Research required [§9]:** find and cite typical underwriting spreads for investment-grade bonds and for seasoned equity offerings, plus typical buyback costs. Set both rates from those sources and list them as assumptions on screen. If no source can be verified, report it; do not approximate.
+
+---
+
+## 7. Inputs and data
+
+**Snapshot rule:** all market inputs come from one snapshot date, shown on screen ("Data as of …"). Betas are Yahoo Finance 5-year monthly betas for all five companies. Pull current values from Yahoo and the latest 10-Q / 10-K on the build date, and record each source in the build report.
+
+Preliminary values found Nov 25, 2026. **All must be verified at build.**
+
+| Company | Market cap | Debt | Beta (5Y monthly) | Tax rate | EBIT | Notes |
+|---|---|---|---|---|---|---|
+| Nike | ~$53–56B | ~$11.1B (Q1 FY27) | ~1.05 | verify | verify | |
+| Delta | ~$52.6B | net debt ~$15.3B (EV − market cap) | ~1.31 (Yahoo) | ~19% | verify | |
+| Con Edison | ~$44B | ~$27.8B | ~0.22–0.26 | ~15–22% | verify (operating income ~$3.4B) | Low beta means very low ke; check the curve looks sensible |
+| Charter | ~$15–21B (share count changed with merger; use 10-Q cover) | principal ~$108.6B, cash ~$0.6B (Sep 30, 2026) | ~0.70 | ~22% | verify | Q3 had a large non-cash impairment; use EBIT before impairment and say so |
+| Alphabet | ~$3.5–4.2T | ~$90B | ~1.25 | ~18% | verify (operating income ~$138B TTM) | Large cash balance; decide gross vs. net debt and apply the same rule to all five |
+
+**Other inputs (verify and cite):**
+- `rf`: current 10-year U.S. Treasury yield on the snapshot date.
+- `MRP`: Damodaran's implied equity risk premium (latest monthly update).
+- Spread table: Damodaran's synthetic rating table for large non-financial firms (latest January update).
+
+All of these live in one constants block at the top of the file [§1].
+
+---
+
+## 8. News flashes (invented, plausible)
+
+Brett chose invented news so the game stays usable year after year. Each flash changes **one** assumption. Label them on screen as hypothetical news. The mechanism behind each must be real [§9].
+
+| Round | Company | Draft flash | Assumption changed |
+|---|---|---|---|
+| 1 | Nike | A turnaround steadies earnings | Business risk (unlevered beta) ↓ |
+| 2 | Delta | Recession fears hit airlines, and lenders widen spreads | Credit curve steeper (spreads ↑ at every rating) |
+| 3 | Con Edison | A loud headline about a regulatory review that barely changes risk | Business risk slightly ↑ |
+| 4 | Charter | Cord-cutting speeds up and fiber competition grows | Business risk ↑ (and/or EBIT ↓; pick one) |
+| 5 | Alphabet | Congress raises the corporate tax rate sharply | Tax rate ↑ |
+
+Size each shock so the target outcome holds after transaction costs (see §3, "let the numbers decide").
+
+---
+
+## 9. Scoring
+
+Simulation game, scored by outcome plus explanation [§5].
+
+- **Steps 1 and 3 (debt choices):** score by net value created as a share of the best possible net value created in that situation (after transaction costs). Thresholds set by simulation.
+- **Step 5 (two-tier MCQ):** 5 points; tier 1 and tier 2 both correct for full points. Partial credit for tier 1 only (justification: tier 1 shows the student read the result; tier 2 shows understanding).
+- **Results page:** total score, round-by-round net value, short comment, screenshot instructions with the ⓘ steps [§5].
+
+**Spec conflict to resolve with Brett before building:** [§5] says "Labels compare with the safe choice, so doing nothing is never rewarded as skill." In this game, doing nothing is the correct move in the Con Edison round, and staying near the current level may be right in other rounds once transaction costs apply. Proposed fix: compare each choice with the **best possible move** in that round, not with doing nothing, so staying put earns full credit only when it is actually best. Confirm before building.
+
+---
+
+## 10. Mango 😼
+
+**Role:** advisor and explainer. Reliable. She explains hard ideas in plain English with New York attitude. She never gives away the bet.
+
+- Tone: teasing but on the student's side. Snarky, never mean [§7]. When a student is wrong, she teases the market, not the student, then explains.
+- Writes like a person: short, natural, grammatical sentences. No broken English, no slogans, no idioms a non-native speaker would miss [§3, §7].
+- Once or twice she says she's not in the mood or just purrs [§7].
+- Front page line, true to her role, for example: "Mango knows this stuff. She'll explain, but she won't make your call."
+- Debrief reveal line (draft): "Those other M&M? Modigliani and Miller. Two economists who won Nobel Prizes for the idea you just played."
+- Sample lines (Brett approved the tone):
+  - Before a bet: "Listen, tax rates just went up. Every dollar of interest saves you more now. You do the math on what that means for debt. I'll wait. 😼"
+  - After a wrong call: "Ehh, you went left and the curve went right. Happens to Wall Street guys every day. Here's what you missed: higher taxes make the tax shield worth more, so the best debt level moves to the right. You'll get the next one."
+
+Because Mango is reliable in this game, the "wrong-advice tell" rule [§7] applies only to the not-in-the-mood moments.
+
+---
+
+## 11. Reflection moment [§8]
+
+Proposed: the Charter round reveal. Hold the screen while the chart shows how much value a heavily indebted company loses when risk rises, and how expensive it is to get out (the levering-down cost). Mango says one line. Not skippable by fast tapping.
+
+---
+
+## 12. Visual and UX direction
+
+Brett wants the chart and sliders to be **gorgeous** and to use current UX thinking, within the design system's limits (single file, no frameworks, no CDN, system fonts) [§1].
+
+- Hand-built SVG chart: smooth value curve, a clear marker for the current debt level, the student's choice, and (after reveal) the best level. Label lines on the chart, not in a key [§4 UX].
+- Animate the curve change on reveal; respect reduced motion.
+- Large, touch-friendly custom slider (44px target), keyboard operable, with live value readout and haptic-style visual feedback ("juice") [§4 Fun].
+- Breaking-news moment styled as a news alert or ticker.
+- "Do nothing" band: after round 3 unlocks it, shade the range where moving costs more than it gains.
+- Whole dollars on game screens [§4 UX]; values in billions with one unit word used everywhere.
+- Plain English, one word per idea [§3]: use "debt," "debt level," "firm value," "tax benefit," "cost of rising rates," and "transaction costs" consistently.
+
+---
+
+## 13. Optional mechanics [§6]
+
+None opted in. No random results, no paid tips, no timer, no multi-stage.
+
+---
+
+## 14. The rule the game teaches [§3]
+
+"Add debt while the tax benefit is worth more than the rising cost of risk, and only move when the gain is bigger than the cost of moving."
+
+The best strategy in simulation must follow this rule in every round. If it doesn't, change the mechanic, not the debrief.
+
+---
+
+## 15. Departures and open questions (resolve before code)
+
+1. Safe-choice label rule vs. correct "do nothing" round (§9 above).
+2. Model value vs. market enterprise value calibration (§5 above).
+3. Gross vs. net debt rule, applied the same way to all five companies.
+4. Name note: the game's numbers are in billions. Mango covers the gap once, for example: "I said millions. I was being modest. 😼"
+5. Overlap with Leverage Legends (FNB 230 Modules 11–12): check that vocabulary matches ("debt," "return") and that this game doesn't repeat its mechanic.
+6. Two-tier MCQ copy for each round: Brett to review before build.
+
+---
+
+## 16. Build report must include
+
+Everything in [§13], plus:
+- Every input with its value, source, and snapshot date.
+- For each round: the current best debt level, the post-news best level, the do-nothing band, and whether the target outcome held.
+- Any number still unverified (especially transaction-cost rates).
+
+---
+
+## 17. Decisions (Brett, Nov 25, 2026)
+
+| # | Question | Decision |
+|---|---|---|
+| 1 | Safe-choice label rule vs. correct "do nothing" round | This is a new sim; nothing carries over from Leverage Legends labels. Score each round against the **best possible move**. Spec departure from [§5] "labels compare with the safe choice"; log in build report. Label names to be written fresh. |
+| 2 | Model V vs. market EV | No calibration. Show the formula's firm value with real reported inputs; **any** discrepancy from market EV is acceptable. Report each company's gap in the build report. |
+| 3 | Gross vs. net debt | **Net debt** (debt minus cash), applied to all five companies. |
+| 4 | "Millions" name note | **Dropped.** Mango does not comment on millions vs. billions. |
+| 5 | Overlap with Leverage Legends | Checked: mechanic does not repeat (LL = random-results funding mix for a small business; M&M = deterministic value curve and prediction after news). Vocabulary: keep "debt"; use "shareholders" (not "partner"); keep "cost of rising rates" distinct from LL's "debt rate"; debrief maps "debt level" → Capital structure, as in LL. |
+| 6 | Two-tier MCQ copy | Claude drafts both tiers **after** the engine run; Brett reviews and edits before build. |
+| 7 | Neutral starting state [§4 UX] (added) | Slider **starts at the current debt level**; Confirm stays locked until the student touches the slider; keeping the current level requires a deliberate "Keep current level" tap. |
+| — | Rating-table kinks | **Keep the kinks.** V(w) shows the steps from the Damodaran synthetic rating table; do not smooth. |
+| — | Step-3 bet baseline | Measure the step-3 move (and its transaction cost) from **where the student left the slider in step 1**, compared with the best move available from that spot. |
+| — | Engine-first check | Run all five curves (especially Alphabet and Con Edison) and show Brett before building any screens. |
