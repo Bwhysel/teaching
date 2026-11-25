@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>M&amp;M: Mango's Millions</title>
+<style>
+:root{--bg:#0B1226;--panel:#15203D;--panel2:#22305A;--ink:#FFF6E0;--dim:#B9C2DC;--orange:#FF8A1F;--green:#3DDC84;--red:#FF6B6B;--yellow:#FFD23F;--blue:#6BB6FF;--alert:#E63946;--grid:#2A3A66}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:17px;line-height:1.4;-webkit-text-size-adjust:100%}
+body{min-height:100vh}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;border:0;border-radius:12px;min-height:48px;padding:10px 14px;background:var(--panel2);color:var(--ink);font-weight:700;touch-action:manipulation;min-width:0}
+button:disabled{opacity:.45;cursor:default}
+button:focus-visible,input:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+.btn-go{background:var(--green);color:#06210F}
+.btn-ghost{background:transparent;border:2px solid var(--panel2)}
+.wide{width:100%}
+.num{font-variant-numeric:tabular-nums}
+#app{max-width:560px;margin:0 auto;padding:0 14px 40px}
+.top{position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 0;margin-bottom:10px;display:flex;align-items:center;gap:8px;border-bottom:2px solid var(--panel2)}
+.chip{background:var(--panel);border-radius:999px;padding:6px 12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.prog{font-size:.85rem;color:var(--dim);white-space:nowrap}
+.score{margin-left:auto;font-weight:800;color:var(--green);white-space:nowrap}
+.card{background:var(--panel);border-radius:16px;padding:14px;margin:0 0 12px}
+h1{font-size:2rem;line-height:1.1;margin:.2em 0}
+h2{font-size:1.25rem;margin:.1em 0 .3em;line-height:1.2}
+h3{font-size:1.02rem;margin:.1em 0 .4em}
+p{margin:.35em 0}
+h1,h2,h3,p,td,th,.bubble,button{overflow-wrap:break-word}
+.dim{color:var(--dim)}
+.small{font-size:.88rem}
+.mango{display:flex;gap:10px;align-items:flex-start;margin:0 0 12px}
+.mface{flex:0 0 52px;height:52px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;font-size:1.8rem;position:relative}
+.mface:before,.mface:after{content:"";position:absolute;top:-6px;border:9px solid transparent;border-bottom:13px solid var(--orange)}
+.mface:before{left:2px;transform:rotate(-25deg)}.mface:after{right:2px;transform:rotate(25deg)}
+.bubble{background:var(--ink);color:#1B1B2A;border-radius:14px;padding:10px 12px;flex:1;font-weight:600;min-width:0}
+.bubble ol{margin:4px 0 0;padding-left:20px}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0 0}
+.fact{background:#0B1430;border-radius:10px;padding:8px 10px;min-width:0}
+.fact span{display:block;font-size:.8rem;color:var(--dim)}
+.fact b{font-size:1.1rem}
+.chart{position:relative}
+.chart svg{width:100%;height:auto;display:block;touch-action:pan-y}
+.hidden-veil{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.hidden-veil span{background:rgba(11,18,38,.88);border:2px dashed var(--yellow);color:var(--yellow);font-weight:800;padding:8px 14px;border-radius:12px}
+/* slider */
+.slider{margin:12px 2px 4px}
+.readout{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:6px}
+.readout b{font-size:1.6rem;display:inline-block}
+.readout .v{font-size:1rem;color:var(--dim);text-align:right}
+.bump{animation:bump .18s ease-out}
+@keyframes bump{0%{transform:scale(1)}50%{transform:scale(1.12)}100%{transform:scale(1)}}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:44px;background:transparent;margin:0;cursor:pointer}
+input[type=range]::-webkit-slider-runnable-track{height:10px;border-radius:999px;background:linear-gradient(90deg,var(--blue) var(--fill,0%),var(--panel2) var(--fill,0%))}
+input[type=range]::-moz-range-track{height:10px;border-radius:999px;background:var(--panel2)}
+input[type=range]::-moz-range-progress{height:10px;border-radius:999px;background:var(--blue)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:34px;height:34px;margin-top:-12px;border-radius:50%;background:var(--orange);border:4px solid var(--ink);box-shadow:0 2px 10px rgba(0,0,0,.5);transition:transform .12s}
+input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;background:var(--orange);border:4px solid var(--ink)}
+input[type=range]:active::-webkit-slider-thumb{transform:scale(1.18)}
+.untouched input[type=range]::-webkit-slider-thumb{background:var(--panel2)}
+.untouched input[type=range]::-moz-range-thumb{background:var(--panel2)}
+.ticks{display:flex;justify-content:space-between;font-size:.75rem;color:var(--dim);margin-top:-4px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+/* news */
+.news{border-radius:16px;overflow:hidden;margin:0 0 12px;background:#1A0F14;border:2px solid var(--alert)}
+.news .bar{background:var(--alert);color:#fff;font-weight:900;letter-spacing:1.5px;font-size:.85rem;padding:6px 12px;display:flex;justify-content:space-between;gap:8px}
+.news .bar i{font-style:normal;opacity:.9;font-weight:700;letter-spacing:.5px}
+.news .body{padding:12px 14px}
+.news h2{font-size:1.35rem}
+.ticker{overflow:hidden;white-space:nowrap;border-top:1px solid #3A1A22;font-size:.85rem;color:#FFB3B3;padding:5px 0}
+.ticker span{display:inline-block;padding-left:100%;animation:tick 16s linear infinite}
+@keyframes tick{to{transform:translateX(-100%)}}
+.flash{animation:flash .6s ease-out 2}
+@keyframes flash{50%{box-shadow:0 0 0 6px rgba(230,57,70,.45)}}
+/* result */
+.big{font-size:2.2rem;font-weight:900;line-height:1.1}
+.pos{color:var(--green)}.neg{color:var(--red)}
+.brk{width:100%;border-collapse:collapse;margin-top:8px;font-size:.95rem}
+.brk td{padding:6px 4px;border-top:1px solid var(--panel2)}
+.brk td:last-child,.brk th:last-child,.brk td:nth-child(2),.brk th:nth-child(2){text-align:right}
+.brk th{font-size:.8rem;color:var(--dim);text-align:left;font-weight:600;padding:4px}
+.brk tr.tot td{font-weight:800;border-top:2px solid var(--dim)}
+.tag{display:inline-block;border-radius:999px;padding:3px 12px;font-weight:800;font-size:.9rem;background:var(--panel2)}
+.tag.good{background:var(--green);color:#06210F}.tag.mid{background:var(--yellow);color:#2A2000}.tag.bad{background:var(--red);color:#2A0606}
+/* mcq */
+.opts{display:grid;gap:8px;margin-top:6px}
+.opt{text-align:left;font-weight:600;border:2px solid transparent}
+.opt[aria-pressed=true]{background:var(--orange);color:#231000}
+.opt.right{border-color:var(--green)}.opt.wrong{border-color:var(--red)}
+.tipbtn{min-width:44px;min-height:44px;padding:0;border-radius:50%;background:transparent;color:var(--blue);font-size:1.1rem;vertical-align:middle}
+.tip{display:block;background:#0B1430;border-left:4px solid var(--blue);border-radius:8px;padding:8px 10px;margin:6px 0;font-size:.9rem}
+/* reflection */
+.veil{position:fixed;inset:0;background:rgba(5,8,18,.82);display:flex;align-items:center;justify-content:center;z-index:20;padding:16px}
+.veil .card{max-width:520px;width:100%;border:2px solid var(--yellow)}
+.ring{height:6px;border-radius:999px;background:var(--panel2);overflow:hidden;margin:10px 0}
+.ring i{display:block;height:100%;background:var(--yellow);width:0;transition:width linear}
+/* debrief */
+.dl{width:100%;border-collapse:collapse}
+.dl td{padding:8px 4px;border-top:1px solid var(--panel2);vertical-align:top;width:50%}
+.dl th{text-align:left;font-size:.8rem;color:var(--dim);padding:4px}
+/* receipt */
+.receipt{background:#FBF7EC;color:#1B1B2A;border-radius:6px;padding:14px 10px;margin:0 0 12px;font-variant-numeric:tabular-nums}
+.receipt h2{text-align:center;margin:0}
+.receipt .line{display:flex;justify-content:space-between;gap:8px;border-bottom:1px dotted #B8B19A;padding:3px 0}
+.receipt table{width:100%;border-collapse:collapse;font-size:.8rem;margin-top:8px;table-layout:fixed}
+.receipt th:first-child{width:28%}.receipt th:last-child{width:12%}
+.receipt td{overflow-wrap:anywhere}
+.receipt th,.receipt td{padding:4px 3px;border-bottom:1px solid #DDD6C2;text-align:right}
+.receipt th:first-child,.receipt td:first-child{text-align:left}
+.receipt .total{font-size:2.4rem;font-weight:900;text-align:center}
+.receipt .tipbtn{color:#1F5FA8}
+.receipt .tip{background:#EFE9D8;color:#1B1B2A}
+.copy{margin-top:10px;text-align:center;font-weight:700}
+.start-cat{width:120px;height:130px;display:block;margin:0 auto}
+label.nm{display:block;font-weight:700;margin:10px 0 4px}
+input.text{width:100%;min-height:48px;border-radius:12px;border:2px solid var(--panel2);background:#0B1430;padding:8px 12px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main id="app" aria-live="polite"></main>
+<script>
+/* =====================================================================
+   M&M: Mango's Millions  (FNB 230, Module 13)
+   Copyright (c) 2026 Brett Whysel. All rights reserved.
+   ===================================================================== */
+
+/* ======================= CONSTANTS (teacher-tunable) ======================= */
+var CONFIG = {
+  SNAPSHOT: 'November 25, 2026',
+  RF: 0.0485,            // 10-year U.S. Treasury, 11/25/2026 (U.S. Treasury daily par yield curve)
+  MRP: 0.0441,           // Damodaran implied equity risk premium, Nov 1, 2026
+  COST_UP: 0.0057,       // issue investment-grade bonds, $500M+: total direct costs (Lee, Lochhead, Ritter & Zhao 1996, Table 3)
+  COST_DOWN: 0.0315,     // seasoned equity offering, $500M+: total direct costs (LLRZ 1996, Table 1)
+  // Damodaran synthetic ratings, large non-financial firms, January 2026: [coverage greater than, rating, spread]
+  RATINGS: [[-1e9,'D',0.19],[0.2,'C',0.16],[0.65,'CC',0.1261],[0.8,'CCC',0.0885],[1.25,'B-',0.0509],[1.5,'B',0.0321],
+            [1.75,'B+',0.0275],[2.0,'BB',0.0184],[2.25,'BB+',0.0138],[2.5,'BBB',0.0111],[3.0,'A-',0.0089],[4.25,'A',0.0078],
+            [5.5,'A+',0.0070],[6.5,'AA',0.0055],[8.5,'AAA',0.0040]],
+  W_MAX: 0.90, W_MIN_CASH: -0.10,
+  PTS_STEP1: 5, PTS_BET: 10, PTS_WHY: 5, PTS_TIER1_ONLY: 2,
+  SCORE_FLOOR: 0.01,     // when the best move gains little, judge gaps against 1% of firm value
+  HOLD_TOL: 0.01,        // "right to hold" if within 1 point of where you started
+  LABELS: [[0.9,'Sharp call','good'],[0.6,'Close','mid'],[0.25,'Partway','mid'],[-1,'Missed','bad']],
+  FINAL: [[85,'Board favorite'],[65,'Trusted advisor'],[40,'Getting there'],[0,'Back to the numbers']],
+  REFLECT_MS: 4000,
+  STORE: 'mm-mangos-millions-v1'
+};
+
+/* Company inputs. $ billions. Sources: Yahoo Finance quote pages (market value, 5Y monthly beta) and latest SEC filings. */
+var COMPANIES = [
+  { id:'NKE', name:'Nike', what:'Sneakers and sportswear', E:54.45, ND:-0.475, beta:1.03, T:0.203, EBIT:3.853, filing:'10-Q, Aug 31, 2026',
+    shock:{ spreadMult:0.7 } },
+  { id:'DAL', name:'Delta Air Lines', what:'Airline. Planes cost a lot, and travel drops in bad times', E:54.57, ND:8.318, beta:1.42, T:0.191, EBIT:5.286, filing:'10-Q, Sep 30, 2026',
+    shock:{ spreadMult:2 } },
+  { id:'ED', name:'Con Edison', what:'Electric and gas utility for New York City', E:44.68, ND:27.386, beta:0.22, T:0.221, EBIT:3.387, filing:'10-Q, Sep 30, 2026',
+    shock:{ bUMult:1.10 } },
+  { id:'CHTR', name:'Charter (Spectrum)', what:'Cable and internet. Borrowed heavily, then merged with Cox in August 2026', E:148.05*0.13587, ND:106.479, beta:0.73, T:0.227, EBIT:12.332, filing:'10-Q, Sep 30, 2026 (EBIT before a one-time $6.3B write-down)',
+    shock:{ spreadMult:2 } },
+  { id:'GOOGL', name:'Alphabet', what:'Google and YouTube. Huge profits, huge cash pile', E:3357, ND:-138.98, beta:1.23, T:0.168, EBIT:156.976, filing:'10-Q, Sep 30, 2026',
+    shock:{ T:0.28 } }
+];
+
+/* Round copy. Each decision screen stays near 200 words. */
+var ROUNDS = [
+  { news:{ head:'Nike turnaround wins over lenders', body:'Banks compete for Nike\'s business. They cut the rates they charge Nike at every debt level.', tick:'NKE ▲ · Lenders line up · Rates cut at every debt level · NKE ▲' },
+    intro:null,
+    hint:'Cheaper loans. Think about what that does to the cost of rising rates. I\'ll wait. 😼',
+    why:'Borrowing got cheaper at every debt level, so the cost of rising rates stays below the tax benefit for longer.',
+    tier1:'more',
+    tier2:[['Borrowing got cheaper at every debt level, so the cost of rising rates stays below the tax benefit for longer.',true],
+           ['Lower rates make each dollar of debt save more tax.',false],
+           ['A stronger company should use less debt because it doesn\'t need the money.',false],
+           ['Nike\'s earnings went up, so it can borrow more.',false]] },
+  { news:{ head:'Recession fears hit airlines', body:'Lenders now charge Delta about twice as much above the Treasury rate, at every debt level.', tick:'DAL ▼ · Airline bonds slide · Lenders pull back · DAL ▼' },
+    intro:{ face:'🐱', text:'Purr. Not in the mood. Airlines make me nervous. You take this one.' },
+    unlock:'New this round: the breakdown. It shows what your move did to the tax benefit and to the cost of rising rates.',
+    hint:'Lenders got nervous. When lenders get nervous, they charge more. Your move.',
+    why:'Rates now climb faster as Delta borrows, so the cost of rising rates catches up with the tax benefit at a lower debt level.',
+    tier1:'less',
+    tier2:[['Rates now climb faster as Delta borrows, so the cost of rising rates catches up with the tax benefit at a lower debt level.',true],
+           ['Higher rates mean more interest to deduct, so the tax benefit grows and Delta should borrow more.',false],
+           ['In a recession, a company should borrow more to get through it.',false],
+           ['The tax rate went down.',false]] },
+  { news:{ head:'Regulators open review of Con Ed', body:'Analysts call the review routine. Con Ed\'s business risk rises only a little.', tick:'ED · Review opens · Analysts: "routine" · ED' },
+    intro:{ face:'😼', text:'New this round: the gray band. Inside it, moving costs more than it gains. The dashed line shows value after transaction costs.' },
+    hint:'Headlines are loud. Numbers are quieter. Check how much really changed.',
+    why:'The news barely changed the balance between the tax benefit and the cost of rising rates, and moving costs money.',
+    tier1:'same',
+    tier2:[['The news barely changed the balance between the tax benefit and the cost of rising rates, and moving would cost money.',true],
+           ['Bad news always means a company should cut its debt.',false],
+           ['Utilities should always borrow as much as they can because their earnings are steady.',false],
+           ['Higher risk always means much less debt.',false]] },
+  { news:{ head:'Cord-cutting speeds up as fiber rivals spread', body:'Lenders now charge Charter about twice as much above the Treasury rate, at every debt level.', tick:'CHTR ▼ · Subscribers leave · Fiber expands · CHTR ▼' },
+    intro:{ face:'😼', text:'Charter borrowed big for the Cox merger. Look where "Today" sits on that curve.' },
+    hint:'Lenders want more from Charter now. Remember where Charter started.',
+    why:'At Charter\'s debt level, the cost of rising rates is far bigger than the tax benefit, even after the cost of issuing new stock.',
+    tier1:'less', reflect:true,
+    tier2:[['At Charter\'s debt level, the cost of rising rates is far bigger than the tax benefit, even after the cost of issuing new stock.',true],
+           ['Charter should keep its debt because paying it down is too expensive.',false],
+           ['Cord-cutting cuts Charter\'s earnings, so it has less income to protect from taxes.',false],
+           ['Big companies can always carry more debt than small ones.',false]] },
+  { news:{ head:'Congress raises corporate tax rate to 28%', body:'Alphabet\'s tax rate goes from about 17% to 28%.', tick:'GOOGL · Tax bill passes · Corporate rate 28% · GOOGL' },
+    intro:{ face:'😼', text:'Alphabet has more cash than debt. A lot more. That\'s the zone left of zero.' },
+    hint:'Listen, tax rates just went up. Every dollar of interest saves you more now. You do the math on what that means for debt. I\'ll wait. 😼',
+    why:'A higher tax rate makes the tax benefit of each dollar of debt bigger, so more debt pays off before rising rates catch up.',
+    tier1:'more',
+    tier2:[['A higher tax rate makes the tax benefit of each dollar of debt bigger, so more debt pays off before rising rates catch up.',true],
+           ['Higher taxes leave the company less cash, so it should borrow less.',false],
+           ['Alphabet has so much cash that it never needs debt.',false],
+           ['Higher taxes push interest rates up.',false]] }
+];
+var TIER1 = [['more','More debt'],['less','Less debt'],['same','About the same']];
+
+/* ======================= ENGINE (Lasher Ch. 14, §14.4c–14.4e) ======================= */
+function unlever(c){ return c.beta / (1 + (1 - c.T) * c.ND / c.E); }
+function rating(cov, mult){ var r = CONFIG.RATINGS[0]; for (var i = 0; i < CONFIG.RATINGS.length; i++){ if (cov > CONFIG.RATINGS[i][0]) r = CONFIG.RATINGS[i]; } return { rating:r[1], spread:r[2] * mult }; }
+function wMin(c){ return c.ND < 0 ? CONFIG.W_MIN_CASH : 0; }
+// s: {bU, T, EBIT, spreadMult, wmin}
+function buildCurve(s){
+  var pts = [], n = Math.round((CONFIG.W_MAX - s.wmin) * 100), mult = s.spreadMult || 1;
+  for (var i = 0; i <= n; i++){
+    var w = Math.round(s.wmin * 100 + i) / 100;
+    var bL = s.bU * (1 + (1 - s.T) * w / (1 - w));     // Hamada (Eq. 14.23)
+    var ke = CONFIG.RF + bL * CONFIG.MRP;              // SML (Eq. 14.22)
+    var kd, ka, V, rt = 'none', cov = Infinity;
+    if (w <= 0){ kd = CONFIG.RF; ka = w * kd * (1 - s.T) + (1 - w) * ke; V = s.EBIT * (1 - s.T) / ka; }
+    else {
+      kd = CONFIG.RF + 0.004; var seen = {};
+      for (var it = 0; it < 200; it++){
+        ka = w * kd * (1 - s.T) + (1 - w) * ke; V = s.EBIT * (1 - s.T) / ka;
+        cov = s.EBIT / (kd * w * V);
+        var r = rating(cov, mult), kdn = CONFIG.RF + r.spread; rt = r.rating;
+        if (Math.abs(kdn - kd) < 1e-12) break;
+        var key = kdn.toFixed(8);
+        if (seen[key]){ kd = Math.max(kd, kdn); ka = w * kd * (1 - s.T) + (1 - w) * ke; V = s.EBIT * (1 - s.T) / ka; cov = s.EBIT / (kd * w * V); rt = rating(cov, mult).rating; break; }
+        seen[key] = 1; kd = kdn;
+      }
+    }
+    pts.push({ w:w, bL:bL, ke:ke, kd:kd, ka:ka, V:V, D:w * V, TB:s.T * w * V, rating:rt });
+  }
+  var v0 = pts[Math.round(-s.wmin * 100)].V;
+  pts.forEach(function(p){ p.dV = p.V - v0; p.CRR = p.TB - p.dV; });   // cost of rising rates = TB − (V(w) − V(0))
+  pts.wmin = s.wmin;
+  return pts;
+}
+function idx(pts, w){ return Math.max(0, Math.min(pts.length - 1, Math.round((w - pts.wmin) * 100))); }
+function at(pts, w){ return pts[idx(pts, w)]; }
+function tcost(Dold, Dnew){ var d = Dnew - Dold; return d >= 0 ? d * CONFIG.COST_UP : -d * CONFIG.COST_DOWN; }
+function move(pts, wOld, wNew){ var a = at(pts, wOld), b = at(pts, wNew), c = tcost(a.D, b.D); return { from:a, to:b, gain:b.V - a.V, cost:c, net:b.V - a.V - c }; }
+function bestMove(pts, wOld){ var best = null; for (var i = 0; i < pts.length; i++){ var m = move(pts, wOld, pts[i].w); if (!best || m.net > best.net + 1e-12) best = m; } return best; }
+function worstMove(pts, wOld){ var worst = null; for (var i = 0; i < pts.length; i++){ var m = move(pts, wOld, pts[i].w); if (!worst || m.net < worst.net) worst = m; } return worst; }
+function holdBand(pts){ var lo = null, hi = null; for (var i = 0; i < pts.length; i++){ if (bestMove(pts, pts[i].w).net <= 1e-9){ if (lo === null) lo = pts[i].w; hi = pts[i].w; } } return lo === null ? null : [lo, hi]; }
+function peak(pts){ return pts.reduce(function(a, p){ return p.V > a.V ? p : a; }); }
+function shareOf(m, best){ var scale = Math.max(best.net, CONFIG.SCORE_FLOOR * best.from.V); return Math.max(0, Math.min(1, 1 - (best.net - m.net) / scale)); }
+
+/* Precompute every round once. Deterministic: reloads cannot change results. */
+var MODEL = COMPANIES.map(function(c){
+  var bU = unlever(c), wmin = wMin(c), base = { bU:bU, T:c.T, EBIT:c.EBIT, spreadMult:1, wmin:wmin };
+  var sh = c.shock, news = { bU:bU * (sh.bUMult || 1), T:sh.T || c.T, EBIT:c.EBIT, spreadMult:sh.spreadMult || 1, wmin:wmin };
+  var p0 = buildCurve(base), p1 = buildCurve(news);
+  return { c:c, w0:Math.round(c.ND / (c.ND + c.E) * 100) / 100, p0:p0, p1:p1, band0:holdBand(p0), band1:holdBand(p1), news:news };
+});
+
+/* ======================= STATE ======================= */
+var S = null, ui = { tips:{}, picked:null, reflectOpen:false, reflectReady:false };
+var REDUCED = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+function save(){ try { localStorage.setItem(CONFIG.STORE, JSON.stringify(S)); } catch (e) {} }
+function load(){ try { var x = JSON.parse(localStorage.getItem(CONFIG.STORE) || 'null'); return x && x.v === 1 ? x : null; } catch (e) { return null; } }
+function clearSave(){ try { localStorage.removeItem(CONFIG.STORE); } catch (e) {} }
+function newGame(name){ S = { v:1, name:name, r:0, step:'set', w:null, touched:false, res:[], started:Date.now() }; ui = { tips:{}, picked:null }; save(); }
+
+/* ======================= FORMAT ======================= */
+function esc(s){ return String(s).replace(/[&<>"']/g, function(ch){ return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[ch]; }); }
+function bn(x){ var a = Math.abs(x), s = a >= 100 ? Math.round(a).toLocaleString('en-US') : a.toFixed(1); return '$' + s + ' billion'; }
+function bnS(x){ return (x > 0.049 ? '+' : x < -0.049 ? '−' : '') + bn(x).replace('-', ''); }
+function bnT(x){ var a = Math.abs(x), v = a >= 100 ? Math.round(a).toLocaleString('en-US') : a.toFixed(1); return (x > 0.049 ? '+' : x < -0.049 ? '−' : '') + '$' + v + 'B'; }
+function bnR(x){ var a = Math.abs(x), v = a >= 10 ? Math.round(a).toLocaleString('en-US') : a.toFixed(1); return (x > 0.049 ? '+' : x < -0.049 ? '−' : '') + '$' + v + 'B'; }
+function axisB(x){ var a = Math.abs(x); return '$' + (a >= 100 ? Math.round(x).toLocaleString('en-US') : x.toFixed(0)) + 'B'; }
+function pc(w){ return Math.round(w * 100) + '%'; }
+function pct1(x){ return (x * 100).toFixed(1) + '%'; }
+function mango(face, html){ return '<div class="mango"><div class="mface" aria-hidden="true">' + face + '</div><div class="bubble">' + html + '</div></div>'; }
+function tip(id, text){ var open = !!ui.tips[id]; return '<button class="tipbtn" data-act="tip" data-v="' + id + '" aria-expanded="' + open + '" aria-label="' + (open ? 'Hide details' : 'What does this mean?') + '">ⓘ</button>' + (open ? '<span class="tip" role="note">' + text + '</span>' : ''); }
+
+/* ======================= CHART ======================= */
+var CH = { W:340, H:250, L:46, R:12, T:30, B:30 };
+function chartSVG(o){
+  // o: {pts, wmin, yPts (array of curves for scale), from, you, best, band, net(bool), veil(bool), today, morph}
+  var all = []; o.scale.forEach(function(p){ p.forEach(function(q){ all.push(q.V); }); });
+  var lo = Math.min.apply(null, all), hi = Math.max.apply(null, all), pad = (hi - lo) * 0.12 || hi * 0.05;
+  lo -= pad; hi += pad;
+  var x = function(w){ return CH.L + (w - o.wmin) / (CONFIG.W_MAX - o.wmin) * (CH.W - CH.L - CH.R); };
+  var y = function(v){ return CH.T + (hi - v) / (hi - lo) * (CH.H - CH.T - CH.B); };
+  var g = '';
+  // cash zone
+  if (o.wmin < 0) g += '<rect x="' + x(o.wmin) + '" y="' + CH.T + '" width="' + (x(0) - x(o.wmin)) + '" height="' + (CH.H - CH.T - CH.B) + '" fill="#1B2A50"/><text x="' + ((x(o.wmin) + x(0)) / 2) + '" y="' + (CH.T + 12) + '" fill="#B9C2DC" font-size="8.5" text-anchor="middle">more cash</text><text x="' + ((x(o.wmin) + x(0)) / 2) + '" y="' + (CH.T + 22) + '" fill="#B9C2DC" font-size="8.5" text-anchor="middle">than debt</text>';
+  // hold band
+  if (o.band) g += '<rect x="' + x(o.band[0] - 0.005) + '" y="' + CH.T + '" width="' + Math.max(3, x(o.band[1] + 0.005) - x(o.band[0] - 0.005)) + '" height="' + (CH.H - CH.T - CH.B) + '" fill="#8A93AD" opacity=".28"/>';
+  // grid + axes
+  for (var k = 0; k <= 4; k++){ var vv = lo + (hi - lo) * k / 4, yy = y(vv); g += '<line x1="' + CH.L + '" x2="' + (CH.W - CH.R) + '" y1="' + yy + '" y2="' + yy + '" stroke="#2A3A66" stroke-width="1"/><text x="' + (CH.L - 5) + '" y="' + (yy + 3) + '" fill="#B9C2DC" font-size="9" text-anchor="end">' + axisB(vv) + '</text>'; }
+  for (var t = Math.ceil(o.wmin * 10) * 10; t <= 90; t += 10){ var xx = x(t / 100); g += '<text x="' + xx + '" y="' + (CH.H - 14) + '" fill="#B9C2DC" font-size="9" text-anchor="middle">' + t + '%</text>'; }
+  g += '<text x="' + ((CH.L + CH.W - CH.R) / 2) + '" y="' + (CH.H - 2) + '" fill="#B9C2DC" font-size="9" text-anchor="middle">Debt level (debt as % of firm value)</text>';
+  g += '<text x="' + (CH.L - 40) + '" y="' + (CH.T - 18) + '" fill="#B9C2DC" font-size="9">Firm value ($ billions)</text>';
+  var path = function(arr, key){ var d = ''; arr.forEach(function(p, i){ d += (i ? 'L' : 'M') + x(p.w).toFixed(1) + ' ' + y(key ? key(p) : p.V).toFixed(1); }); return d; };
+  if (o.ghost) g += '<path d="' + path(o.ghost) + '" fill="none" stroke="#5B6A94" stroke-width="2" stroke-dasharray="4 4"/>';
+  if (!o.veil){
+    g += '<path id="curve" d="' + path(o.pts) + '" fill="none" stroke="#6BB6FF" stroke-width="3" stroke-linejoin="round"/>';
+    if (o.net){ var f = at(o.pts, o.net); g += '<path d="' + path(o.pts, function(p){ return p.V - tcost(f.D, p.D); }) + '" fill="none" stroke="#FFD23F" stroke-width="1.6" stroke-dasharray="5 3"/>'; var lp = o.pts[0], gap = -1; for (var q = Math.round(o.pts.length * 0.1); q < Math.round(o.pts.length * 0.85); q++){ var gg = tcost(f.D, o.pts[q].D); if (gg > gap){ gap = gg; lp = o.pts[q]; } } if (gap <= 0) lp = o.pts[Math.round(o.pts.length * 0.5)]; g += '<text x="' + (x(lp.w) + 2) + '" y="' + (y(lp.V - tcost(f.D, lp.D)) + 13) + '" fill="#FFD23F" font-size="8.5">after transaction costs</text>'; }
+    var end = o.pts[o.pts.length - 1]; g += '<text x="' + (x(end.w) - 2) + '" y="' + (y(end.V) - 6) + '" fill="#6BB6FF" font-size="9" text-anchor="end">firm value</text>';
+  }
+  var marks = [];
+  if (o.today !== undefined) marks.push({ w:o.today, color:'#B9C2DC', label:o.todayLabel || 'Today', dash:true });
+  if (o.best !== undefined) marks.push({ w:o.best, color:'#3DDC84', label:'Best' });
+  if (o.you !== undefined && o.you !== null) marks.push({ w:o.you, color:'#FF8A1F', label:'You' });
+  var placed = [];
+  marks.forEach(function(mk){
+    var px = x(mk.w), row = 0;
+    while (placed.some(function(q){ return q.row === row && Math.abs(q.px - px) < 34; })) row++;
+    placed.push({ px:px, row:row });
+    g += '<line x1="' + px + '" x2="' + px + '" y1="' + CH.T + '" y2="' + (CH.H - CH.B) + '" stroke="' + mk.color + '" stroke-width="2"' + (mk.dash ? ' stroke-dasharray="3 3"' : '') + '/>';
+    if (!o.veil) g += '<circle cx="' + px + '" cy="' + y(at(o.pts, mk.w).V) + '" r="5.5" fill="' + mk.color + '" stroke="#0B1226" stroke-width="2"/>';
+    var anchor = px > CH.W - 50 ? 'end' : px < CH.L + 30 ? 'start' : 'middle';
+    g += '<text x="' + px + '" y="' + (CH.T - 4 - row * 11) + '" fill="' + mk.color + '" font-size="10" font-weight="700" text-anchor="' + anchor + '">' + mk.label + '</text>';
+  });
+  return '<svg viewBox="0 0 ' + CH.W + ' ' + CH.H + '" role="img" aria-label="' + esc(o.alt || 'Firm value at each debt level') + '">' + g + '</svg>';
+}
+
+/* ======================= SCREENS ======================= */
+function topBar(){ var pts = S.res.reduce(function(a, r){ return a + (r.p1 || 0) + (r.p2 || 0) + (r.p3 || 0); }, 0); return '<div class="top"><span class="chip">' + esc(MODEL[S.r].c.name) + '</span><span class="prog">Round ' + (S.r + 1) + ' of 5</span><span class="score num" aria-label="Score">' + pts + ' pts</span></div>'; }
+function catSVG(){ return '<svg class="start-cat" viewBox="0 0 120 130" role="img" aria-label="Mango, an orange bodega cat"><path d="M92 108 C118 104 122 78 108 66" fill="none" stroke="#E8832A" stroke-width="10" stroke-linecap="round"/><ellipse cx="58" cy="100" rx="38" ry="26" fill="#FF8A1F"/><circle cx="58" cy="56" r="30" fill="#FF8A1F"/><path d="M33 44 L30 16 L52 32 Z" fill="#FF8A1F"/><path d="M83 44 L86 16 L64 32 Z" fill="#FF8A1F"/><path d="M36 38 L35 24 L46 33 Z" fill="#FFC9A3"/><path d="M80 38 L81 24 L70 33 Z" fill="#FFC9A3"/><path d="M42 52 q6 -5 12 0" fill="none" stroke="#1B1B2A" stroke-width="3" stroke-linecap="round"/><path d="M62 52 q6 -5 12 0" fill="none" stroke="#1B1B2A" stroke-width="3" stroke-linecap="round"/><path d="M55 62 h6 l-3 4 z" fill="#E0567A"/><path d="M58 66 q-5 6 -10 3 M58 66 q5 6 10 3" fill="none" stroke="#1B1B2A" stroke-width="2" stroke-linecap="round"/><rect x="34" y="80" width="48" height="8" rx="4" fill="#1FB5A8"/><circle cx="58" cy="92" r="4" fill="#FFD23F"/></svg>'; }
+
+function startScreen(){
+  var saved = load();
+  return '<div class="card" style="margin-top:14px">' + catSVG() +
+    '<h1>M&amp;M: Mango\'s Millions</h1>' +
+    '<p>You\'re a new CFO advisor. Five real companies, five boardrooms, one question:</p>' +
+    '<p style="font-size:1.15rem;font-weight:800">"Can you make our shareholders richer by changing how much we borrow?"</p>' +
+    '<p>Then the news changes. You decide whether to change the plan.</p>' +
+    '<p class="dim small">Numbers are in billions. Data as of ' + CONFIG.SNAPSHOT + '. News stories are made up.</p>' +
+    '<label class="nm" for="nm">Your name (for your receipt)</label><input id="nm" class="text" autocomplete="name" maxlength="40">' +
+    '</div>' + mango('😼', 'Mango knows this stuff. She\'ll explain, but she won\'t make your call.') +
+    '<button class="btn-go wide" data-act="start">Go to the first boardroom</button>' +
+    (saved && saved.r !== undefined && saved.step !== 'done' ? '<button class="btn-ghost wide" style="margin-top:8px" data-act="resume">Continue where you left off (round ' + (saved.r + 1) + ')</button>' : '') +
+    '<p class="dim small" style="text-align:center;margin-top:14px">© 2026 Brett Whysel · FNB 230</p>';
+}
+
+function companyFacts(m){
+  var c = m.c;
+  return '<div class="facts"><div class="fact"><span>Debt level today</span><b class="num">' + pc(m.w0) + '</b></div><div class="fact"><span>Tax rate</span><b class="num">' + Math.round(c.T * 100) + '%</b></div></div>' +
+    '<p class="small dim" style="margin-top:6px">Company data ' + tip('co' + S.r, 'Market value of stock ' + bn(c.E) + '. Net debt (debt minus cash) ' + bn(c.ND) + '. Beta ' + c.beta.toFixed(2) + ' (Yahoo Finance, 5-year monthly). Tax rate from the last full-year 10-K. Operating income (EBIT) ' + bn(c.EBIT) + ' over the last 12 months (' + esc(c.filing) + '). Firm value here comes from the textbook formula, EBIT × (1 − tax rate) ÷ cost of capital. It will not match the stock market\'s value, which also prices in growth.') +
+    ' · Model ' + tip('as' + S.r, 'Data as of ' + CONFIG.SNAPSHOT + '. Treasury rate ' + pct1(CONFIG.RF) + ' (10-year). Market risk premium ' + pct1(CONFIG.MRP) + ' (Damodaran). Lenders\' rates come from Damodaran\'s rating table: the less a company earns compared with its interest, the more it pays. Shareholders\' required return rises with debt (levered beta). Transaction costs: ' + pct1(CONFIG.COST_UP) + ' of debt added (issuing bonds) and ' + pct1(CONFIG.COST_DOWN) + ' of debt paid down (issuing stock), from Lee, Lochhead, Ritter and Zhao (1996).') + '</p>';
+}
+
+function sliderBlock(m, w, opts){
+  var lo = Math.round(m.p0.wmin * 100), val = Math.round(w * 100), fill = ((val - lo) / (90 - lo) * 100).toFixed(1) + '%';
+  var vtxt = opts.showValue ? 'Firm value <b class="num" id="vread">' + bn(at(opts.curve, w).V) + '</b>' : '';
+  return '<div class="slider' + (S.touched ? '' : ' untouched') + '"><div class="readout"><span>Debt <b class="num" id="wread">' + val + '%</b></span><span class="v">' + vtxt + '</span></div>' +
+    '<label class="sr" for="sl">Debt level, percent of firm value</label>' +
+    '<input id="sl" type="range" min="' + lo + '" max="90" step="1" value="' + val + '" style="--fill:' + fill + '" aria-valuetext="' + val + ' percent debt">' +
+    '<div class="ticks"><span>' + lo + '%</span><span>90%</span></div></div>' +
+    '<div class="row2"><button class="btn-ghost" data-act="keep">' + opts.keepLabel + '</button><button class="btn-go" data-act="confirm"' + (S.touched ? '' : ' disabled') + '>' + (S.touched ? 'Confirm ' + val + '%' : 'Choose a debt level first') + '</button></div>';
+}
+
+function setScreen(){
+  var m = MODEL[S.r], R = ROUNDS[S.r], w = S.w === null ? m.w0 : S.w;
+  var guide = S.r === 0 && !S.touched ? mango('😼', 'Three steps, then I step back:<ol><li>Drag the slider to pick a debt level.</li><li>The curve shows firm value at each level. Find the top.</li><li>Moving costs money, so make it worth it. Then confirm.</li></ol>') : '';
+  var intro = R.intro && !S.touched ? mango(R.intro.face, R.intro.text) : '';
+  var showNet = S.r >= 2;
+  return topBar() + '<div class="card"><h2>' + esc(m.c.name) + '</h2><p class="dim small">' + esc(m.c.what) + '</p>' +
+    '<p style="font-weight:700;margin-top:8px">The board asks: can you make our shareholders richer by changing how much we borrow?</p>' + companyFacts(m) + '</div>' +
+    guide + intro +
+    '<div class="card chart" id="chartbox">' + chartSVG({ pts:m.p0, wmin:m.p0.wmin, scale:[m.p0], today:m.w0, you:S.touched ? w : null, band:showNet ? m.band0 : null, net:showNet ? m.w0 : null, alt:'Firm value curve for ' + m.c.name + ' at each debt level, today\'s level ' + pc(m.w0) }) +
+    sliderBlock(m, w, { showValue:true, curve:m.p0, keepLabel:'Keep today\'s ' + pc(m.w0) }) + '</div>';
+}
+
+function countUpHTML(id, value, signed){ return '<span class="num" id="' + id + '" data-to="' + value + '" data-signed="' + (signed ? 1 : 0) + '">' + (REDUCED ? (signed ? bnS(value) : bn(value)) : (signed ? bnS(0) : bn(0))) + '</span>'; }
+
+function newsScreen(){
+  var m = MODEL[S.r], R = ROUNDS[S.r], r = S.res[S.r], m1 = move(m.p0, m.w0, r.w1), b1 = bestMove(m.p0, m.w0);
+  var lab = labelFor(r.s1, b1, m1);
+  return topBar() + '<div class="card"><h3>Your plan: debt at ' + pc(r.w1) + '</h3><p>Value created after transaction costs: <b class="big ' + (m1.net >= -0.05 ? 'pos' : 'neg') + '">' + countUpHTML('cu1', m1.net, true) + '</b></p>' +
+    '<p class="small dim">Best possible move from ' + pc(m.w0) + ': ' + pc(b1.to.w) + ', ' + bnS(b1.net) + '. <span class="tag ' + lab[1] + '">' + lab[0] + '</span> +' + r.p1 + ' pts</p></div>' +
+    '<div class="news flash" role="alert"><div class="bar">BREAKING NEWS <i>Hypothetical</i></div><div class="body"><h2>' + esc(R.news.head) + '</h2><p>' + esc(R.news.body) + '</p></div><div class="ticker" aria-hidden="true"><span>' + esc(R.news.tick) + '</span></div></div>' +
+    mango('😼', R.hint) +
+    '<p class="small dim">Next: the new curve stays hidden. Set the debt level where you think the new top is.</p>' +
+    '<button class="btn-go wide" data-act="tobet">Make your call</button>';
+}
+
+function betScreen(){
+  var m = MODEL[S.r], r = S.res[S.r], w = S.w === null ? r.w1 : S.w;
+  return topBar() + '<div class="news" style="margin-bottom:10px"><div class="bar">AFTER THE NEWS <i>Hypothetical</i></div><div class="body"><p style="margin:0"><b>' + esc(ROUNDS[S.r].news.head) + '.</b> ' + esc(ROUNDS[S.r].news.body) + '</p></div></div>' +
+    '<div class="card chart" id="chartbox"><h3>Where is the new best debt level?</h3>' +
+    '<div style="position:relative">' + chartSVG({ pts:m.p0, wmin:m.p0.wmin, scale:[m.p0, m.p1], ghost:m.p0, veil:true, today:r.w1, todayLabel:'Your plan', you:S.touched ? w : null, alt:'Old curve shown dashed. The new curve is hidden.' }) +
+    '<div class="hidden-veil"><span>New curve hidden</span></div></div>' +
+    '<p class="small dim">Dashed line: the curve before the news. You start from your plan, ' + pc(r.w1) + '.</p>' +
+    sliderBlock(m, w, { showValue:false, keepLabel:'Keep my ' + pc(r.w1) }) + '</div>';
+}
+
+function labelFor(share, best, m){
+  if (best.to.w === best.from.w && Math.abs(m.to.w - m.from.w) <= CONFIG.HOLD_TOL && share >= 0.9) return ['Right to hold', 'good'];
+  for (var i = 0; i < CONFIG.LABELS.length; i++) if (share >= CONFIG.LABELS[i][0]) return [CONFIG.LABELS[i][1], CONFIG.LABELS[i][2]];
+}
+
+function revealScreen(){
+  var m = MODEL[S.r], R = ROUNDS[S.r], r = S.res[S.r], mv = move(m.p1, r.w1, r.w2), best = bestMove(m.p1, r.w1), pk = peak(m.p1);
+  var lab = labelFor(r.s2, best, mv);
+  var wrongWay = (pk.w - r.w1) * (r.w2 - r.w1) < 0 && Math.abs(pk.w - r.w1) > 0.02;
+  var face = r.s2 >= 0.9 ? '😸' : '😼';
+  var line = r.s2 >= 0.9 ? 'Nice. You read that like a bond trader.' : wrongWay ? 'Ehh, you went one way and the curve went the other. Happens to Wall Street guys every day.' : 'Not bad. The market was a little ahead of you.';
+  var brk = '';
+  if (S.r >= 1){
+    var a = mv.from, b = mv.to, bb = best.to;
+    var row = function(lbl, you, bst){ return '<tr><td>' + lbl + '</td><td class="num">' + bnT(you) + '</td><td class="num">' + bnT(bst) + '</td></tr>'; };
+    brk = '<table class="brk"><thead><tr><th>Effect on firm value, starting from your plan (' + pc(r.w1) + ')</th><th>You (' + pc(r.w2) + ')</th><th>Best (' + pc(bb.w) + ')</th></tr></thead><tbody>' +
+      row('Tax benefit ' + tip('tb' + S.r, 'Tax rate × debt. Interest is tax-deductible, so debt saves taxes (textbook Eq. 14.21).'), b.TB - a.TB, bb.TB - a.TB) +
+      row('Cost of rising rates ' + tip('cr' + S.r, 'As debt grows, lenders charge more and shareholders demand a higher return. This is the value that rising rates take back (the trade-off model).'), -(b.CRR - a.CRR), -(bb.CRR - a.CRR)) +
+      row('Transaction costs', -mv.cost, -best.cost) +
+      '<tr class="tot"><td>Value created</td><td class="num">' + bnT(mv.net) + '</td><td class="num">' + bnT(best.net) + '</td></tr></tbody></table><p class="small dim">$B = billions of dollars.</p>';
+  }
+  var unlock = R.unlock ? mango('😼', R.unlock) : '';
+  var flat = S.r === 1 ? '<p class="small">See how flat the new top is? Many debt levels are almost equally good. Once you\'re on it, moving just costs money.</p>' : '';
+  return topBar() + '<div class="card chart" id="chartbox"><h3>The new curve</h3>' +
+    chartSVG({ pts:m.p1, wmin:m.p1.wmin, scale:[m.p0, m.p1], ghost:m.p0, today:r.w1, todayLabel:'Plan', you:r.w2, best:best.to.w, band:S.r >= 2 ? m.band1 : null, net:S.r >= 2 ? r.w1 : null, alt:'New firm value curve. Best debt level ' + pc(best.to.w) + '. Your call ' + pc(r.w2) + '.' }) +
+    '<p class="small dim">Dashed line: before the news. Top of the new curve: ' + pc(pk.w) + '.</p></div>' +
+    '<div class="card"><p>Your call created</p><p class="big ' + (mv.net >= -0.05 ? 'pos' : 'neg') + '">' + countUpHTML('cu2', mv.net, true) + '</p>' +
+    '<p class="small">Best possible from your plan: <b>' + pc(best.to.w) + '</b>, ' + bnS(best.net) + '. <span class="tag ' + lab[1] + '">' + lab[0] + '</span> +' + r.p2 + ' pts</p>' + brk + flat + '</div>' +
+    mango(face, line) + unlock +
+    '<button class="btn-go wide" data-act="toexplain">Explain what happened</button>';
+}
+
+function explainScreen(){
+  var R = ROUNDS[S.r], r = S.res[S.r], done = r.p3 !== undefined;
+  var t1 = TIER1.map(function(o){ var on = r.t1 === o[0]; var cls = done ? (o[0] === R.tier1 ? ' right' : on ? ' wrong' : '') : ''; return '<button class="opt' + cls + '" data-act="t1" data-v="' + o[0] + '" aria-pressed="' + on + '"' + (done ? ' disabled' : '') + '>' + o[1] + '</button>'; }).join('');
+  var order = r.order;
+  var t2 = order.map(function(i){ var o = R.tier2[i], on = r.t2 === i; var cls = done ? (o[1] ? ' right' : on ? ' wrong' : '') : ''; return '<button class="opt' + cls + '" data-act="t2" data-v="' + i + '" aria-pressed="' + on + '"' + (done ? ' disabled' : '') + '>' + esc(o[0]) + '</button>'; }).join('');
+  var fb = '';
+  if (done){
+    var ok1 = r.t1 === R.tier1, ok2 = R.tier2[r.t2][1];
+    var msg = ok1 && ok2 ? 'Both right. That\'s the whole idea, in one round.' : ok1 ? 'You read the curve right, but the reason is off. Here\'s the real one: ' + esc(R.why) : 'The market fooled you on that one. Here\'s what happened: ' + esc(R.why);
+    fb = mango(ok1 && ok2 ? '😸' : '😼', msg + ' <b>+' + r.p3 + ' pts</b>') +
+      '<button class="btn-go wide" data-act="next">' + (S.r < 4 ? 'Next boardroom' : 'See the debrief') + '</button>';
+  }
+  return topBar() + '<div class="card"><h3>1. After the news, what happened to the best debt level?</h3><div class="opts" role="group" aria-label="Best debt level">' + t1 + '</div></div>' +
+    '<div class="card"><h3>2. Why?</h3><div class="opts" role="group" aria-label="Reason">' + t2 + '</div></div>' +
+    (done ? fb : '<button class="btn-go wide" data-act="submit"' + (r.t1 && r.t2 !== undefined ? '' : ' disabled') + '>' + (r.t1 && r.t2 !== undefined ? 'Lock in my answers' : 'Pick one answer in each') + '</button>');
+}
+
+function totals(){
+  var you = 0, safe = 0;
+  S.res.forEach(function(r, i){
+    you += (r.p1 || 0) + (r.p2 || 0) + (r.p3 || 0);
+    var m = MODEL[i], b1 = bestMove(m.p0, m.w0), s1 = move(m.p0, m.w0, m.w0), b2 = bestMove(m.p1, m.w0), s2 = move(m.p1, m.w0, m.w0);
+    safe += Math.round(CONFIG.PTS_STEP1 * shareOf(s1, b1)) + Math.round(CONFIG.PTS_BET * shareOf(s2, b2));
+  });
+  return { you:you, max:5 * (CONFIG.PTS_STEP1 + CONFIG.PTS_BET + CONFIG.PTS_WHY), safe:safe };
+}
+
+function debriefScreen(){
+  var rows = [['Added debt and saved taxes', 'Tax benefit of debt (MM with taxes)'],
+              ['Watched lenders and shareholders charge more as debt grew', 'Trade-off model of capital structure'],
+              ['Saw shareholders\' required return climb with debt', 'Levered beta (Hamada equation)'],
+              ['Found the top of the curve', 'Optimal capital structure'],
+              ['Stayed put when moving cost more than it gained', 'Transaction costs'],
+              ['Chose each company\'s mix of debt and stock', 'Capital structure']];
+  return '<div class="card" style="margin-top:14px"><h2>The rule</h2><p style="font-size:1.1rem;font-weight:800">Add debt while the tax benefit is worth more than the rising cost of risk, and only move when the gain is bigger than the cost of moving.</p></div>' +
+    '<div class="card"><table class="dl"><thead><tr><th>What you did</th><th>What it\'s called</th></tr></thead><tbody>' + rows.map(function(x){ return '<tr><td>' + x[0] + '</td><td><b>' + x[1] + '</b></td></tr>'; }).join('') + '</tbody></table></div>' +
+    mango('😸', 'Those other M&amp;M? Modigliani and Miller. Two economists who won Nobel Prizes for the idea you just played. With no taxes and no risk of going broke, the curve would be flat. No debt level would beat another.') +
+    mango('😼', 'One more thing. Real CFOs borrow less than this model says. They keep room for bad years and guard their credit rating.') +
+    '<button class="btn-go wide" data-act="results">See my receipt</button>';
+}
+
+function resultsScreen(){
+  var t = totals(), pct = Math.round(t.you / t.max * 100), label = CONFIG.FINAL.filter(function(f){ return pct >= f[0]; })[0][1];
+  var rows = S.res.map(function(r, i){ var m = MODEL[i], b = bestMove(m.p1, r.w1), mv = move(m.p1, r.w1, r.w2); return '<tr><td>' + esc(m.c.name.replace(' (Spectrum)', '').replace(' Air Lines', '')) + '</td><td>' + Math.round(r.w1 * 100) + '→' + Math.round(r.w2 * 100) + '</td><td>' + bnR(mv.net) + '</td><td>' + bnR(b.net) + '</td><td>' + ((r.p1 || 0) + (r.p2 || 0) + (r.p3 || 0)) + '</td></tr>'; }).join('');
+  var L = function(a, b){ return '<div class="line"><span>' + a + '</span><b>' + b + '</b></div>'; };
+  return '<div class="receipt" style="margin-top:14px"><h2>M&amp;M: MANGO\'S MILLIONS</h2><p style="text-align:center;margin:2px 0 8px;font-size:.8rem;letter-spacing:1px">FNB 230 · MODULE 13</p>' +
+    L('Name', esc(S.name || '—')) + L('Played', new Date(S.doneAt || Date.now()).toLocaleDateString()) +
+    '<p style="color:#555;text-align:center;margin:12px 0 0">SCORE</p><div class="total">' + t.you + ' / ' + t.max + '</div><p style="text-align:center;margin:0;font-weight:800">' + pct + '% · ' + label + '</p>' +
+    '<table><thead><tr><th>Company</th><th>Debt %</th><th>Your call</th><th>Best</th><th>Pts</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+    '<p class="small" style="margin-top:8px">Best possible score: ' + t.max + '. Staying put every time and answering every question right: ' + (t.safe + 5 * CONFIG.PTS_WHY) + '. Worst possible: 0.</p>' +
+    '<div class="copy">Take a screenshot of this receipt.' + tip('shot', '<b>iPhone:</b> press the side button and volume up together. Older iPhones with a Home button: side or top button and Home.<br><b>Android:</b> press power and volume down together.<br><b>Windows:</b> press Windows + Shift + S, then drag over the receipt.<br><b>Mac:</b> press Shift + Command + 4, then drag over the receipt.<br><b>Chromebook:</b> press Ctrl + Show windows.') + '</div></div>' +
+    mango(pct >= 85 ? '😸' : '😼', pct >= 85 ? 'Okay, the board loves you. Don\'t let it go to your head.' : pct >= 65 ? 'Solid. Most boards would keep you.' : 'The curve moves fast. Play again and watch where the top goes.') +
+    '<button class="wide" data-act="again">Play again</button>';
+}
+
+function reflectVeil(){
+  var m = MODEL[S.r], r = S.res[S.r], cur = at(m.p1, m.w0), best = bestMove(m.p1, m.w0);
+  return '<div class="veil" role="dialog" aria-modal="true" aria-labelledby="rf"><div class="card"><h2 id="rf">Sit with this one</h2>' +
+    '<p>At its real debt level of <b>' + pc(m.w0) + '</b>, Charter is worth <b>' + bn(cur.V) + '</b> in this model.</p>' +
+    '<p>At <b>' + pc(best.to.w) + '</b>, it would be worth <b>' + bn(best.to.V) + '</b>.</p>' +
+    '<p>Getting there means issuing a lot of new stock. The transaction costs alone: <b>' + bn(best.cost) + '</b>.</p>' +
+    mango('😼', 'That\'s what too much debt costs. And getting out isn\'t free.') +
+    '<div class="ring" aria-hidden="true"><i id="ring"></i></div>' +
+    '<button class="btn-go wide" data-act="reflectdone"' + (ui.reflectReady ? '' : ' disabled') + '>' + (ui.reflectReady ? 'Continue' : 'Take a moment…') + '</button></div></div>';
+}
+
+/* ======================= RENDER ======================= */
+function render(focusSel){
+  var html;
+  if (!S || S.step === 'start') html = startScreen();
+  else if (S.step === 'set') html = setScreen();
+  else if (S.step === 'news') html = newsScreen();
+  else if (S.step === 'bet') html = betScreen();
+  else if (S.step === 'reveal') html = revealScreen() + (ui.reflectOpen ? reflectVeil() : '');
+  else if (S.step === 'explain') html = explainScreen();
+  else if (S.step === 'debrief') html = debriefScreen();
+  else html = resultsScreen();
+  document.getElementById('app').innerHTML = html;
+  bindSlider();
+  runCounters();
+  if (focusSel){ var el = document.querySelector(focusSel); if (el) el.focus({ preventScroll:true }); }
+}
+function go(step){ S.step = step; S.w = null; S.touched = false; ui.tips = {}; save(); render('h2,h3'); window.scrollTo(0, 0); var h = document.querySelector('#app h2, #app h3'); if (h){ h.setAttribute('tabindex', '-1'); h.focus({ preventScroll:true }); } }
+
+function runCounters(){
+  document.querySelectorAll('[data-to]').forEach(function(el){
+    var to = +el.getAttribute('data-to'), signed = el.getAttribute('data-signed') === '1', fmt = signed ? bnS : bn;
+    var key = S ? S.step + S.r + el.id : el.id; ui.counted = ui.counted || {};
+    if (REDUCED || ui.counted[key]){ el.textContent = fmt(to); return; }
+    ui.counted[key] = 1;
+    var t0 = null, dur = 1300;
+    function step(ts){ if (!t0) t0 = ts; var k = Math.min(1, (ts - t0) / dur), e = 1 - Math.pow(1 - k, 3); el.textContent = fmt(to * e); if (k < 1) requestAnimationFrame(step); else el.textContent = fmt(to); }
+    requestAnimationFrame(step);
+  });
+  var curve = document.getElementById('curve');
+  if (curve && S && S.step === 'reveal' && !REDUCED && !ui.morphed){
+    ui.morphed = true; var m = MODEL[S.r], dNew = curve.getAttribute('d');
+    var svgTmp = chartSVG({ pts:m.p0, wmin:m.p0.wmin, scale:[m.p0, m.p1] }), dOld = (svgTmp.match(/id="curve" d="([^"]+)"/) || [])[1];
+    if (dOld){
+      var A = dOld.match(/-?[\d.]+/g).map(Number), B = dNew.match(/-?[\d.]+/g).map(Number), t0 = null;
+      if (A.length === B.length){
+        function mstep(ts){ if (!t0) t0 = ts; var k = Math.min(1, (ts - t0) / 900), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2, d = ''; for (var i = 0; i < A.length; i += 2){ d += (i ? 'L' : 'M') + (A[i] + (B[i] - A[i]) * e).toFixed(1) + ' ' + (A[i + 1] + (B[i + 1] - A[i + 1]) * e).toFixed(1); } curve.setAttribute('d', d); if (k < 1) requestAnimationFrame(mstep); }
+        requestAnimationFrame(mstep);
+      }
+    }
+  }
+}
+
+/* Live slider updates without a full re-render, so keyboard focus stays on the slider. */
+function bindSlider(){
+  var sl = document.getElementById('sl'); if (!sl) return;
+  var onInput = function(){
+    var v = +sl.value, w = v / 100, m = MODEL[S.r], first = !S.touched;
+    S.w = w; S.touched = true;
+    if (first){ render('#sl'); return; }
+    var lo = +sl.min; sl.style.setProperty('--fill', ((v - lo) / (90 - lo) * 100).toFixed(1) + '%'); sl.setAttribute('aria-valuetext', v + ' percent debt');
+    var wr = document.getElementById('wread'); if (wr){ wr.textContent = v + '%'; wr.classList.remove('bump'); void wr.offsetWidth; wr.classList.add('bump'); }
+    var vr = document.getElementById('vread'); if (vr) vr.textContent = bn(at(m.p0, w).V);
+    var btn = document.querySelector('[data-act=confirm]'); if (btn){ btn.disabled = false; btn.textContent = 'Confirm ' + v + '%'; }
+    var box = document.querySelector('#chartbox svg');
+    if (box){ var tmp = document.createElement('div'); tmp.innerHTML = S.step === 'set' ? chartSVG({ pts:m.p0, wmin:m.p0.wmin, scale:[m.p0], today:m.w0, you:w, band:S.r >= 2 ? m.band0 : null, net:S.r >= 2 ? m.w0 : null }) : chartSVG({ pts:m.p0, wmin:m.p0.wmin, scale:[m.p0, m.p1], ghost:m.p0, veil:true, today:S.res[S.r].w1, todayLabel:'Your plan', you:w }); box.replaceWith(tmp.firstChild); }
+  };
+  sl.addEventListener('input', onInput);
+}
+
+/* ======================= ACTIONS ======================= */
+function shuffle(n, seed){ var a = []; for (var i = 0; i < n; i++) a.push(i); var s = seed; for (var j = n - 1; j > 0; j--){ s = (s * 9301 + 49297) % 233280; var k = Math.floor(s / 233280 * (j + 1)); var t = a[j]; a[j] = a[k]; a[k] = t; } return a; }
+var busy = false;
+document.addEventListener('click', function(e){
+  var b = e.target.closest('[data-act]'); if (!b || b.disabled) return;
+  var act = b.getAttribute('data-act'), v = b.getAttribute('data-v');
+  if (busy && act !== 'tip') return;
+  if (act === 'tip'){ ui.tips[v] = !ui.tips[v]; var y = window.scrollY; render('[data-act=tip][data-v="' + v + '"]'); window.scrollTo(0, y); return; }
+  if (act === 'start'){ var nm = (document.getElementById('nm') || {}).value || ''; newGame(nm.trim()); go('set'); return; }
+  if (act === 'resume'){ S = load(); ui = { tips:{}, picked:null }; render(); return; }
+  if (act === 'again'){ clearSave(); S = null; ui = { tips:{} }; render(); window.scrollTo(0, 0); return; }
+  var m = MODEL[S.r];
+  if (act === 'keep'){ S.w = S.step === 'set' ? m.w0 : S.res[S.r].w1; S.touched = true; save(); render('[data-act=confirm]'); return; }
+  if (act === 'confirm'){
+    if (!S.touched) return;
+    busy = true; setTimeout(function(){ busy = false; }, 350);
+    if (S.step === 'set'){
+      var w1 = S.w === null ? m.w0 : S.w, m1 = move(m.p0, m.w0, w1), b1 = bestMove(m.p0, m.w0), s1 = shareOf(m1, b1);
+      S.res[S.r] = { w1:w1, s1:s1, p1:Math.round(CONFIG.PTS_STEP1 * s1), order:shuffle(4, 7 + S.r * 13 + (S.started % 97)) };
+      go('news');
+    } else if (S.step === 'bet'){
+      var r = S.res[S.r], w2 = S.w === null ? r.w1 : S.w, mv = move(m.p1, r.w1, w2), bb = bestMove(m.p1, r.w1), s2 = shareOf(mv, bb);
+      r.w2 = w2; r.s2 = s2; r.p2 = Math.round(CONFIG.PTS_BET * s2); ui.morphed = false;
+      go('reveal');
+    }
+    return;
+  }
+  if (act === 'tobet'){ go('bet'); return; }
+  if (act === 'toexplain'){
+    if (ROUNDS[S.r].reflect && !S.res[S.r].reflected){ openReflect(); return; }
+    go('explain'); return;
+  }
+  if (act === 'reflectdone'){ S.res[S.r].reflected = true; ui.reflectOpen = false; save(); go('explain'); return; }
+  if (act === 't1'){ S.res[S.r].t1 = v; save(); render('[data-act=t1][data-v="' + v + '"]'); return; }
+  if (act === 't2'){ S.res[S.r].t2 = +v; save(); render('[data-act=t2][data-v="' + v + '"]'); return; }
+  if (act === 'submit'){
+    var rr = S.res[S.r], R = ROUNDS[S.r]; if (rr.p3 !== undefined) return;
+    var ok1 = rr.t1 === R.tier1, ok2 = R.tier2[rr.t2][1];
+    rr.p3 = ok1 && ok2 ? CONFIG.PTS_WHY : ok1 ? CONFIG.PTS_TIER1_ONLY : 0; save(); render('[data-act=next]'); return;
+  }
+  if (act === 'next'){ busy = true; setTimeout(function(){ busy = false; }, 350); if (S.r < 4){ S.r++; go('set'); } else { S.doneAt = Date.now(); go('debrief'); } return; }
+  if (act === 'results'){ S.step = 'done'; save(); render(); window.scrollTo(0, 0); return; }
+});
+function openReflect(){
+  ui.reflectOpen = true; ui.reflectReady = false; render('#rf');
+  var ring = document.getElementById('ring'); if (ring){ ring.style.transitionDuration = CONFIG.REFLECT_MS + 'ms'; requestAnimationFrame(function(){ requestAnimationFrame(function(){ ring.style.width = '100%'; }); }); }
+  setTimeout(function(){ ui.reflectReady = true; if (ui.reflectOpen){ var y = window.scrollY; render('[data-act=reflectdone]'); window.scrollTo(0, y); var rg = document.getElementById('ring'); if (rg){ rg.style.transitionDuration = '0ms'; rg.style.width = '100%'; } } }, CONFIG.REFLECT_MS);
+}
+document.addEventListener('keydown', function(e){ if (e.key === 'Enter' && e.target.id === 'nm'){ var b = document.querySelector('[data-act=start]'); if (b) b.click(); } });
+
+/* Resume mid-game on reload; otherwise start page. */
+(function(){ var s = load(); if (s && s.step && s.step !== 'start' && s.step !== 'done'){ S = null; } render(); })();
+
+/* Test hook (no effect on play) */
+window.__MM = { CONFIG:CONFIG, MODEL:MODEL, move:move, bestMove:bestMove, worstMove:worstMove, shareOf:shareOf, peak:peak, holdBand:holdBand, state:function(){ return S; } };
+</script>
+</body>
+</html>
