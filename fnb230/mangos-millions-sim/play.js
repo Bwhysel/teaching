@@ -7,7 +7,7 @@ const strat = process.argv[2] || 'best';
 (async () => {
   require('fs').mkdirSync(OUT, { recursive: true });
   const b = await chromium.launch();
-  const p = await b.newPage({ viewport: { width: 360, height: 780 }, deviceScaleFactor: 1 });
+  const p = await b.newPage({ viewport: { width: 360, height: 780 }, deviceScaleFactor: 2 });
   const errs = []; p.on('pageerror', e => errs.push(String(e))); p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
   await p.goto(FILE);
   const shot = async n => { if (strat === 'best') await p.screenshot({ path: `${OUT}/${n}.png`, fullPage: true }); };
@@ -69,7 +69,7 @@ const strat = process.argv[2] || 'best';
   await p.click('[data-act=results]');
   await p.waitForTimeout(300);
   await shot('95-results');
-  const total = await p.evaluate(() => document.querySelector('.receipt .total').innerText);
+  const total = await p.evaluate(() => document.querySelector('.review .sc').innerText);
   report.push(`TOTAL ${total}`);
   // 320px sideways check on results
   await p.setViewportSize({ width: 320, height: 700 });

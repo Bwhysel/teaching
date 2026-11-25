@@ -23,7 +23,7 @@ Target outcomes: all five held (small up / small down / no change / big down / b
 | Scoring logic | Pass. Best play = 100/100 (each round 5 + 10 + 5). |
 | Simulation, every path | Pass. 45,265 (step 1 × bet) paths enumerated. Best path in every round equals the rule path (value-maximizing move after transaction costs). Worst = 0 every round. |
 | Best / safe / worst | Best 100. Staying put every time with all questions right: 39 (Con Ed hold earns 14 of 15 move points; other rounds 0). Worst 0. |
-| Screen flow | Pass. Start → 5 × (set, news, bet, reveal, explain) → debrief → receipt. No dead ends. |
+| Screen flow | Pass. Start → 5 × (set, news, bet, reveal, explain) → debrief → board review. No dead ends. |
 | Mango tells | Pass. Reliable throughout; the one not-in-the-mood moment (Round 2) uses 🐱 and says so. |
 | Reflection moment | Pass. Charter reveal opens a held screen; Continue is disabled for 4 seconds; a fast tap during the hold does not skip it. |
 | Results page | Pass. Score, label, per-round table, best/safe/worst line, screenshot ⓘ with five platforms. |
