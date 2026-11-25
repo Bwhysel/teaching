@@ -36,7 +36,20 @@ Rules applied to all five:
 
 Charter equity note: 10-Q cover shows 114.45M Class A shares (9/30/2026). Cox also holds ~33.6M Charter Holdings common units (exchangeable) and $6.0B of convertible preferred units. Yahoo's market cap ($26.37B) does not match either 114.45M or 148.05M × price; to resolve.
 
-## Not yet sourced
+## Transaction costs
 
-- Transaction-cost rates (`COST_UP`, `COST_DOWN`): no source verified yet. Candidate: Lee, Lochhead, Ritter & Zhao (1996), "The Costs of Raising Capital," *Journal of Financial Research* 19(1): 59–74 (abstract: SEO direct costs average 7.1%). Table values not yet read.
-- Buyback costs: no study found that measures repurchase commissions directly.
+Source: Lee, Lochhead, Ritter & Zhao (1996), "The Costs of Raising Capital," *Journal of Financial Research* 19(1): 59–74, read from the scanned original at site.warrington.ufl.edu/ritter/files/2016/01/The-Costs-of-Raising-Capital-1996.pdf. Sample: U.S. offerings 1990–94. TDC = total direct costs (gross spread + legal, auditing, printing), % of proceeds. All five recaps are multibillion-dollar, so the largest size class ($500M and up) applies.
+
+| Item | Gross spread | TDC | Table, row |
+|---|---|---|---|
+| Seasoned equity offering, $500M+ | 3.03% | **3.15%** | Table 1, SEOs, "500–up" |
+| SEO, all sizes | 5.44% | 7.11% | Table 1, SEOs, "Total" |
+| Straight bonds, investment grade, $500M+ | 0.39% | **0.57%** | Table 3, Straight / Investment Grade, "500–up" |
+| Straight bonds, non-investment grade, $500M+ | 2.60% | 2.90% | Table 3, Straight / Noninvestment Grade, "500–up" |
+| Straight bonds, all, $500M+ | 1.39% | 1.64% | Table 1, Straight Bonds, "500–up" |
+
+Draft rates: `COST_UP` = 0.57% (issue investment-grade debt); `COST_DOWN` = 3.15% (issue equity). Ratio ≈ 5.5×, consistent with the brief's "COST_DOWN higher than COST_UP."
+
+Caveats:
+- Data are from 1990–94; spreads have likely fallen since. No newer verified source yet.
+- **Buyback costs remain unsourced.** No study found that measures open-market repurchase commissions. Not included in `COST_UP` until a source is found.
