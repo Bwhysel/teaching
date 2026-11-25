@@ -54,7 +54,8 @@ Target outcomes: all five held (more / less / no change / pay down most / extrem
 5. **Firm value uses EBIT × (1 − T) ÷ WACC** (brief), while Lasher p. 623 divides operating income by WACC. Changes levels, not the best debt level.
 6. **Risk-free rate is the 10-year Treasury** (brief), while Lasher p. 623 uses short-term T-bills. Brett chose to keep the 10-year.
 7. **No sound.** Web Audio is optional (§1); "juice" is visual (slider bump, live chart marker, count-ups, curve morph, news flash).
-8. **Name field on the start page**, so the screenshot identifies the student (as in Leverage Legends).
+8. **Credit-rating strip under the chart from Round 1** (visual pass, Nov 25). It explains the kinks the moment students see them. It adds one more thing to read in the guided round; remove or delay it if play-testing shows overload (spec §4, progressive disclosure).
+9. **Name field on the start page**, so the screenshot identifies the student (as in Leverage Legends).
 
 ## Still unverified or limited
 
