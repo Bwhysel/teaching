@@ -33,6 +33,12 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--yellow);outline
 .locked [data-act]:not([data-act=tip]):not([data-act=back]):not([data-act=fwd]):not([data-act=front]):not([data-act=t2]){display:none}
 .locked #draghint{display:none}.locked .drag{cursor:default}
 .lookback{text-align:center;font-size:.78rem;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--yellow);background:rgba(255,210,63,.08);border:1px solid rgba(255,210,63,.25);border-radius:999px;padding:6px 12px;margin:0 0 12px}
+.xs{padding:10px 0;border-bottom:1px solid var(--line)}.xs:last-of-type{border-bottom:0}
+.xs.off{opacity:.4}
+.xl{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-weight:700}
+.xl b{font-size:1.1rem;color:var(--cyan)}
+.xs input[type=range]{height:44px}
+.xs input[type=range]::-webkit-slider-runnable-track{background:rgba(255,255,255,.12)}
 .score{margin-left:auto;font-weight:800;white-space:nowrap;background:rgba(61,220,132,.12);color:var(--mint);border:1px solid rgba(61,220,132,.3);padding:5px 12px;border-radius:999px;font-size:.95rem}
 .steps{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-top:9px}
 .steps i{height:4px;border-radius:999px;background:rgba(255,255,255,.1)}
@@ -264,6 +270,9 @@ var COMPANIES = [
     shock:{ T:0.35 } }             // big increase
 ];
 
+/* Optional model explorer (tutorial at the start, wrap-up at the end): a sample company. */
+var SAMPLE = { EBIT:10, T:0.21, bU:1.0, RF:CONFIG.RF, MRP:CONFIG.MRP, spreadMult:1 };
+
 /* Round copy. Each decision screen stays near 200 words. */
 var ROUNDS = [
   { unlock:'This table shows where the value came from: the tax benefit your debt adds, minus the cost of rising rates and of moving.',
@@ -315,19 +324,19 @@ function rating(cov, mult){ var r = CONFIG.RATINGS[0]; for (var i = 0; i < CONFI
 function wMin(c){ return c.ND < 0 ? CONFIG.W_MIN_CASH : 0; }
 // s: {bU, T, EBIT, spreadMult, wmin}
 function buildCurve(s){
-  var pts = [], n = Math.round((CONFIG.W_MAX - s.wmin) * 100), mult = s.spreadMult || 1;
+  var pts = [], n = Math.round((CONFIG.W_MAX - s.wmin) * 100), mult = s.spreadMult || 1, RF = s.RF || CONFIG.RF;
   for (var i = 0; i <= n; i++){
     var w = Math.round(s.wmin * 100 + i) / 100;
     var bL = s.bU * (1 + (1 - s.T) * w / (1 - w));     // Hamada (Eq. 14.23)
-    var ke = CONFIG.RF + bL * (s.MRP || CONFIG.MRP);   // SML (Eq. 14.22)
+    var ke = RF + bL * (s.MRP || CONFIG.MRP);   // SML (Eq. 14.22)
     var kd, ka, V, rt = 'none', cov = Infinity;
-    if (w <= 0){ kd = CONFIG.RF; ka = w * kd * (1 - s.T) + (1 - w) * ke; V = s.EBIT * (1 - s.T) / ka; }
+    if (w <= 0 || s.perfect){ kd = RF; ka = w * kd * (1 - s.T) + (1 - w) * ke; V = s.EBIT * (1 - s.T) / ka; }
     else {
-      kd = CONFIG.RF + 0.004; var seen = {};
+      kd = RF + 0.004; var seen = {};
       for (var it = 0; it < 200; it++){
         ka = w * kd * (1 - s.T) + (1 - w) * ke; V = s.EBIT * (1 - s.T) / ka;
         cov = s.EBIT / (kd * w * V);
-        var r = rating(cov, mult), kdn = CONFIG.RF + r.spread; rt = r.rating;
+        var r = rating(cov, mult), kdn = RF + r.spread; rt = r.rating;
         if (Math.abs(kdn - kd) < 1e-12) break;
         var key = kdn.toFixed(8);
         if (seen[key]){ kd = Math.max(kd, kdn); ka = w * kd * (1 - s.T) + (1 - w) * ke; V = s.EBIT * (1 - s.T) / ka; cov = s.EBIT / (kd * w * V); rt = rating(cov, mult).rating; break; }
@@ -393,7 +402,9 @@ function ratingColor(r){
 }
 function chartSVG(o){
   var all = []; o.scale.forEach(function(p){ p.forEach(function(q){ all.push(q.V); }); });
-  var lo = Math.min.apply(null, all), hi = Math.max.apply(null, all), pad = (hi - lo) * 0.12 || hi * 0.05;
+  var lo = Math.min.apply(null, all), hi = Math.max.apply(null, all), minSpan = hi * 0.04;
+  if (hi - lo < minSpan){ var mid = (hi + lo) / 2; lo = mid - minSpan / 2; hi = mid + minSpan / 2; }
+  var pad = (hi - lo) * 0.12;
   lo -= pad; hi += pad * 0.6;
   var yb = CH.H - CH.B, xr = CH.W - CH.R;
   var x = function(w){ return CH.L + (w - o.wmin) / (CONFIG.W_MAX - o.wmin) * (xr - CH.L); };
@@ -404,7 +415,7 @@ function chartSVG(o){
     '<linearGradient id="gl" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#6BB6FF"/><stop offset="1" stop-color="#56E0FF"/></linearGradient>' +
     '<linearGradient id="gb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C9D2EE" stop-opacity=".22"/><stop offset="1" stop-color="#C9D2EE" stop-opacity=".06"/></linearGradient>' +
     '<pattern id="hz" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#6F7BA0" stroke-width="1.2" stroke-opacity=".35"/></pattern>' +
-    '<filter id="glow" x="-10%" y="-30%" width="120%" height="160%"><feGaussianBlur stdDeviation="2.6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>' +
+    '<filter id="glow" filterUnits="userSpaceOnUse" x="0" y="0" width="' + CH.W + '" height="' + CH.H + '"><feGaussianBlur stdDeviation="2.6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>' +
     '</defs>';
   // plot well
   g += '<rect x="' + CH.L + '" y="' + CH.T + '" width="' + (xr - CH.L) + '" height="' + (yb - CH.T) + '" rx="8" fill="rgba(255,255,255,.018)"/>';
@@ -476,6 +487,7 @@ function startScreen(){
     '<p class="small dim" style="margin-top:10px">Numbers are in billions. Data as of ' + CONFIG.SNAPSHOT + '. News stories are made up.</p>' +
     '</div>' + mango('😼', 'Mango knows this stuff. She\'ll explain, but she won\'t make your call.') +
     '<button class="btn-go wide" data-act="start">Go to the first boardroom</button>' +
+    '<button class="btn-ghost wide" style="margin-top:10px" data-act="explore">How the model works (optional)</button>' +
     (saved && saved.r !== undefined && saved.step !== 'done' ? '<button class="btn-ghost wide" style="margin-top:10px" data-act="resume">Continue where you left off (boardroom ' + (saved.r + 1) + ')</button>' : '') +
     '<p class="small" style="text-align:center;margin-top:16px;color:var(--faint)">© 2026 Brett Whysel · FNB 230</p>';
 }
@@ -644,7 +656,8 @@ function resultsBody(){
     '<p class="note">Best possible score: ' + t.max + '. Staying put every time and answering every question right: ' + (t.safe + 5 * CONFIG.PTS_WHY) + '. Worst possible: 0. Debt % shows your plan → your call after the news.</p>' +
     '<div class="copy">Take a screenshot of this review.' + tip('shot', '<b>iPhone:</b> press the side button and volume up together. Older iPhones with a Home button: side or top button and Home.<br><b>Android:</b> press power and volume down together.<br><b>Windows:</b> press Windows + Shift + S, then drag over the review.<br><b>Mac:</b> press Shift + Command + 4, then drag over the review.<br><b>Chromebook:</b> press Ctrl + Show windows.') + '</div></div></div>' +
     mango(pct >= 85 ? '😸' : '😼', pct >= 85 ? 'Okay, the board loves you. Don\'t brag.' : pct >= 65 ? 'Solid. Most boards would keep you.' : 'That one was hard. Try again.') +
-    '<button class="wide" data-act="again">Play again</button>';
+    '<button class="btn-ghost wide" data-act="explore">Explore the model</button>' +
+    '<button class="wide" style="margin-top:10px" data-act="again">Play again</button>';
 }
 
 function reflectVeil(){
@@ -658,6 +671,47 @@ function reflectVeil(){
 }
 
 /* ======================= RENDER ======================= */
+/* ======================= MODEL EXPLORER ======================= */
+var XS = [
+  { k:'T', label:'Tax rate', min:0, max:0.40, step:0.01, fmt:function(v){ return Math.round(v * 100) + '%'; },
+    say:'Interest is tax-deductible. A higher tax rate makes debt save more tax, so the best debt level rises.' },
+  { k:'spreadMult', label:'What lenders charge', min:0.5, max:3, step:0.05, fmt:function(v){ return '×' + v.toFixed(2); },
+    say:'The extra rate lenders add above the Treasury rate. When lenders charge more, the best debt level falls.' },
+  { k:'RF', label:'Treasury rate', min:0.01, max:0.08, step:0.0025, fmt:function(v){ return (v * 100).toFixed(2) + '%'; },
+    say:'The safe rate everyone starts from. It raises the cost of debt and stock together, so its effect is small and mixed.' },
+  { k:'MRP', label:'Market risk premium', min:0.03, max:0.07, step:0.0025, fmt:function(v){ return (v * 100).toFixed(2) + '%'; },
+    say:'The extra return investors want for owning stocks. When it rises, debt looks cheaper, so the best debt level rises.' },
+  { k:'bU', label:'Business risk (beta)', min:0.3, max:2, step:0.05, fmt:function(v){ return v.toFixed(2); },
+    say:'How much the business swings with the economy. In this model, higher beta raises the best debt level. In real life, riskier companies usually borrow less, because lenders charge them more.' }
+];
+function xCurve(){ var x = ui.x; return buildCurve({ bU:x.bU, T:x.perfect ? 0 : x.T, EBIT:SAMPLE.EBIT, spreadMult:x.spreadMult, RF:x.RF, MRP:x.MRP, perfect:x.perfect, wmin:0 }); }
+function xChart(){ var pts = xCurve(), pk = peak(pts), flat = (pk.V - Math.min.apply(null, pts.map(function(q){ return q.V; }))) < 0.002 * pk.V;
+  return { svg:chartSVG({ pts:pts, wmin:0, scale:[pts], best:flat ? undefined : pk.w, alt:'Sample company firm value curve' }), best:pk, flat:flat }; }
+function xRead(c){ return c.flat ? 'Every debt level gives the same firm value: <b>' + bn(c.best.V) + '</b>.' : 'Best debt level: <b class="num">' + pc(c.best.w) + '</b> · firm value <b class="num">' + bn(c.best.V) + '</b>'; }
+function exploreScreen(){
+  var x = ui.x, c = xChart();
+  var rows = XS.map(function(d){ var v = x[d.k]; return '<div class="xs' + (x.perfect && (d.k === 'T' || d.k === 'spreadMult') ? ' off' : '') + '"><div class="xl"><label for="x-' + d.k + '">' + d.label + '</label><b class="num" id="xv-' + d.k + '">' + d.fmt(v) + '</b></div>' +
+    '<input type="range" id="x-' + d.k + '" data-k="' + d.k + '" min="' + d.min + '" max="' + d.max + '" step="' + d.step + '" value="' + v + '"' + (x.perfect && (d.k === 'T' || d.k === 'spreadMult') ? ' disabled' : '') + ' aria-describedby="xd-' + d.k + '">' +
+    '<p class="small dim" id="xd-' + d.k + '">' + d.say + '</p></div>'; }).join('');
+  return '<div class="card" style="margin-top:16px"><p class="eyebrow">' + (ui.x.from === 'start' ? 'Optional tutorial' : 'Wrap-up') + '</p><h2>How the model works</h2>' +
+    '<p class="small dim">A sample company that earns ' + bn(SAMPLE.EBIT) + ' a year before interest and taxes. Move an input to see how the best debt level changes.</p></div>' +
+    '<div class="card chart"><p class="eyebrow">Firm value at every debt level</p><div id="xchart">' + c.svg + '</div><p class="caption" id="xread" aria-live="polite">' + xRead(c) + '</p>' +
+    '<button class="wide ' + (x.perfect ? 'btn-go' : 'btn-ghost') + '" data-act="perfect" aria-pressed="' + !!x.perfect + '" style="margin-top:8px">' + (x.perfect ? 'Back to the real world' : 'Try Modigliani and Miller\'s perfect world') + '</button>' +
+    (x.perfect ? '<p class="small" style="margin-top:8px">No taxes, and lenders charge every company the Treasury rate, at any debt level. The curve goes flat: no debt level beats another. That is the MM independence idea.</p>' : '') + '</div>' +
+    '<div class="card">' + rows + '<button class="btn-ghost wide" data-act="xreset">Reset all inputs</button></div>' +
+    '<button class="btn-go wide" data-act="xdone">' + (ui.x.from === 'start' ? 'Back to the start' : 'Back to my board review') + '</button>';
+}
+function openExplore(from){ ui.x = { from:from, T:SAMPLE.T, bU:SAMPLE.bU, RF:SAMPLE.RF, MRP:SAMPLE.MRP, spreadMult:SAMPLE.spreadMult, perfect:false }; render('h2'); window.scrollTo(0, 0); }
+function bindExplore(){
+  document.querySelectorAll('input[data-k]').forEach(function(inp){
+    inp.addEventListener('input', function(){
+      var d = XS.filter(function(q){ return q.k === inp.getAttribute('data-k'); })[0];
+      ui.x[d.k] = +inp.value; document.getElementById('xv-' + d.k).textContent = d.fmt(+inp.value);
+      var c = xChart(); document.getElementById('xchart').innerHTML = c.svg; document.getElementById('xread').innerHTML = xRead(c);
+    });
+  });
+}
+
 /* Look back: re-read earlier screens. Scored choices stay locked. */
 var STEPS = ['set', 'news', 'bet', 'reveal', 'explain'];
 function seq(){
@@ -679,7 +733,8 @@ function render(focusSel){
     S.r = view.r; S.step = view.step; var rr = S.res[view.r] || {};
     if (view.step === 'set'){ S.w = rr.w1; S.touched = true; } else if (view.step === 'bet'){ S.w = rr.w2; S.touched = true; }
   }
-  if (!S || S.step === 'start') html = startScreen();
+  if (ui.x) html = exploreScreen();
+  else if (!S || S.step === 'start') html = startScreen();
   else if (S.step === 'set') html = setScreen();
   else if (S.step === 'news') html = newsScreen();
   else if (S.step === 'bet') html = betScreen();
@@ -687,14 +742,14 @@ function render(focusSel){
   else if (S.step === 'explain') html = explainScreen();
   else if (S.step === 'debrief') html = debriefScreen();
   else html = resultsScreen();
-  var key = (S ? S.step + S.r : 'start') + (view ? 'v' : ''), fresh = key !== ui.lastKey; ui.lastKey = key;
+  var key = (ui.x ? 'x' : '') + (S ? S.step + S.r : 'start') + (view ? 'v' : ''), fresh = key !== ui.lastKey; ui.lastKey = key;
   if (view){
     html = '<div class="locked"><p class="lookback">Looking back · your choices are locked</p>' + html +
       '<div class="row2" style="margin-top:14px"><button class="btn-ghost" data-act="fwd">Next screen ›</button><button class="btn-go" data-act="front">Return to my game</button></div></div>';
     S.r = keep.r; S.step = keep.step; S.w = keep.w; S.touched = keep.touched;
   }
   document.getElementById('app').innerHTML = '<div class="' + (fresh ? 'screen' : '') + '">' + html + '</div>';
-  if (!view) bindSlider();
+  if (ui.x) bindExplore(); else if (!view) bindSlider();
   runCounters();
   if (focusSel){ var el = document.querySelector(focusSel); if (el) el.focus({ preventScroll:true }); }
 }
@@ -763,6 +818,10 @@ var busy = false;
 document.addEventListener('click', function(e){
   var b = e.target.closest('[data-act]'); if (!b || b.disabled) return;
   var act = b.getAttribute('data-act'), v = b.getAttribute('data-v');
+  if (act === 'explore'){ var nmv = (document.getElementById('nm') || {}).value; if (nmv !== undefined) ui.nameDraft = nmv; openExplore(S && S.step === 'done' ? 'end' : 'start'); return; }
+  if (act === 'xdone'){ ui.x = null; render('h1,h2'); window.scrollTo(0, 0); var nmi = document.getElementById('nm'); if (nmi && ui.nameDraft) nmi.value = ui.nameDraft; return; }
+  if (act === 'perfect'){ ui.x.perfect = !ui.x.perfect; render('[data-act=perfect]'); return; }
+  if (act === 'xreset'){ var f = ui.x.from; openExplore(f); return; }
   if (act === 'back'){ doBack(); return; }
   if (act === 'fwd'){ doFwd(); return; }
   if (act === 'front'){ ui.vi = null; ui.tips = {}; render('h2,h3'); window.scrollTo(0, 0); return; }
@@ -812,10 +871,10 @@ document.addEventListener('keydown', function(e){ if (e.key === 'Enter' && e.tar
 /* Resume mid-game on reload; otherwise start page. */
 (function(){ var s = load(); if (s && s.step && s.step !== 'start' && s.step !== 'done'){ S = null; } render(); })();
 try { history.replaceState({ mm:0 }, ''); history.pushState({ mm:1 }, ''); } catch (e) {}
-window.addEventListener('popstate', function(){ if (doBack()){ try { history.pushState({ mm:1 }, ''); } catch (e) {} } else if (S && S.step !== 'start'){ try { history.pushState({ mm:1 }, ''); } catch (e) {} } });
+window.addEventListener('popstate', function(){ if (ui.x){ ui.x = null; render(); try { history.pushState({ mm:1 }, ''); } catch (e) {} return; } if (doBack()){ try { history.pushState({ mm:1 }, ''); } catch (e) {} } else if (S && S.step !== 'start'){ try { history.pushState({ mm:1 }, ''); } catch (e) {} } });
 
 /* Test hook (no effect on play) */
-window.__MM = { CH:CH, CONFIG:CONFIG, MODEL:MODEL, move:move, bestMove:bestMove, worstMove:worstMove, shareOf:shareOf, peak:peak, holdBand:holdBand, state:function(){ return S; } };
+window.__MM = { buildCurve:buildCurve, peak:peak, SAMPLE:SAMPLE, CH:CH, CONFIG:CONFIG, MODEL:MODEL, move:move, bestMove:bestMove, worstMove:worstMove, shareOf:shareOf, peak:peak, holdBand:holdBand, state:function(){ return S; } };
 </script>
 </body>
 </html>

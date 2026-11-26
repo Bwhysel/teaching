@@ -59,7 +59,8 @@ Target outcomes: all five held (small up / small down / no change / big down / b
 10. **No mood emoji on Mango's avatar** (Brett, Nov 26). Spec §7 asks for emoji tells; Mango is reliable here, and her one not-in-the-mood moment says so in words ("Purr. Not in the mood…").
 11. **Breakdown from Round 1** (Brett, Nov 26), not Round 2 as the brief planned; the guided round shows one more table.
 12. **Look-back navigation** (Brett, Nov 26): Back re-reads earlier screens with every scored choice locked; browser/phone back stays inside the game. Tested: choices unchanged after back/forward; two browser-back presses stay on the page.
-13. **Name field on the start page**, so the screenshot identifies the student (as in Leverage Legends).
+13. **Optional model explorer** (Brett, Nov 26): tutorial from the start screen, wrap-up from the board review. Unscored. About 205 words (240 with the perfect-world note open), slightly over the 200-word decision-screen budget; it is not a decision screen.
+14. **Name field on the start page**, so the screenshot identifies the student (as in Leverage Legends).
 
 ## Still unverified or limited
 
