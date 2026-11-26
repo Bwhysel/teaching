@@ -74,6 +74,8 @@ These are principles, not rules. Apply judgment.
 
 **Plain English, one word per idea.** Write the way a native speaker talks to a student who reads English as a second language. No idioms ("tops you up," "does not check the weather," "get loud about it"), no odd comparisons ("moves harder"), no stiff phrasing ("Everyone gets different luck"). Pick one word for each idea and use it everywhere: if the forecast says "return," the chart, the partner and the debrief say "return" too. Use "debt" on screen, and say once up front what kind of debt it is (for example, credit card debt). Read every visible line aloud before handoff.
 
+**Use the course's own terms.** When the module slides or the textbook name a concept, use that exact term in the game (for example, "Trade-Off Model," "Independence Hypothesis," "benefit of debt," "credit spread"), so students can connect the game to their reading, the lecture and the assignment. Define each term in plain English the first time it appears, then use it the same way everywhere. Plain English governs the sentences around the terms, not the terms themselves. Don't invent a paraphrase for a concept the course already names. If the game needs a term the course doesn't use, list it in the build report. (First used in Mango's Millions.)
+
 ---
 
 ## 4. State-of-the-Art Design Principles
@@ -284,4 +286,4 @@ The spec stays constant. The brief captures only what changes:
 
 ---
 
-_Last updated: November 22, 2026 (Leverage Legends redesign: random results, plain English, publishing to `teaching`). Update this file when a new invariant pattern is established across two or more games; patterns marked "first used in" come from one game so far._
+_Last updated: November 26, 2026 (added "Use the course's own terms" after Mango's Millions). Previously November 22, 2026 (Leverage Legends redesign: random results, plain English, publishing to `teaching`). Update this file when a new invariant pattern is established across two or more games; patterns marked "first used in" come from one game so far._
