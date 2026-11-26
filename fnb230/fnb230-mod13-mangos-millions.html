@@ -313,7 +313,7 @@ var ROUNDS = [
            ['A higher risk premium makes the tax benefit of debt bigger.',false]] },
   { news:{ head:'Recession fears hit airlines', body:'Lenders raise Delta\'s credit spread by 25% at every debt level. (A credit spread is the extra rate lenders charge above the Treasury rate.)', tick:'DAL ▼ · Airline bonds slide · Lenders pull back · DAL ▼' },
     intro:{ face:'🐱', text:'Purr. Not in the mood. Airlines make me nervous. You take this one.' },
-    hint:'Lenders got nervous. When lenders get nervous, they charge more. Your move.',
+    hint:'More debt means more risk of bankruptcy. Lenders see it, so they charge more. Your move.',
     why:'Delta\'s credit spread went up, so the cost of rising rates becomes bigger than the tax benefit at a lower debt level.',
     tier2:[['Delta\'s credit spread went up, so the cost of rising rates becomes bigger than the tax benefit at a lower debt level.',true],
            ['Higher rates mean more interest to deduct, so the tax benefit grows and Delta should borrow more.',false],
@@ -517,7 +517,7 @@ function startScreen(){
     '<p class="small dim" style="margin-top:10px">Numbers are in billions. Data as of ' + CONFIG.SNAPSHOT + '. News stories are made up.</p>' +
     '</div>' + mango('😼', 'Mango knows this stuff. She\'ll explain, but she won\'t make your call.') +
     '<button class="btn-go wide" data-act="start">Go to the first boardroom</button>' +
-    '<button class="btn-ghost wide" style="margin-top:10px" data-act="explore">How the model works (optional)</button>' +
+    '<button class="btn-ghost wide" style="margin-top:10px" data-act="explore">Play with the model</button>' +
     (saved && saved.r !== undefined && saved.step !== 'done' ? '<button class="btn-ghost wide" style="margin-top:10px" data-act="resume">Continue where you left off (boardroom ' + (saved.r + 1) + ')</button>' : '') +
     '<p class="small" style="text-align:center;margin-top:16px;color:var(--faint)">© 2026 Brett Whysel · FNB 230</p>';
 }
@@ -609,7 +609,7 @@ function revealScreen(){
     var row = function(lbl, you, bst){ return '<tr><td>' + lbl + '</td><td class="num ' + (you > 0.049 ? 'pos' : you < -0.049 ? 'neg' : '') + '">' + bnT(you) + '</td><td class="num">' + bnT(bst) + '</td></tr>'; };
     brk = '<table class="brk"><thead><tr><th>Effect on firm value, from your plan (' + pc(r.w1) + ')</th><th>You (' + pc(r.w2) + ')</th><th>Best (' + pc(bb.w) + ')</th></tr></thead><tbody>' +
       row('Tax benefit ' + tip('tb' + S.r, 'Tax rate × debt. Interest is tax-deductible, so debt saves taxes (textbook Eq. 14.21).'), b.TB - a.TB, bb.TB - a.TB) +
-      row('Cost of rising rates ' + tip('cr' + S.r, 'As debt grows, lenders charge more and shareholders demand a higher return. This is the value that rising rates take back (the trade-off model).'), -(b.CRR - a.CRR), -(bb.CRR - a.CRR)) +
+      row('Cost of rising rates ' + tip('cr' + S.r, 'More debt raises the risk of bankruptcy. Rating agencies lower the credit rating, lenders charge a higher credit spread, and shareholders demand a higher return. That is the cost side of the trade-off model.'), -(b.CRR - a.CRR), -(bb.CRR - a.CRR)) +
       row('Transaction costs', -mv.cost, -best.cost) +
       '<tr class="tot"><td>Value created</td><td class="num">' + bnT(mv.net) + '</td><td class="num">' + bnT(best.net) + '</td></tr></tbody></table><p class="small dim">$B = billions of dollars.</p>' +
       '<p class="small" style="margin-top:10px">Shareholders\' required return: <b class="num">' + pct1(a.ke) + '</b> at your plan (' + pc(r.w1) + ') → <b class="num">' + pct1(b.ke) + '</b> at your call (' + pc(r.w2) + '). Levered beta: ' + a.bL.toFixed(2) + ' → ' + b.bL.toFixed(2) + '. ' + tip('kb' + S.r, 'More debt makes owning the stock riskier, so beta rises (the Hamada equation, textbook Eq. 14.23). Required return = Treasury rate + beta × market risk premium (Eq. 14.22).') + '</p>';
@@ -707,7 +707,7 @@ function resultsBody(){
     '<p class="note">Best possible score: ' + t.max + '. Staying put every time and answering every question right: ' + (t.safe + 5 * CONFIG.PTS_WHY) + '. Worst possible: 0. Debt % shows your plan → your call after the news.</p>' +
     '<div class="copy">Take a screenshot of this review.' + tip('shot', '<b>iPhone:</b> press the side button and volume up together. Older iPhones with a Home button: side or top button and Home.<br><b>Android:</b> press power and volume down together.<br><b>Windows:</b> press Windows + Shift + S, then drag over the review.<br><b>Mac:</b> press Shift + Command + 4, then drag over the review.<br><b>Chromebook:</b> press Ctrl + Show windows.') + '</div></div></div>' +
     mango(pct >= 85 ? '😸' : '😼', pct >= 85 ? 'Okay, the board loves you. Don\'t brag.' : pct >= 65 ? 'Solid. Most boards would keep you.' : 'That one was hard. Try again.') +
-    '<button class="btn-ghost wide" data-act="explore">Explore the model</button>' +
+    '<button class="btn-ghost wide" data-act="explore">Play with the model</button>' +
     '<button class="wide" style="margin-top:10px" data-act="again">Play again</button>';
 }
 
@@ -775,7 +775,7 @@ function exploreScreen(){
   var rows = xOrder().map(function(d){ var v = x[d.k]; return '<div class="xs' + (off(d.k) ? ' off' : '') + '"><div class="xl"><label for="x-' + d.k + '">' + d.label + '</label><b class="num" id="xv-' + d.k + '">' + d.fmt(v) + '</b></div>' +
     '<input type="range" id="x-' + d.k + '" data-k="' + d.k + '" min="' + d.min + '" max="' + d.max + '" step="' + d.step + '" value="' + v + '"' + (off(d.k) ? ' disabled' : '') + ' aria-describedby="xd-' + d.k + '"><span class="sr" id="xd-' + d.k + '">' + d.say + '</span></div>'; }).join('');
   var last = XS.filter(function(d){ return d.k === ui.x.last; })[0];
-  return '<div class="card" style="margin-top:16px"><p class="eyebrow">' + (ui.x.from === 'start' ? 'Optional tutorial' : 'Wrap-up') + '</p><h2>How the model works</h2>' +
+  return '<div class="card" style="margin-top:16px"><p class="eyebrow">' + (ui.x.from === 'start' ? 'Optional tutorial' : 'Wrap-up') + '</p><h2>Play with the model</h2>' +
     '<p class="small dim">A sample company that earns ' + bn(SAMPLE.EBIT) + ' a year before interest and taxes, with ' + pc(SAMPLE.today) + ' debt today. Move an input to see what happens.</p></div>' +
     '<div class="card"><p class="eyebrow">Step through the theory</p><div class="stages" role="group" aria-label="Theory">' +
       STAGES.map(function(st, i){ return '<button class="' + (x.stage === i + 1 ? 'on' : '') + '" data-act="stage" data-v="' + (i + 1) + '" aria-pressed="' + (x.stage === i + 1) + '"><small>' + (i + 1) + '</small>' + st[0] + '</button>'; }).join('') +
