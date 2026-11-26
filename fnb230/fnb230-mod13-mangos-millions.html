@@ -907,7 +907,7 @@ document.addEventListener('click', function(e){
   if (act === 'explore'){ var nmv = (document.getElementById('nm') || {}).value; if (nmv !== undefined) ui.nameDraft = nmv; openExplore(S && S.step === 'done' ? 'end' : 'start'); return; }
   if (act === 'xdone'){ ui.x = null; render('h1,h2'); window.scrollTo(0, 0); var nmi = document.getElementById('nm'); if (nmi && ui.nameDraft) nmi.value = ui.nameDraft; return; }
   if (act === 'stage'){ ui.x.stage = +v; var y0 = window.scrollY; render('[data-act=stage][data-v="' + v + '"]'); window.scrollTo(0, y0); return; }
-  if (act === 'xreset'){ var f = ui.x.from; openExplore(f); return; }
+  if (act === 'xreset'){ var f = ui.x.from, st = ui.x.stage, y1 = window.scrollY; openExplore(f); ui.x.stage = st; render('[data-act=xreset]'); window.scrollTo(0, y1); return; }
   if (act === 'back'){ doBack(); return; }
   if (act === 'fwd'){ doFwd(); return; }
   if (act === 'front'){ ui.vi = null; ui.tips = {}; render('h2,h3'); window.scrollTo(0, 0); return; }
