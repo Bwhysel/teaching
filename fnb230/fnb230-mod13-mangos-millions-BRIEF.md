@@ -270,3 +270,4 @@ Everything in [§13], plus:
 | — | Wording (Brett, Nov 26) | Drop the word "band" on screen: legend says "Do nothing"; Alphabet's Mango line says "The gray area means do nothing." |
 | — | Reset (Brett, Nov 26) | "Reset all inputs" restores the sliders and the axis but keeps the current theory step. |
 | — | Final review (Brett, Nov 26) | **SLO 4:** every reveal shows shareholders' required return and levered beta, plan → call, with an ⓘ citing Eqs. 14.22–14.23. **SLO 3:** the M&A-premium link stays in the Module 13 Assignment (LBO question); not added to the game. Fixed: correct-hold feedback at Con Ed; Nike's net-cash start explained in its description. |
+| — | Alphabet hint (Brett, Nov 26) | Mango: "Listen, taxes just went up, and interest is still tax-deductible. You do the math on debt. I'll wait. 😼" (replaces the brief's "saves you more" line). |
