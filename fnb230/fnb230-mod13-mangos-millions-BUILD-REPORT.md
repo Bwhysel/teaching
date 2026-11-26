@@ -40,7 +40,7 @@ Target outcomes: all five held (small up / small down / no change / big down / b
 | Fast tapper (keeps every default, picks the second reason) | 14 / 100 | Back to the numbers | Gets points only for the Con Ed hold. Cannot skip the reflection screen. |
 | Default accepter (keeps today's level every time, answers correctly) | 39 / 100 | Back to the numbers | The game never rewards staying put except where it is right (Con Ed). |
 | Careful reader | 100 / 100 possible | Board favorite | All screens under 200 words. |
-| Non-native English speaker | — | — | One word per idea (debt, debt level, firm value, tax benefit, cost of rising rates, transaction costs). "Spread" never appears; written as "charge … above the Treasury rate." Read-aloud check still needed by Brett. |
+| Non-native English speaker | — | — | One word per idea, using the textbook's terms defined at first use: debt, debt level, firm value, benefit of debt, cost of bankruptcy risk, credit spread, transaction costs. Idioms removed in the copy pass. Read-aloud check still needed by Brett. |
 | Disengaged / grade-motivated | Low unless they read the curve | — | Answer order is shuffled per student; "always the first answer" does not work. Step 1 chart is visible, so step-1 points are easy to get (by design: it teaches reading the curve). |
 | Highly engaged | 100 possible | Board favorite | Depth: breakdown table, do-nothing band, after-cost line, company data ⓘ. |
 | Keyboard / screen reader | Full play possible | — | Arrow keys move the slider; Tab/Enter for buttons. Not tested with an actual screen reader. |
@@ -81,9 +81,9 @@ Target outcomes: all five held (small up / small down / no change / big down / b
 **Learning objectives**
 | SLO | Where it lives | Status |
 |---|---|---|
-| 1. Firm value and capital structure | Every chart; breakdown in every reveal (tax benefit, cost of rising rates, transaction costs); explorer | Built |
+| 1. Firm value and capital structure | Every chart; breakdown in every reveal (benefit of debt, cost of bankruptcy risk, transaction costs); explorer | Built |
 | 2. MM Independence Hypothesis | Explorer step 1 (flat curve); debrief Mango line | Feel built; paraphrase left to assignment |
-| 3. Taxes in MM; M&A premiums | Alphabet tax round; tax benefit row; explorer step 2 | Taxes built; M&A link left to the LBO assignment question (Brett, Nov 26) |
+| 3. Taxes in MM; M&A premiums | Alphabet tax round; benefit-of-debt row; explorer step 2 | Taxes built; M&A link left to the LBO assignment question (Brett, Nov 26) |
 | 4. Optimal structure with levered beta | Engine uses Hamada every round; every reveal now shows shareholders' required return and levered beta, plan → call | Feel built, numbers visible; calculation left to Queens Quality question |
 
 **Decided in the final review (Brett):** add the required-return/levered-beta row (SLO 4); leave M&A to the assignment (SLO 3); shorter Alphabet hint; keep the model's deal size on the deal toy (Alphabet best play shows $1,167 billion; Charter's paydown ~$25B vs. $107B real, a consequence of model firm value below market).
