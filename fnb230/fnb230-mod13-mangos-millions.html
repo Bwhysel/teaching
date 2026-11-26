@@ -238,7 +238,7 @@ var CONFIG = {
   SCORE_FLOOR: 0.01,     // when the best move gains little, judge gaps against 1% of firm value
   HOLD_TOL: 0.01,        // "right to hold" if within 1 point of where you started
   LABELS: [[0.9,'Sharp call','good'],[0.6,'Close','mid'],[0.25,'Partway','mid'],[-1,'Missed','bad']],
-  FINAL: [[85,'Board favorite'],[65,'Trusted advisor'],[40,'Getting there'],[0,'Back to the numbers']],
+  FINAL: [[85,'Board favorite'],[65,'Trusted analyst'],[40,'Getting there'],[0,'Back to the numbers']],
   REFLECT_MS: 4000,
   STORE: 'mm-mangos-millions-v1'
 };
@@ -456,7 +456,7 @@ function startScreen(){
   return '<div class="card hero"><img class="start-icon" src="' + ART.icon + '" width="200" height="200" alt="Mango, an orange cat in a pinstripe suit and red tie, in front of the New York City skyline">' +
     '<p class="eyebrow" style="margin-top:8px">FNB 230 · Module 13</p>' +
     '<h1><em>M&amp;M:</em> Mango\'s Millions</h1>' +
-    '<p class="dim">You\'re a new CFO advisor. Five real companies. Five boardrooms. One question:</p>' +
+    '<p class="dim">You\'re a new analyst in an investment bank\'s Capital Structure Advisory group. Five real companies. Five boardrooms. One question:</p>' +
     '<p class="q">"Can you make our shareholders richer by changing how much we borrow?"</p>' +
     '<p class="dim">Then the news changes. You decide whether to change the plan.</p>' +
     '<div class="tickers" aria-label="Companies">' + COMPANIES.map(function(c){ return '<span>' + c.id + '</span>'; }).join('') + '</div>' +
@@ -606,13 +606,13 @@ function debriefScreen(){
 
 function resultsScreen(){
   var t = totals(), pct = Math.round(t.you / t.max * 100), label = CONFIG.FINAL.filter(function(f){ return pct >= f[0]; })[0][1];
-  var assess = pct >= 85 ? 'Read every curve clearly and moved only when the gain beat the cost. The board recommends this advisor for future engagements.'
+  var assess = pct >= 85 ? 'Read every curve clearly and moved only when the gain beat the cost. The board recommends this analyst for future engagements.'
     : pct >= 65 ? 'Sound judgment on most calls. Watch the size of each move as closely as its direction.'
     : pct >= 40 ? 'Some strong calls. Work on reading where the tax benefit stops paying for the rising cost of risk.'
     : 'The board asks for a second engagement. Replay and watch where the top of each curve goes after the news.';
   var rows = S.res.map(function(r, i){ var m = MODEL[i], b = bestMove(m.p1, r.w1), mv = move(m.p1, r.w1, r.w2); return '<tr><td>' + esc(m.c.name.replace(' (Spectrum)', '').replace(' Air Lines', '')) + '</td><td>' + Math.round(r.w1 * 100) + '→' + Math.round(r.w2 * 100) + '</td><td>' + bnR(mv.net) + '</td><td>' + bnR(b.net) + '</td><td>' + ((r.p1 || 0) + (r.p2 || 0) + (r.p3 || 0)) + '</td></tr>'; }).join('');
-  return '<div class="review"><div class="lh"><img src="' + ART.icon + '" alt=""><div><h2>Board Performance Review</h2><p>CFO Advisory Engagement · FNB 230, Module 13</p></div></div><div class="bd">' +
-    '<div class="fields"><div><span>Advisor</span><b>' + esc(S.name || '—') + '</b></div><div><span>Date</span><b>' + new Date(S.doneAt || Date.now()).toLocaleDateString() + '</b></div><div style="grid-column:1/-1"><span>Engagements</span><b>Nike · Delta · Con Edison · Charter · Alphabet</b></div></div>' +
+  return '<div class="review"><div class="lh"><img src="' + ART.icon + '" alt=""><div><h2>Board Performance Review</h2><p>Capital Structure Advisory · FNB 230, Module 13</p></div></div><div class="bd">' +
+    '<div class="fields"><div><span>Analyst</span><b>' + esc(S.name || '—') + '</b></div><div><span>Date</span><b>' + new Date(S.doneAt || Date.now()).toLocaleDateString() + '</b></div><div style="grid-column:1/-1"><span>Engagements</span><b>Nike · Delta · Con Edison · Charter · Alphabet</b></div></div>' +
     '<div class="rating"><div class="sc">' + t.you + '<small> / ' + t.max + '</small></div><div class="lb"><span>Overall rating</span><b>' + label + '</b></div></div>' +
     '<h3>Results by engagement</h3><table><thead><tr><th>Company</th><th>Debt %</th><th>Value created</th><th>Best possible</th><th>Pts</th></tr></thead><tbody>' + rows + '</tbody></table>' +
     '<h3>Board\'s assessment</h3><p class="assess">' + assess + '</p>' +
