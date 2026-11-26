@@ -677,7 +677,7 @@ function reflectVeil(){
 /* ======================= MODEL EXPLORER ======================= */
 var XS = [
   { k:'T', label:'Tax rate', min:0, max:0.40, step:0.01, fmt:function(v){ return Math.round(v * 100) + '%'; },
-    say:'The share of profit paid in taxes. Interest is tax-deductible, so the tax rate sets how much each dollar of interest saves.' },
+    say:'The share of profit paid in taxes. Interest is tax-deductible, so the tax rate sets how big the tax benefit of debt is.' },
   { k:'spreadMult', label:'Credit spread', min:0.5, max:3, step:0.05, fmt:function(v){ return v.toFixed(2) + '× normal'; },
     say:'A credit spread is the extra rate lenders charge above the Treasury rate. It grows as the credit rating (the colored bar) falls.' },
   { k:'RF', label:'Treasury rate', min:0.01, max:0.08, step:0.0025, fmt:function(v){ return (v * 100).toFixed(2) + '%'; },
