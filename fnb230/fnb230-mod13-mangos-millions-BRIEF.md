@@ -256,3 +256,4 @@ Everything in [§13], plus:
 | — | Student's role (Brett, Nov 26) | "CFO advisor" is not a real title. Student is **a new analyst in an investment bank's Capital Structure Advisory group** (real groups: Moelis, Raymond James, Baird). Results page is a **Board Performance Review** ("Capital Structure Advisory"), replacing the receipt. |
 | — | Controls and Mango avatar (Brett, Nov 26) | Students **drag the vertical line on the chart** (or tap the chart) instead of using a slider. Mango's avatar shows **no mood emoji**. |
 | — | Breakdown and Back (Brett, Nov 26) | Reveal **breakdown shown from Round 1** (Nike), introduced by Mango there. **Back button** lets students re-read earlier screens; scored choices stay locked. The phone/browser back gesture does the same instead of leaving the game. |
+| — | Sandbox / tutorial (Brett, Nov 26) | Considered and **declined**: no lever-playing tutorial on a made-up company. Model exploration stays in class and the assignment. |
