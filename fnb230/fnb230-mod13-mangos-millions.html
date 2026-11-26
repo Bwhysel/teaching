@@ -488,7 +488,7 @@ function startScreen(){
     '<p class="eyebrow" style="margin-top:8px">FNB 230 · Module 13</p>' +
     '<h1><em>M&amp;M:</em> Mango\'s Millions</h1>' +
     '<p class="dim">You\'re a new analyst in an investment bank\'s Capital Structure Advisory group. You\'ll advise the boards of five real companies. Each one asks the same question:</p>' +
-    '<p class="q">"Can you make our shareholders richer by changing how much we borrow?"</p>' +
+    '<p class="q">"Can you create shareholder value by changing how much we borrow?"</p>' +
     '<p class="dim">Then the news changes. You decide whether to change the plan.</p>' +
     '<div class="tickers" aria-label="Companies">' + COMPANIES.map(function(c){ return '<span>' + c.id + '</span>'; }).join('') + '</div>' +
     '<label class="nm" for="nm">Your name (for your board review)</label><input id="nm" class="text" autocomplete="name" maxlength="40">' +
@@ -534,7 +534,7 @@ function setScreen(){
   var intro = R.intro && !S.touched ? mango(R.intro.face, R.intro.text) : '';
   var leg = S.r >= 2 ? legend([['#56E0FF', 'Firm value'], ['#FFD23F', 'After transaction costs', true], ['rgba(201,210,238,.5)', 'Do-nothing band']]) : '';
   var html = topBar() + '<div class="card">' + companyHead(m) +
-    '<div class="ask"><span>The board asks</span>Can you make our shareholders richer by changing how much we borrow?</div>' + companyFacts(m) + '</div>' +
+    '<div class="ask"><span>The board asks</span>Can you create shareholder value by changing how much we borrow?</div>' + companyFacts(m) + '</div>' +
     guide + intro +
     '<div class="card chart" id="chartbox"><p class="eyebrow">Firm value at every debt level</p>' + readout(m, w, m.p0) + dragWrap(m, w, setChart(m, w)) + leg +
     buttons('Keep today\'s ' + pc(m.w0), w) + '</div>';
