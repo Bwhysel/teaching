@@ -11,7 +11,7 @@ Drafted by Claude after the engine run, Nov 25, 2026 (decision 6, option B). Bre
 - **Scoring:** both tiers right = 5 points. Tier 1 right, tier 2 wrong = 2 points (brief §9: tier 1 shows the student read the result; tier 2 shows understanding). Tier 1 wrong = 0. Feedback always says when tier 1 is right but tier 2 is wrong.
 - Answer order is shuffled on screen.
 
-Vocabulary used throughout: debt, debt level, firm value, tax benefit, cost of rising rates, transaction costs, lenders, shareholders.
+Vocabulary used throughout: debt, debt level, firm value, benefit of debt, cost of bankruptcy risk, transaction costs, lenders, shareholders.
 
 ---
 
@@ -25,7 +25,7 @@ Vocabulary used throughout: debt, debt level, firm value, tax benefit, cost of r
 - ✓ Shareholders now demand a higher return, so debt is a little cheaper by comparison. A small move toward more debt pays off.
 - ✗ When stocks get riskier, every company should borrow less. *(Misconception: reacting to market mood instead of the company's own trade-off.)*
 - ✗ Lenders cut the rates they charge Nike. *(Misconception: misreading which assumption changed.)*
-- ✗ A higher risk premium makes the tax benefit of debt bigger. *(Misconception: the tax benefit is tax rate × debt (Lasher Eq. 14.21); the risk premium doesn't enter it.)*
+- ✗ A higher risk premium makes the benefit of debt bigger. *(Misconception: the benefit of debt is tax rate × debt (Lasher Eq. 14.21); the risk premium doesn't enter it.)*
 
 ---
 
@@ -36,8 +36,8 @@ Vocabulary used throughout: debt, debt level, firm value, tax benefit, cost of r
 **Tier 1:** More debt · Less debt ✓ · About the same
 
 **Tier 2 — Why?**
-- ✓ Rates now climb a bit faster as Delta borrows, so the cost of rising rates catches up with the tax benefit a little sooner.
-- ✗ Higher rates mean more interest to deduct, so the tax benefit grows and Delta should borrow more. *(Misconception: the tax benefit is tax rate × debt; the interest rate cancels out. Higher rates only raise the cost side.)*
+- ✓ Rates now climb a bit faster as Delta borrows, so the cost of bankruptcy risk catches up with the benefit of debt a little sooner.
+- ✗ Higher rates mean more interest to deduct, so the benefit of debt grows and Delta should borrow more. *(Misconception: the benefit of debt is tax rate × debt; the interest rate cancels out. Higher rates only raise the cost side.)*
 - ✗ In a recession, a company should borrow more to get through it. *(Misconception: mixing up needing cash with the best mix of debt and equity.)*
 - ✗ The tax rate went down. *(Misconception: misreading which assumption changed.)*
 
@@ -50,7 +50,7 @@ Vocabulary used throughout: debt, debt level, firm value, tax benefit, cost of r
 **Tier 1:** More debt · Less debt · About the same ✓
 
 **Tier 2 — Why?**
-- ✓ The news barely changed the balance between the tax benefit and the cost of rising rates, and moving would cost money.
+- ✓ The news barely changed the balance between the benefit of debt and the cost of bankruptcy risk, and moving would cost money.
 - ✗ Bad news always means a company should cut its debt. *(Misconception: reacting to the headline instead of the numbers.)*
 - ✗ Utilities should always borrow as much as they can because their earnings are steady. *(Misconception: steady earnings mean unlimited debt.)*
 - ✗ Higher risk always means much less debt. *(Misconception: in this model, a small rise in business risk barely moves the best level, and a rise in beta alone can even nudge it toward more debt.)*
@@ -64,7 +64,7 @@ Vocabulary used throughout: debt, debt level, firm value, tax benefit, cost of r
 **Tier 1:** More debt · Less debt ✓ · About the same
 
 **Tier 2 — Why?**
-- ✓ At Charter's debt level, the cost of rising rates is far bigger than the tax benefit, even after the cost of issuing new stock.
+- ✓ At Charter's debt level, the cost of bankruptcy risk is far bigger than the benefit of debt, even after the cost of issuing new stock.
 - ✗ Charter should keep its debt because paying it down is too expensive. *(Misconception: overweighting transaction costs; here the gain is many times the cost.)*
 - ✗ Cord-cutting cuts Charter's earnings, so it has less income to protect from taxes. *(Misconception: the news changed lender rates, not earnings, in this round.)*
 - ✗ Big companies can always carry more debt than small ones. *(Misconception: size, not the trade-off, decides the best debt level.)*
@@ -80,8 +80,8 @@ Vocabulary used throughout: debt, debt level, firm value, tax benefit, cost of r
 **Tier 1:** More debt ✓ · Less debt · About the same
 
 **Tier 2 — Why?**
-- ✓ A higher tax rate makes the tax benefit of each dollar of debt bigger, so more debt pays off before rising rates catch up.
-- ✗ Higher taxes leave the company less cash, so it should borrow less. *(Misconception: confusing cash flow with the value of the tax benefit.)*
+- ✓ A higher tax rate makes the benefit of debt of each dollar of debt bigger, so more debt pays off before rising rates catch up.
+- ✗ Higher taxes leave the company less cash, so it should borrow less. *(Misconception: confusing cash flow with the value of the benefit of debt.)*
 - ✗ Alphabet has so much cash that it never needs debt. *(Misconception: debt is only for companies that need cash.)*
 - ✗ Higher taxes push interest rates up. *(Misconception: misreading which assumption changed.)*
 
@@ -102,13 +102,13 @@ One plain idea per answer, same vocabulary as the game. Order is shuffled on scr
 - ✓ Shareholders want a higher return, so debt is now cheaper by comparison.
 - ✗ When investors are nervous about stocks, every company should borrow less.
 - ✗ Lenders cut the rates they charge Nike.
-- ✗ A higher risk premium makes the tax benefit of debt bigger.
+- ✗ A higher risk premium makes the benefit of debt bigger.
 
 **Delta**
-- ✓ Delta's credit spread went up, so the cost of rising rates becomes bigger than the tax benefit at a lower debt level.
-- ✗ Higher rates mean more interest to deduct, so the tax benefit grows and Delta should borrow more.
+- ✓ Delta's credit spread went up, so the cost of bankruptcy risk becomes bigger than the benefit of debt at a lower debt level.
+- ✗ Higher rates mean more interest to deduct, so the benefit of debt grows and Delta should borrow more.
 - ✗ In a recession, a company should borrow more to get through it.
-- ✗ The tax rate went down, so the tax benefit of debt got smaller.
+- ✗ The tax rate went down, so the benefit of debt got smaller.
 
 **Con Edison**
 - ✓ The change in risk was too small to matter, and changing the debt level would mean paying transaction costs.
@@ -117,13 +117,13 @@ One plain idea per answer, same vocabulary as the game. Order is shuffled on scr
 - ✗ More business risk always means much less debt.
 
 **Charter**
-- ✓ At Charter's debt level, the cost of rising rates now far outweighs the tax benefit.
+- ✓ At Charter's debt level, the cost of bankruptcy risk now far outweighs the benefit of debt.
 - ✗ Issuing new stock to pay down debt costs more than it gains, so Charter should keep its debt.
 - ✗ Losing customers cuts Charter's earnings, so it has less income to shelter from taxes.
 - ✗ Big companies can always carry more debt than small ones.
 
 **Alphabet**
-- ✓ Interest is tax-deductible, so a higher tax rate makes the tax benefit of debt bigger.
+- ✓ Interest is tax-deductible, so a higher tax rate makes the benefit of debt bigger.
 - ✗ Higher taxes leave Alphabet less cash, so it should borrow less.
 - ✗ Alphabet has so much cash that it never needs to borrow.
 - ✗ Higher taxes push interest rates up.
