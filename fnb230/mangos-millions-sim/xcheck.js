@@ -13,12 +13,14 @@ const O = '/tmp/claude-0/-home-user-teaching/cf62903a-f23e-55db-a5d1-f5cc3ba7c3b
   console.log(r);
   // UI: open from start, move tax slider by keyboard, toggle perfect, back
   await p.click('[data-act=explore]'); await p.waitForTimeout(400);
-  await p.focus('#x-T'); for (let i = 0; i < 10; i++) await p.keyboard.press('ArrowRight');
-  console.log('after 10 right on tax:', await p.$eval('#xv-T', e => e.textContent), '|', await p.$eval('#xread', e => e.textContent), '| focus:', await p.evaluate(() => document.activeElement.id));
-  await p.screenshot({ path: O + 'X-explore.png', fullPage: true });
-  await p.click('[data-act=perfect]'); await p.waitForTimeout(300);
-  console.log('perfect:', await p.$eval('#xread', e => e.textContent));
+    console.log('stage on open:', await p.$eval('[data-act=stage][aria-pressed=true]', e => e.textContent), '|', await p.$eval('#xread', e => e.textContent));
   await p.screenshot({ path: O + 'X-perfect.png', fullPage: true });
+  await p.click('[data-act=stage][data-v="2"]'); await p.waitForTimeout(300);
+  const s2 = await p.evaluate(() => { const S0 = __MM.SAMPLE; const pts = __MM.buildCurve({ bU: S0.bU, T: S0.T, EBIT: S0.EBIT, spreadMult: 1, RF: S0.RF, MRP: S0.MRP, perfect: true, wmin: 0 }); let mono = true; for (let i = 1; i < pts.length; i++) if (pts[i].V < pts[i-1].V - 1e-9) mono = false; return mono; });
+  console.log('stage 2 rising everywhere:', s2, '|', await p.$eval('#xread', e => e.textContent));
+  await p.screenshot({ path: O + 'X-stage2.png', fullPage: true });
+  await p.click('[data-act=stage][data-v="3"]'); await p.waitForTimeout(300);
+  console.log('stage 3:', await p.$eval('#xread', e => e.textContent), '| spread label:', await p.$eval('#xv-spreadMult', e => e.textContent));
   const words = await p.evaluate(() => document.getElementById('app').innerText.split(/\s+/).length);
   console.log('words on explorer screen:', words, '| sideways:', await p.evaluate(() => document.documentElement.scrollWidth > innerWidth));
   await p.click('[data-act=xdone]'); await p.waitForTimeout(300);

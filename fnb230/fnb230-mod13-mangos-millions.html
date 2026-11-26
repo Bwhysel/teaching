@@ -35,6 +35,11 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--yellow);outline
 .lookback{text-align:center;font-size:.78rem;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--yellow);background:rgba(255,210,63,.08);border:1px solid rgba(255,210,63,.25);border-radius:999px;padding:6px 12px;margin:0 0 12px}
 .xs{padding:10px 0;border-bottom:1px solid var(--line)}.xs:last-of-type{border-bottom:0}
 .xs.off{opacity:.4}
+.stages{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}
+.stages button{min-height:58px;padding:6px 6px;font-size:.8rem;line-height:1.15;background:rgba(255,255,255,.04);overflow-wrap:normal;word-break:normal;hyphens:manual}
+.stages button small{display:block;font-size:.7rem;color:var(--faint);font-weight:800;margin-bottom:2px}
+.stages button.on{background:linear-gradient(135deg,var(--mint),var(--green));color:#04261A;border-color:transparent}
+.stages button.on small{color:#04261A}
 .xsay{margin:10px 0 0;padding:10px 12px;border-radius:12px;background:rgba(86,224,255,.07);border:1px solid rgba(86,224,255,.22);font-size:.92rem;min-height:3.2em}
 .xs{padding:6px 0}
 .xl{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-weight:700}
@@ -675,11 +680,16 @@ function reflectVeil(){
 
 /* ======================= RENDER ======================= */
 /* ======================= MODEL EXPLORER ======================= */
+var STAGES = [
+  ['Indepen&shy;dence Hypothesis', 'Modigliani and Miller\'s first model: no taxes, and every company borrows at the Treasury rate at any debt level. What happens to the curve?'],
+  ['MM with taxes', 'Now interest is tax-deductible. Lenders still charge the Treasury rate at any debt level.'],
+  ['Trade-off model', 'Taxes plus bankruptcy risk. As debt grows, lenders charge a credit spread and shareholders want a higher return.']
+];
 var XS = [
   { k:'T', label:'Tax rate', min:0, max:0.40, step:0.01, fmt:function(v){ return Math.round(v * 100) + '%'; },
     say:'The share of profit paid in taxes. Interest is tax-deductible, so the tax rate sets how big the tax benefit of debt is.' },
-  { k:'spreadMult', label:'Credit spread', min:0.5, max:3, step:0.05, fmt:function(v){ return v.toFixed(2) + '× normal'; },
-    say:'A credit spread is the extra rate lenders charge above the Treasury rate. It grows as the credit rating (the colored bar) falls.' },
+  { k:'spreadMult', label:'Credit spread (BBB)', min:0.5, max:3, step:0.05, fmt:function(v){ return Math.round(v * 111) + ' bp'; },
+    say:'A credit spread is the extra rate lenders charge above the Treasury rate, in basis points (100 bp = 1%). Shown for a BBB rating; lower ratings on the colored bar pay more.' },
   { k:'RF', label:'Treasury rate', min:0.01, max:0.08, step:0.0025, fmt:function(v){ return (v * 100).toFixed(2) + '%'; },
     say:'The rate on U.S. government debt. It is the safe starting point for what lenders and shareholders both charge.' },
   { k:'MRP', label:'Market risk premium', min:0.03, max:0.07, step:0.0025, fmt:function(v){ return (v * 100).toFixed(2) + '%'; },
@@ -691,7 +701,7 @@ var XS = [
   { k:'down', label:'Cost to issue stock', min:0, max:0.10, step:0.005, fmt:function(v){ return (v * 100).toFixed(1) + '%'; },
     say:'Paying down debt means issuing new stock, the most expensive way to raise money.' }
 ];
-function xCurve(){ var x = ui.x; return buildCurve({ bU:x.bU, T:x.perfect ? 0 : x.T, EBIT:SAMPLE.EBIT, spreadMult:x.spreadMult, RF:x.RF, MRP:x.MRP, perfect:x.perfect, wmin:0 }); }
+function xCurve(){ var x = ui.x; return buildCurve({ bU:x.bU, T:x.stage === 1 ? 0 : x.T, EBIT:SAMPLE.EBIT, spreadMult:x.spreadMult, RF:x.RF, MRP:x.MRP, perfect:x.stage < 3, wmin:0 }); }
 function xChart(){
   var x = ui.x, keep = COSTS; COSTS = { up:x.up, down:x.down };
   var pts = xCurve(), pk = peak(pts), flat = (pk.V - Math.min.apply(null, pts.map(function(q){ return q.V; }))) < 0.002 * pk.V;
@@ -705,22 +715,24 @@ function xRead(c){
   return 'Highest firm value at <b class="num">' + pc(c.best.w) + '</b> debt. Best move from today\'s ' + pc(SAMPLE.today) + ', after transaction costs: <b class="num">' + (Math.abs(c.move.to.w - SAMPLE.today) < 0.005 ? 'stay put' : pc(c.move.to.w)) + '</b>.';
 }
 function exploreScreen(){
-  var x = ui.x, c = xChart(), off = function(k){ return x.perfect && (k === 'T' || k === 'spreadMult'); };
+  var x = ui.x, c = xChart(), off = function(k){ return (k === 'T' && x.stage === 1) || (k === 'spreadMult' && x.stage < 3); };
   var rows = XS.map(function(d){ var v = x[d.k]; return '<div class="xs' + (off(d.k) ? ' off' : '') + '"><div class="xl"><label for="x-' + d.k + '">' + d.label + '</label><b class="num" id="xv-' + d.k + '">' + d.fmt(v) + '</b></div>' +
     '<input type="range" id="x-' + d.k + '" data-k="' + d.k + '" min="' + d.min + '" max="' + d.max + '" step="' + d.step + '" value="' + v + '"' + (off(d.k) ? ' disabled' : '') + ' aria-describedby="xd-' + d.k + '"><span class="sr" id="xd-' + d.k + '">' + d.say + '</span></div>'; }).join('');
   var last = XS.filter(function(d){ return d.k === ui.x.last; })[0];
   return '<div class="card" style="margin-top:16px"><p class="eyebrow">' + (ui.x.from === 'start' ? 'Optional tutorial' : 'Wrap-up') + '</p><h2>How the model works</h2>' +
     '<p class="small dim">A sample company that earns ' + bn(SAMPLE.EBIT) + ' a year before interest and taxes, with ' + pc(SAMPLE.today) + ' debt today. Move an input to see what happens.</p></div>' +
+    '<div class="card"><p class="eyebrow">Step through the theory</p><div class="stages" role="group" aria-label="Theory">' +
+      STAGES.map(function(st, i){ return '<button class="' + (x.stage === i + 1 ? 'on' : '') + '" data-act="stage" data-v="' + (i + 1) + '" aria-pressed="' + (x.stage === i + 1) + '"><small>' + (i + 1) + '</small>' + st[0] + '</button>'; }).join('') +
+      '</div><p class="small" style="margin:10px 0 0">' + STAGES[x.stage - 1][1] + '</p></div>' +
     '<div class="card chart"><p class="eyebrow">Firm value at every debt level</p><div id="xchart">' + c.svg + '</div>' +
     legend([['#56E0FF', 'Firm value'], ['#FFD23F', 'After transaction costs', true], ['rgba(201,210,238,.5)', 'Do-nothing band']]) +
     '<p class="caption" id="xread" aria-live="polite">' + xRead(c) + '</p>' +
     '<p class="xsay" id="xsay" aria-live="polite">' + (last ? '<b>' + last.label + ':</b> ' + last.say : 'Move any input below. What it means shows up here.') + '</p>' +
-    '<button class="wide ' + (x.perfect ? 'btn-go' : 'btn-ghost') + '" data-act="perfect" aria-pressed="' + !!x.perfect + '" style="margin-top:8px">' + (x.perfect ? 'Back to the real world' : 'Try Modigliani and Miller\'s perfect world') + '</button>' +
-    (x.perfect ? '<p class="small" style="margin-top:8px">No taxes, and every company borrows at the Treasury rate, at any debt level. What happens to the curve?</p>' : '') + '</div>' +
+    '</div>' +
     '<div class="card">' + rows + '<button class="btn-ghost wide" style="margin-top:8px" data-act="xreset">Reset all inputs</button></div>' +
     '<button class="btn-go wide" data-act="xdone">' + (ui.x.from === 'start' ? 'Back to the start' : 'Back to my board review') + '</button>';
 }
-function openExplore(from){ ui.x = { from:from, T:SAMPLE.T, bU:SAMPLE.bU, RF:SAMPLE.RF, MRP:SAMPLE.MRP, spreadMult:SAMPLE.spreadMult, up:SAMPLE.up, down:SAMPLE.down, perfect:false, last:null }; render('h2'); window.scrollTo(0, 0); }
+function openExplore(from){ ui.x = { from:from, T:SAMPLE.T, bU:SAMPLE.bU, RF:SAMPLE.RF, MRP:SAMPLE.MRP, spreadMult:SAMPLE.spreadMult, up:SAMPLE.up, down:SAMPLE.down, stage:1, last:null }; render('h2'); window.scrollTo(0, 0); }
 function bindExplore(){
   document.querySelectorAll('input[data-k]').forEach(function(inp){
     inp.addEventListener('input', function(){
@@ -840,7 +852,7 @@ document.addEventListener('click', function(e){
   var act = b.getAttribute('data-act'), v = b.getAttribute('data-v');
   if (act === 'explore'){ var nmv = (document.getElementById('nm') || {}).value; if (nmv !== undefined) ui.nameDraft = nmv; openExplore(S && S.step === 'done' ? 'end' : 'start'); return; }
   if (act === 'xdone'){ ui.x = null; render('h1,h2'); window.scrollTo(0, 0); var nmi = document.getElementById('nm'); if (nmi && ui.nameDraft) nmi.value = ui.nameDraft; return; }
-  if (act === 'perfect'){ ui.x.perfect = !ui.x.perfect; render('[data-act=perfect]'); return; }
+  if (act === 'stage'){ ui.x.stage = +v; var y0 = window.scrollY; render('[data-act=stage][data-v="' + v + '"]'); window.scrollTo(0, y0); return; }
   if (act === 'xreset'){ var f = ui.x.from; openExplore(f); return; }
   if (act === 'back'){ doBack(); return; }
   if (act === 'fwd'){ doFwd(); return; }
