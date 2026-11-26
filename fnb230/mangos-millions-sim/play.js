@@ -19,7 +19,8 @@ async function setDebt(p, pct){
   const p = await b.newPage({ viewport: { width: 360, height: 780 }, deviceScaleFactor: 2 });
   const errs = []; p.on('pageerror', e => errs.push(String(e))); p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
   await p.goto(FILE);
-  const shot = async n => { if (strat === 'best') await p.screenshot({ path: `${OUT}/${n}.png`, fullPage: true }); };
+  const shot = async n => { await dump(n); if (strat === 'best') await p.screenshot({ path: `${OUT}/${n}.png`, fullPage: true }); };
+  const TEXTDUMP = []; const dump = async (n) => TEXTDUMP.push('=== ' + n + '\n' + await p.evaluate(() => document.getElementById('app').innerText));
   const words = async () => p.evaluate(() => document.getElementById('app').innerText.split(/\s+/).filter(Boolean).length);
   const sideways = async () => p.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
   const report = [];
@@ -84,6 +85,6 @@ async function setDebt(p, pct){
   await p.setViewportSize({ width: 320, height: 700 });
   report.push(`320px sideways on results: ${await sideways()}`);
   console.log(strat, '\n' + report.join('\n'));
-  console.log('errors:', errs.length ? errs : 'none');
+  console.log('errors:', errs.length ? errs : 'none'); require('fs').writeFileSync(OUT + '/text-' + strat + '.txt', TEXTDUMP.join('\n\n'));
   await b.close();
 })();

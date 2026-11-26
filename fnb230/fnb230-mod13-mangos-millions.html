@@ -267,9 +267,9 @@ var COMPANIES = [
 /* Round copy. Each decision screen stays near 200 words. */
 var ROUNDS = [
   { unlock:'This table shows where the value came from: the tax benefit your debt adds, minus the cost of rising rates and of moving.',
-    news:{ head:'Stock market jitters spread', body:'Investors now demand a higher return for owning stocks. The market risk premium rises from 4.4% to 4.9%. What lenders charge stays the same.', tick:'S&P 500 ▼ · Investors want more for owning stocks · Risk premium 4.9% · S&P 500 ▼' },
+    news:{ head:'Investors grow nervous about stocks', body:'Investors now demand a higher return for owning stocks. The market risk premium rises from 4.4% to 4.9%. What lenders charge stays the same.', tick:'S&P 500 ▼ · Investors want more for owning stocks · Risk premium 4.9% · S&P 500 ▼' },
     intro:null,
-    hint:'Shareholders want more now. Lenders didn\'t change. Think about which kind of money just got pricier. I\'ll wait. 😼',
+    hint:'Shareholders want more now. Lenders didn\'t change. Which kind of money just got more expensive? I\'ll wait. 😼',
     why:'Shareholders now demand a higher return, so debt is a little cheaper by comparison. A small move toward more debt pays off.',
     tier2:[['Shareholders now demand a higher return, so debt is a little cheaper by comparison. A small move toward more debt pays off.',true],
            ['When stocks get riskier, every company should borrow less.',false],
@@ -285,19 +285,19 @@ var ROUNDS = [
            ['The tax rate went down.',false]] },
   { news:{ head:'Regulators open review of Con Ed', body:'Analysts call the review routine. Con Ed\'s business risk rises only a little.', tick:'ED · Review opens · Analysts: "routine" · ED' },
     intro:{ face:'😼', text:'New this round: the gray band. Inside it, moving costs more than it gains. The dashed line shows value after transaction costs.' },
-    hint:'Headlines are loud. Numbers are quieter. Check how much really changed.',
+    hint:'The headline sounds big, but the change in risk is small. Is moving worth the cost?',
     why:'The news barely changed the balance between the tax benefit and the cost of rising rates, and moving costs money.',
     tier2:[['The news barely changed the balance between the tax benefit and the cost of rising rates, and moving would cost money.',true],
            ['Bad news always means a company should cut its debt.',false],
            ['Utilities should always borrow as much as they can because their earnings are steady.',false],
            ['Higher risk always means much less debt.',false]] },
-  { news:{ head:'Cord-cutting speeds up as fiber rivals spread', body:'Lenders now charge Charter about twice as much above the Treasury rate, at every debt level.', tick:'CHTR ▼ · Subscribers leave · Fiber expands · CHTR ▼' },
-    intro:{ face:'😼', text:'Charter borrowed big for the Cox merger. Look where "Today" sits on that curve.' },
+  { news:{ head:'More customers cancel cable as fiber internet spreads', body:'Lenders now charge Charter about twice as much above the Treasury rate, at every debt level.', tick:'CHTR ▼ · Subscribers leave · Fiber expands · CHTR ▼' },
+    intro:{ face:'😼', text:'Charter borrowed heavily for the Cox merger. Look where "Today" sits on that curve.' },
     hint:'Lenders want more from Charter now. Remember where Charter started.',
     why:'At Charter\'s debt level, the cost of rising rates is far bigger than the tax benefit, even after the cost of issuing new stock.', reflect:true,
     tier2:[['At Charter\'s debt level, the cost of rising rates is far bigger than the tax benefit, even after the cost of issuing new stock.',true],
            ['Charter should keep its debt because paying it down is too expensive.',false],
-           ['Cord-cutting cuts Charter\'s earnings, so it has less income to protect from taxes.',false],
+           ['Losing customers cuts Charter\'s earnings, so it has less income to protect from taxes.',false],
            ['Big companies can always carry more debt than small ones.',false]] },
   { news:{ head:'Congress restores the 35% corporate tax rate', body:'Alphabet\'s tax rate goes from about 17% to 35%.', tick:'GOOGL · Tax bill passes · Corporate rate back to 35% · GOOGL' },
     intro:{ face:'😼', text:'Alphabet has more cash than debt. A lot more. That\'s the zone left of zero.' },
@@ -468,7 +468,7 @@ function startScreen(){
   return '<div class="card hero"><img class="start-icon" src="' + ART.icon + '" width="200" height="200" alt="Mango, an orange cat in a pinstripe suit and red tie, in front of the New York City skyline">' +
     '<p class="eyebrow" style="margin-top:8px">FNB 230 · Module 13</p>' +
     '<h1><em>M&amp;M:</em> Mango\'s Millions</h1>' +
-    '<p class="dim">You\'re a new analyst in an investment bank\'s Capital Structure Advisory group. Five real companies. Five boardrooms. One question:</p>' +
+    '<p class="dim">You\'re a new analyst in an investment bank\'s Capital Structure Advisory group. You\'ll advise the boards of five real companies. Each one asks the same question:</p>' +
     '<p class="q">"Can you make our shareholders richer by changing how much we borrow?"</p>' +
     '<p class="dim">Then the news changes. You decide whether to change the plan.</p>' +
     '<div class="tickers" aria-label="Companies">' + COMPANIES.map(function(c){ return '<span>' + c.id + '</span>'; }).join('') + '</div>' +
@@ -558,9 +558,9 @@ function revealScreen(){
   var held = Math.abs(r.w2 - r.w1) <= CONFIG.HOLD_TOL;
   var line = r.s2 >= 0.9 ? 'Nice. You read that like a bond trader.'
     : wrongWay ? 'Ehh, you went one way and the curve went the other. Happens to Wall Street guys every day.'
-    : held ? 'You held still, and the top moved without you. It went to ' + pc(pk.w) + '.'
-    : r.s2 >= 0.6 ? 'Not bad. The market was a little ahead of you.'
-    : 'Right direction, but not far enough. The top went to ' + pc(pk.w) + '.';
+    : held ? 'You stayed put, but the best debt level moved to ' + pc(best.to.w) + '.'
+    : r.s2 >= 0.6 ? 'Close. The best debt level was ' + pc(best.to.w) + '.'
+    : 'Right direction, but not far enough. The best debt level was ' + pc(best.to.w) + '.';
   var brk = '';
   if (true){
     var a = mv.from, b = mv.to, bb = best.to;
@@ -576,7 +576,7 @@ function revealScreen(){
   var leg = [['#56E0FF', 'After the news'], ['#7D8BB5', 'Before', true]]; if (S.r >= 2){ leg.push(['#FFD23F', 'After transaction costs', true]); leg.push(['rgba(201,210,238,.5)', 'Do-nothing band']); }
   return topBar() + '<div class="card chart" id="chartbox"><p class="eyebrow">The reveal</p><h3>The new curve</h3>' +
     chartSVG({ pts:m.p1, wmin:m.p1.wmin, scale:[m.p0, m.p1], ghost:m.p0, today:r.w1, todayLabel:'Plan', you:r.w2, best:best.to.w, band:S.r >= 2 ? m.band1 : null, net:S.r >= 2 ? r.w1 : null, alt:'New firm value curve. Best debt level ' + pc(best.to.w) + '. Your call ' + pc(r.w2) + '.' }) +
-    legend(leg) + '<p class="caption">Top of the new curve: <b>' + pc(pk.w) + '</b>.</p></div>' +
+    legend(leg) + '<p class="caption">Highest firm value after the news: at <b>' + pc(pk.w) + '</b> debt.</p></div>' +
     '<div class="card"><p class="eyebrow">Your call created</p><p class="big ' + (mv.net >= -0.05 ? 'pos' : 'neg') + '">' + countUpHTML('cu2', mv.net, true) + '</p>' +
     '<div class="vs"><div><span>Best from your plan</span><b class="num">' + pc(best.to.w) + ' · ' + bnT(best.net) + '</b></div><div><span>Result</span><b><span class="tag ' + lab[1] + '">' + lab[0] + '</span><span class="pts">+' + r.p2 + '</span></b></div></div>' + brk + flat + '</div>' +
     mango(face, line) + unlock +
@@ -590,11 +590,11 @@ function explainScreen(){
   var fb = '';
   if (done){
     var read = readRight(S.r), ok = R.tier2[r.t2][1];
-    var msg = ok && read ? 'Right call, right reason. That\'s the whole idea, in one round.' : ok ? 'Right reason. Your slider just didn\'t follow it all the way. Trust the reason next time.' : read ? 'Your slider moved the right way, but the reason is off. Here\'s the real one: ' + esc(R.why) : 'The market fooled you on that one. Here\'s what happened: ' + esc(R.why);
+    var msg = ok && read ? 'Right call and right reason.' : ok ? 'Right reason, but your debt level didn\'t follow it all the way. Next time, move as far as the reason says.' : read ? 'You moved the right way, but that\'s not the reason. Here\'s the real one: ' + esc(R.why) : 'The market fooled you on that one. Here\'s what happened: ' + esc(R.why);
     fb = mango(ok ? '😸' : '😼', msg + ' <b>+' + r.p3 + ' pts</b>') +
       '<button class="btn-go wide" data-act="next">' + (S.r < 4 ? 'Next boardroom' : 'See the debrief') + '</button>';
   }
-  return topBar() + '<div class="card"><p class="eyebrow">Explain it</p><h3>Why did the best debt level change the way it did?</h3><div class="opts" role="group" aria-label="Reason">' + t2 + '</div></div>' +
+  return topBar() + '<div class="card"><p class="eyebrow">Explain it</p><h3>Which reason explains what happened to the best debt level?</h3><div class="opts" role="group" aria-label="Reason">' + t2 + '</div></div>' +
     (done ? fb : '<button class="btn-go wide" data-act="submit"' + (r.t2 !== undefined ? '' : ' disabled') + '>' + (r.t2 !== undefined ? 'Lock in my answer' : 'Pick one answer') + '</button>');
 }
 
@@ -615,7 +615,7 @@ function debriefBody(){
   var rows = [['Added debt and saved taxes', 'Tax benefit of debt (MM with taxes)'],
               ['Watched lenders and shareholders charge more as debt grew', 'Trade-off model of capital structure'],
               ['Saw shareholders\' required return climb with debt', 'Levered beta (Hamada equation)'],
-              ['Found the top of the curve', 'Optimal capital structure'],
+              ['Found the debt level with the highest firm value', 'Optimal capital structure'],
               ['Stayed put when moving cost more than it gained', 'Transaction costs'],
               ['Chose each company\'s mix of debt and stock', 'Capital structure']];
   return '<div class="card" style="margin-top:16px"><p class="eyebrow">The rule</p><p class="rule">Add debt while the tax benefit is worth more than the rising cost of risk, and only move when the gain is bigger than the cost of moving.</p></div>' +
@@ -632,8 +632,8 @@ function resultsBody(){
   var t = totals(), pct = Math.round(t.you / t.max * 100), label = CONFIG.FINAL.filter(function(f){ return pct >= f[0]; })[0][1];
   var assess = pct >= 85 ? 'Read every curve clearly and moved only when the gain beat the cost. The board recommends this analyst for future engagements.'
     : pct >= 65 ? 'Sound judgment on most calls. Watch the size of each move as closely as its direction.'
-    : pct >= 40 ? 'Some strong calls. Work on reading where the tax benefit stops paying for the rising cost of risk.'
-    : 'The board asks for a second engagement. Replay and watch where the top of each curve goes after the news.';
+    : pct >= 40 ? 'Some strong calls. Practice finding the debt level where the cost of rising rates catches up with the tax benefit.'
+    : 'The board asks for a second try. After each news story, ask which changed: the tax benefit or the cost of rising rates.';
   var rows = S.res.map(function(r, i){ var m = MODEL[i], b = bestMove(m.p1, r.w1), mv = move(m.p1, r.w1, r.w2); return '<tr><td>' + esc(m.c.name.replace(' (Spectrum)', '').replace(' Air Lines', '')) + '</td><td>' + Math.round(r.w1 * 100) + '→' + Math.round(r.w2 * 100) + '</td><td>' + bnR(mv.net) + '</td><td>' + bnR(b.net) + '</td><td>' + ((r.p1 || 0) + (r.p2 || 0) + (r.p3 || 0)) + '</td></tr>'; }).join('');
   return '<div class="review"><div class="lh"><img src="' + ART.icon + '" alt=""><div><h2>Board Performance Review</h2><p>Capital Structure Advisory · FNB 230, Module 13</p></div></div><div class="bd">' +
     '<div class="fields"><div><span>Analyst</span><b>' + esc(S.name || '—') + '</b></div><div><span>Date</span><b>' + new Date(S.doneAt || Date.now()).toLocaleDateString() + '</b></div><div style="grid-column:1/-1"><span>Engagements</span><b>Nike · Delta · Con Edison · Charter · Alphabet</b></div></div>' +
@@ -643,13 +643,13 @@ function resultsBody(){
     '<div class="sig"><div><i>The Board of Directors</i>M&amp;M: Mango\'s Millions</div><img class="seal" src="' + ART.face + '" alt=""></div>' +
     '<p class="note">Best possible score: ' + t.max + '. Staying put every time and answering every question right: ' + (t.safe + 5 * CONFIG.PTS_WHY) + '. Worst possible: 0. Debt % shows your plan → your call after the news.</p>' +
     '<div class="copy">Take a screenshot of this review.' + tip('shot', '<b>iPhone:</b> press the side button and volume up together. Older iPhones with a Home button: side or top button and Home.<br><b>Android:</b> press power and volume down together.<br><b>Windows:</b> press Windows + Shift + S, then drag over the review.<br><b>Mac:</b> press Shift + Command + 4, then drag over the review.<br><b>Chromebook:</b> press Ctrl + Show windows.') + '</div></div></div>' +
-    mango(pct >= 85 ? '😸' : '😼', pct >= 85 ? 'Okay, the board loves you. Don\'t let it go to your head.' : pct >= 65 ? 'Solid. Most boards would keep you.' : 'The curve moves fast. Play again and watch where the top goes.') +
+    mango(pct >= 85 ? '😸' : '😼', pct >= 85 ? 'Okay, the board loves you. Don\'t brag.' : pct >= 65 ? 'Solid. Most boards would keep you.' : 'Play again. After each news story, ask what changed: the tax benefit or the cost of rising rates.') +
     '<button class="wide" data-act="again">Play again</button>';
 }
 
 function reflectVeil(){
   var m = MODEL[S.r], cur = at(m.p1, m.w0), best = bestMove(m.p1, m.w0);
-  return '<div class="veil" role="dialog" aria-modal="true" aria-labelledby="rf"><div class="card"><p class="eyebrow" style="color:var(--yellow)">A moment</p><h2 id="rf">Sit with this one</h2>' +
+  return '<div class="veil" role="dialog" aria-modal="true" aria-labelledby="rf"><div class="card"><p class="eyebrow" style="color:var(--yellow)">A moment</p><h2 id="rf">What Charter\'s debt costs</h2>' +
     '<div class="cmp"><div><span>Charter at ' + pc(m.w0) + ' debt (today)</span><b class="num neg">' + bn(cur.V) + '</b></div><div><span>Charter at ' + pc(best.to.w) + ' debt</span><b class="num pos">' + bn(best.to.V) + '</b></div></div>' +
     '<p>Getting there means issuing a lot of new stock. The transaction costs alone: <b>' + bn(best.cost) + '</b>.</p>' +
     mango('😼', 'That\'s what too much debt costs. And getting out isn\'t free.') +
