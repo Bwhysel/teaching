@@ -215,6 +215,25 @@ input[type=range]:active::-webkit-slider-thumb,input[type=range]:focus-visible::
 .review .tipbtn{color:#1F5FA8}
 .review .tip{background:#F1ECDD;color:#1A2033;border-color:#D8CDAF;border-left-color:#1F5FA8}
 .copy{margin-top:14px;text-align:center;font-weight:700;font-size:.92rem}
+/* deal toy */
+.toywrap{margin:18px 0 6px}
+.toy{width:230px;margin:6px auto 0;perspective:700px}
+.toy .block{position:relative;overflow:hidden;padding:20px 16px 18px;text-align:center;border-radius:6px;transform:rotateX(6deg);
+  background:linear-gradient(160deg,rgba(220,240,255,.30),rgba(150,190,230,.12) 45%,rgba(220,240,255,.22));
+  border:1px solid rgba(220,240,255,.55);box-shadow:inset 0 0 0 4px rgba(255,255,255,.06),inset 0 14px 30px rgba(255,255,255,.12),0 22px 30px -18px rgba(0,0,0,.9);
+  -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);color:#EAF4FF;text-shadow:0 1px 0 rgba(0,0,0,.35),0 0 8px rgba(160,210,255,.35)}
+.toy .shine{position:absolute;inset:-40% -60%;background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.28) 50%,transparent 60%);transform:translateX(-60%);animation:toyshine 3.2s ease-in-out 1s 2}
+@keyframes toyshine{to{transform:translateX(60%)}}
+.toy .tk{display:inline-block;font-size:.66rem;font-weight:900;letter-spacing:1.5px;border:1px solid rgba(234,244,255,.6);border-radius:4px;padding:1px 6px;margin-bottom:6px}
+.toy .co2{font-size:.95rem;font-weight:800;letter-spacing:.3px}
+.toy .amt{font-size:1.7rem;font-weight:900;letter-spacing:-.5px;margin-top:6px;color:#F6DA8B;text-shadow:0 1px 0 rgba(0,0,0,.4),0 0 10px rgba(233,185,73,.45)}
+.toy .kind{font-size:.72rem;letter-spacing:2px;text-transform:uppercase;font-weight:800}
+.toy .rule2{height:1px;background:rgba(234,244,255,.45);margin:10px 18px}
+.toy .ln{font-size:.78rem;line-height:1.3}
+.toy .adv{font-size:.7rem;letter-spacing:1.4px;text-transform:uppercase;font-weight:800;margin-top:10px}
+.toy .who{font-size:.85rem;font-weight:700;margin-top:2px}
+.toy .dt{font-size:.7rem;opacity:.85;margin-top:2px}
+.toy .base{height:16px;margin:0 -10px;border-radius:0 0 8px 8px;background:linear-gradient(180deg,#1E2A4D,#0B1226);box-shadow:0 10px 18px -8px rgba(0,0,0,.9),inset 0 1px 0 rgba(255,255,255,.12)}
 /* start */
 .hero{text-align:center;padding:22px 18px 18px;margin-top:16px;overflow:hidden}
 .hero:before{content:"";position:absolute;inset:-40% -20% auto;height:260px;background:radial-gradient(circle at 50% 50%,rgba(233,185,73,.25),rgba(233,185,73,0) 65%);pointer-events:none}
@@ -647,7 +666,27 @@ function debriefBody(){
 }
 
 function resultsScreen(){
-  return (ui.canBack ? '<div style="margin-top:12px">' + backBtn() + '</div>' : '') + resultsBody();
+  return (ui.canBack ? '<div style="margin-top:12px">' + backBtn() + '</div>' : '') + dealToy() + resultsBody();
+}
+/* Deal toy: the Lucite "tombstone" bankers get when a deal closes, for the round that created the most value. */
+var LEGAL = { NKE:'NIKE, Inc.', DAL:'Delta Air Lines, Inc.', ED:'Consolidated Edison, Inc.', CHTR:'Charter Communications, Inc.', GOOGL:'Alphabet Inc.' };
+function dealToy(){
+  var best = null;
+  S.res.forEach(function(r, i){ var m = MODEL[i], v = move(m.p0, m.w0, r.w1).net + move(m.p1, r.w1, r.w2).net; if (!best || v > best.v) best = { i:i, v:v, r:r, m:m }; });
+  if (!best || best.v < 0.05) return '';
+  var m = best.m, c = m.c, from = m.w0, to = best.r.w2, verb = to > from ? 'raised' : 'cut';
+  var line = Math.abs(to - from) < 0.005 ? 'Debt held at ' + pc(to) + ' of firm value' : 'Debt ' + verb + ' from ' + (from < 0 ? 'more cash than debt' : pc(from)) + ' to ' + pc(to) + ' of firm value';
+  var when = new Date(S.doneAt || Date.now()).toLocaleDateString('en-US', { month:'long', year:'numeric' });
+  var small = best.v < 1, size = Math.abs(at(m.p1, to).D - at(m.p0, from).D);
+  return '<div class="toywrap"><p class="eyebrow" style="text-align:center">Your deal toy</p>' +
+    '<div class="toy" role="img" aria-label="Deal toy for ' + esc(LEGAL[c.id]) + ': ' + esc(bn(size)) + ' recapitalization. ' + esc(line) + '. Firm value created: ' + esc(bn(best.v)) + '. Capital Structure Advisory, ' + esc(S.name || 'Analyst') + '.">' +
+    '<div class="block"><div class="shine" aria-hidden="true"></div>' +
+    '<div class="tk">' + c.id + '</div><div class="co2">' + esc(LEGAL[c.id]) + '</div>' +
+    '<div class="amt">' + esc(bn(size)) + '</div><div class="kind">Recapitalization</div>' +
+    '<div class="rule2"></div><div class="ln">' + esc(line) + '</div><div class="ln" style="margin-top:4px">Firm value created: <b>' + esc(bn(best.v)) + '</b></div>' +
+    '<div class="adv">Capital Structure Advisory</div><div class="who">' + esc(S.name || 'Analyst') + ', Analyst</div><div class="dt">' + esc(when) + '</div></div>' +
+    '<div class="base" aria-hidden="true"></div></div></div>' +
+    mango('😼', small ? 'Small deal. Still counts.' : 'Bankers put these on their desks. You earned this one.');
 }
 function resultsBody(){
   var t = totals(), pct = Math.round(t.you / t.max * 100), label = CONFIG.FINAL.filter(function(f){ return pct >= f[0]; })[0][1];
@@ -712,12 +751,14 @@ function xAxis(pts){
   if (mx > x.y[1]) x.y[1] = mx + (mx - x.y[0]) * 0.05;
   return x.y;
 }
+function xStartCurve(){ var st = ui.x.stage; return buildCurve({ bU:SAMPLE.bU, T:st === 1 ? 0 : SAMPLE.T, EBIT:SAMPLE.EBIT, spreadMult:SAMPLE.spreadMult, RF:SAMPLE.RF, MRP:SAMPLE.MRP, perfect:st < 3, wmin:0 }); }
 function xCurve(){ var x = ui.x; return buildCurve({ bU:x.bU, T:x.stage === 1 ? 0 : x.T, EBIT:SAMPLE.EBIT, spreadMult:x.spreadMult, RF:x.RF, MRP:x.MRP, perfect:x.stage < 3, wmin:0 }); }
 function xChart(){
   var x = ui.x, keep = COSTS; COSTS = { up:x.up, down:x.down };
   var pts = xCurve(), pk = peak(pts), flat = (pk.V - Math.min.apply(null, pts.map(function(q){ return q.V; }))) < 0.002 * pk.V;
   var bm = bestMove(pts, SAMPLE.today), band = flat ? null : holdBand(pts);
-  var svg = chartSVG({ pts:pts, wmin:0, scale:[pts], yRange:xAxis(pts), today:SAMPLE.today, best:flat ? undefined : bm.to.w, band:band, net:flat ? null : SAMPLE.today, alt:'Sample company firm value curve' });
+  var start = xStartCurve(), moved = start.some(function(q, i){ return Math.abs(q.V - pts[i].V) > 1e-9; });
+  var svg = chartSVG({ pts:pts, wmin:0, scale:[pts], yRange:xAxis(pts), ghost:moved ? start : null, today:SAMPLE.today, best:flat ? undefined : bm.to.w, band:band, alt:'Sample company firm value curve' });
   COSTS = keep;
   return { svg:svg, best:pk, move:bm, flat:flat };
 }
@@ -736,7 +777,7 @@ function exploreScreen(){
       STAGES.map(function(st, i){ return '<button class="' + (x.stage === i + 1 ? 'on' : '') + '" data-act="stage" data-v="' + (i + 1) + '" aria-pressed="' + (x.stage === i + 1) + '"><small>' + (i + 1) + '</small>' + st[0] + '</button>'; }).join('') +
       '</div><p class="small" style="margin:10px 0 0">' + STAGES[x.stage - 1][1] + '</p></div>' +
     '<div class="card chart"><p class="eyebrow">Firm value at every debt level</p><div id="xchart">' + c.svg + '</div>' +
-    legend([['#56E0FF', 'Firm value'], ['#FFD23F', 'After transaction costs', true], ['rgba(201,210,238,.5)', 'Do-nothing band']]) +
+    legend([['#56E0FF', 'Firm value now'], ['#7D8BB5', 'Starting point', true], ['rgba(201,210,238,.5)', 'Do-nothing band']]) +
     '<p class="caption" id="xread" aria-live="polite">' + xRead(c) + '</p>' +
     '<p class="xsay" id="xsay" aria-live="polite">' + (last ? '<b>' + last.label + ':</b> ' + last.say : 'Move any input below. What it means shows up here.') + '</p>' +
     '</div>' +
