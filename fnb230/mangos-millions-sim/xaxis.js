@@ -1,0 +1,26 @@
+const { chromium } = require('playwright');
+const O = '/tmp/claude-0/-home-user-teaching/cf62903a-f23e-55db-a5d1-f5cc3ba7c3b8/scratchpad/shots/';
+(async () => {
+  const b = await chromium.launch(); const p = await b.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
+  const errs = []; p.on('pageerror', e => errs.push(String(e)));
+  await p.goto('file:///home/user/teaching/fnb230/fnb230-mod13-mangos-millions.html');
+  await p.click('[data-act=explore]'); await p.waitForTimeout(400);
+  const axis = () => p.$$eval('#xchart svg text', ts => ts.map(t => t.textContent).filter(t => /^\$/.test(t)).join(' '));
+  const order = () => p.$$eval('.xs label', ls => ls.map(l => l.textContent).join(' | '));
+  console.log('stage 1 order:', await order());
+  console.log('stage 1 axis:', await axis());
+  await p.screenshot({ path: O + 'A-s1.png', fullPage: true });
+  await p.focus('#x-bU'); for (let i = 0; i < 4; i++) await p.keyboard.press('ArrowRight');
+  console.log('after beta up, axis:', await axis(), '| read:', await p.$eval('#xread', e => e.textContent));
+  await p.click('[data-act=stage][data-v="2"]'); await p.waitForTimeout(200);
+  console.log('stage 2 order:', await order(), '\nstage 2 axis:', await axis());
+  await p.click('[data-act=stage][data-v="3"]'); await p.waitForTimeout(200);
+  console.log('stage 3 order:', await order(), '\nstage 3 axis:', await axis());
+  await p.screenshot({ path: O + 'A-s3.png', fullPage: true });
+  await p.focus('#x-RF'); await p.keyboard.press('Home');
+  console.log('Treasury at minimum, axis widened:', await axis());
+  await p.click('[data-act=xreset]'); await p.waitForTimeout(200);
+  console.log('after reset, stage:', await p.$eval('[data-act=stage][aria-pressed=true]', e => e.textContent), '| axis:', await axis());
+  console.log('errors:', errs.length ? errs : 'none');
+  await b.close();
+})();

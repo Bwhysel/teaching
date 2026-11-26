@@ -414,6 +414,7 @@ function chartSVG(o){
   if (hi - lo < minSpan){ var mid = (hi + lo) / 2; lo = mid - minSpan / 2; hi = mid + minSpan / 2; }
   var pad = (hi - lo) * 0.12;
   lo -= pad; hi += pad * 0.6;
+  if (o.yRange){ lo = o.yRange[0]; hi = o.yRange[1]; }
   var yb = CH.H - CH.B, xr = CH.W - CH.R;
   var x = function(w){ return CH.L + (w - o.wmin) / (CONFIG.W_MAX - o.wmin) * (xr - CH.L); };
   var y = function(v){ return CH.T + (hi - v) / (hi - lo) * (yb - CH.T); };
@@ -701,12 +702,22 @@ var XS = [
   { k:'down', label:'Cost to issue stock', min:0, max:0.10, step:0.005, fmt:function(v){ return (v * 100).toFixed(1) + '%'; },
     say:'Paying down debt means issuing new stock, the most expensive way to raise money.' }
 ];
+function xOff(k){ var st = ui.x.stage; return (st === 1 && (k === 'T' || k === 'up' || k === 'down')) || (k === 'spreadMult' && st < 3); }
+function xOrder(){ return XS.filter(function(d){ return !xOff(d.k); }).concat(XS.filter(function(d){ return xOff(d.k); })); }
+function xCurveFor(stage){ var x = ui.x; return buildCurve({ bU:x.bU, T:stage === 1 ? 0 : x.T, EBIT:SAMPLE.EBIT, spreadMult:x.spreadMult, RF:x.RF, MRP:x.MRP, perfect:stage < 3, wmin:0 }); }
+function xAxis(pts){
+  var x = ui.x, vals = pts.map(function(q){ return q.V; }), mn = Math.min.apply(null, vals), mx = Math.max.apply(null, vals);
+  if (!x.y){ var all = []; [1, 2, 3].forEach(function(st){ xCurveFor(st).forEach(function(q){ all.push(q.V); }); }); var a = Math.min.apply(null, all), b = Math.max.apply(null, all), pd = (b - a) * 0.15; x.y = [a - pd, b + pd]; }
+  if (mn < x.y[0]) x.y[0] = mn - (x.y[1] - mn) * 0.05;
+  if (mx > x.y[1]) x.y[1] = mx + (mx - x.y[0]) * 0.05;
+  return x.y;
+}
 function xCurve(){ var x = ui.x; return buildCurve({ bU:x.bU, T:x.stage === 1 ? 0 : x.T, EBIT:SAMPLE.EBIT, spreadMult:x.spreadMult, RF:x.RF, MRP:x.MRP, perfect:x.stage < 3, wmin:0 }); }
 function xChart(){
   var x = ui.x, keep = COSTS; COSTS = { up:x.up, down:x.down };
   var pts = xCurve(), pk = peak(pts), flat = (pk.V - Math.min.apply(null, pts.map(function(q){ return q.V; }))) < 0.002 * pk.V;
   var bm = bestMove(pts, SAMPLE.today), band = flat ? null : holdBand(pts);
-  var svg = chartSVG({ pts:pts, wmin:0, scale:[pts], today:SAMPLE.today, best:flat ? undefined : bm.to.w, band:band, net:flat ? null : SAMPLE.today, alt:'Sample company firm value curve' });
+  var svg = chartSVG({ pts:pts, wmin:0, scale:[pts], yRange:xAxis(pts), today:SAMPLE.today, best:flat ? undefined : bm.to.w, band:band, net:flat ? null : SAMPLE.today, alt:'Sample company firm value curve' });
   COSTS = keep;
   return { svg:svg, best:pk, move:bm, flat:flat };
 }
@@ -715,8 +726,8 @@ function xRead(c){
   return 'Highest firm value at <b class="num">' + pc(c.best.w) + '</b> debt. Best move from today\'s ' + pc(SAMPLE.today) + ', after transaction costs: <b class="num">' + (Math.abs(c.move.to.w - SAMPLE.today) < 0.005 ? 'stay put' : pc(c.move.to.w)) + '</b>.';
 }
 function exploreScreen(){
-  var x = ui.x, c = xChart(), off = function(k){ return (k === 'T' && x.stage === 1) || (k === 'spreadMult' && x.stage < 3); };
-  var rows = XS.map(function(d){ var v = x[d.k]; return '<div class="xs' + (off(d.k) ? ' off' : '') + '"><div class="xl"><label for="x-' + d.k + '">' + d.label + '</label><b class="num" id="xv-' + d.k + '">' + d.fmt(v) + '</b></div>' +
+  var x = ui.x, c = xChart(), off = function(k){ return xOff(k); };
+  var rows = xOrder().map(function(d){ var v = x[d.k]; return '<div class="xs' + (off(d.k) ? ' off' : '') + '"><div class="xl"><label for="x-' + d.k + '">' + d.label + '</label><b class="num" id="xv-' + d.k + '">' + d.fmt(v) + '</b></div>' +
     '<input type="range" id="x-' + d.k + '" data-k="' + d.k + '" min="' + d.min + '" max="' + d.max + '" step="' + d.step + '" value="' + v + '"' + (off(d.k) ? ' disabled' : '') + ' aria-describedby="xd-' + d.k + '"><span class="sr" id="xd-' + d.k + '">' + d.say + '</span></div>'; }).join('');
   var last = XS.filter(function(d){ return d.k === ui.x.last; })[0];
   return '<div class="card" style="margin-top:16px"><p class="eyebrow">' + (ui.x.from === 'start' ? 'Optional tutorial' : 'Wrap-up') + '</p><h2>How the model works</h2>' +
