@@ -611,7 +611,8 @@ function revealScreen(){
       row('Tax benefit ' + tip('tb' + S.r, 'Tax rate × debt. Interest is tax-deductible, so debt saves taxes (textbook Eq. 14.21).'), b.TB - a.TB, bb.TB - a.TB) +
       row('Cost of rising rates ' + tip('cr' + S.r, 'As debt grows, lenders charge more and shareholders demand a higher return. This is the value that rising rates take back (the trade-off model).'), -(b.CRR - a.CRR), -(bb.CRR - a.CRR)) +
       row('Transaction costs', -mv.cost, -best.cost) +
-      '<tr class="tot"><td>Value created</td><td class="num">' + bnT(mv.net) + '</td><td class="num">' + bnT(best.net) + '</td></tr></tbody></table><p class="small dim">$B = billions of dollars.</p>';
+      '<tr class="tot"><td>Value created</td><td class="num">' + bnT(mv.net) + '</td><td class="num">' + bnT(best.net) + '</td></tr></tbody></table><p class="small dim">$B = billions of dollars.</p>' +
+      '<p class="small" style="margin-top:10px">Shareholders\' required return: <b class="num">' + pct1(a.ke) + '</b> at your plan (' + pc(r.w1) + ') → <b class="num">' + pct1(b.ke) + '</b> at your call (' + pc(r.w2) + '). Levered beta: ' + a.bL.toFixed(2) + ' → ' + b.bL.toFixed(2) + '. ' + tip('kb' + S.r, 'More debt makes owning the stock riskier, so beta rises (the Hamada equation, textbook Eq. 14.23). Required return = Treasury rate + beta × market risk premium (Eq. 14.22).') + '</p>';
   }
   var unlock = R.unlock ? mango('😼', R.unlock) : '';
   var flat = '';
