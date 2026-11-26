@@ -285,7 +285,7 @@ var ROUNDS = [
            ['The tax rate went down.',false]] },
   { news:{ head:'Regulators open review of Con Ed', body:'Analysts call the review routine. Con Ed\'s business risk rises only a little.', tick:'ED · Review opens · Analysts: "routine" · ED' },
     intro:{ face:'😼', text:'New this round: the gray band. Inside it, moving costs more than it gains. The dashed line shows value after transaction costs.' },
-    hint:'The headline sounds big, but the change in risk is small. Is moving worth the cost?',
+    hint:'Read past the headline. How much did Con Ed\'s risk really change?',
     why:'The news barely changed the balance between the tax benefit and the cost of rising rates, and moving costs money.',
     tier2:[['The news barely changed the balance between the tax benefit and the cost of rising rates, and moving would cost money.',true],
            ['Bad news always means a company should cut its debt.',false],
@@ -510,7 +510,7 @@ function buttons(keepLabel, w){ var val = Math.round(w * 100); return '<div clas
 function setChart(m, w){ var showNet = S.r >= 2; return chartSVG({ pts:m.p0, wmin:m.p0.wmin, scale:[m.p0], today:m.w0, you:S.touched ? w : null, grab:{ w:S.touched ? w : m.w0, on:S.touched }, band:showNet ? m.band0 : null, net:showNet ? m.w0 : null, draw:!S.touched && !ui.drawn, alt:'Firm value curve for ' + m.c.name + ' at each debt level, today\'s level ' + pc(m.w0) }); }
 function setScreen(){
   var m = MODEL[S.r], R = ROUNDS[S.r], w = S.w === null ? m.w0 : S.w;
-  var guide = S.r === 0 && !S.touched ? mango('😼', 'Three steps, then I step back:<ol><li>Drag the line on the chart to pick a debt level.</li><li>The curve shows firm value at each level. Find the top.</li><li>Moving costs money, so make it worth it. Then confirm.</li></ol>') : '';
+  var guide = S.r === 0 && !S.touched ? mango('😼', 'Three steps, then I step back:<ol><li>Drag the line on the chart to pick a debt level.</li><li>The curve shows firm value at each level. Find where it is highest.</li><li>Moving costs money, so make it worth it. Then confirm.</li></ol>') : '';
   var intro = R.intro && !S.touched ? mango(R.intro.face, R.intro.text) : '';
   var leg = S.r >= 2 ? legend([['#56E0FF', 'Firm value'], ['#FFD23F', 'After transaction costs', true], ['rgba(201,210,238,.5)', 'Do-nothing band']]) : '';
   var html = topBar() + '<div class="card">' + companyHead(m) +
@@ -531,7 +531,7 @@ function newsScreen(){
     '<div class="vs"><div><span>Best move</span><b class="num">' + pc(b1.to.w) + ' · ' + bnT(b1.net) + '</b></div><div><span>Result</span><b><span class="tag ' + lab[1] + '">' + lab[0] + '</span><span class="pts">+' + r.p1 + '</span></b></div></div></div>' +
     '<div class="news flash" role="alert"><div class="bar"><span class="dot" aria-hidden="true"></span>BREAKING NEWS<i>Hypothetical</i></div><div class="body"><h2>' + esc(R.news.head) + '</h2><p>' + esc(R.news.body) + '</p></div><div class="ticker" aria-hidden="true"><span>' + esc(R.news.tick) + '</span></div></div>' +
     mango('😼', R.hint) +
-    '<p class="small dim">Next: the new curve stays hidden. Set the debt level where you think the new top is.</p>' +
+    '<p class="small dim">Next, the new curve is hidden. Set your debt level where you think firm value will be highest.</p>' +
     '<button class="btn-go wide" data-act="tobet">Make your call</button>';
 }
 
@@ -618,7 +618,7 @@ function debriefBody(){
               ['Found the debt level with the highest firm value', 'Optimal capital structure'],
               ['Stayed put when moving cost more than it gained', 'Transaction costs'],
               ['Chose each company\'s mix of debt and stock', 'Capital structure']];
-  return '<div class="card" style="margin-top:16px"><p class="eyebrow">The rule</p><p class="rule">Add debt while the tax benefit is worth more than the rising cost of risk, and only move when the gain is bigger than the cost of moving.</p></div>' +
+  return '<div class="card" style="margin-top:16px"><p class="eyebrow">The rule</p><p class="rule">Add debt while the tax benefit is worth more than the cost of rising rates, and only move when the gain is bigger than the cost of moving.</p></div>' +
     '<div class="card"><div class="dl"><div class="hd"><span>What you did</span><span>What it\'s called</span></div>' + rows.map(function(x){ return '<div class="it"><span>' + x[0] + '</span><b>' + x[1] + '</b></div>'; }).join('') + '</div></div>' +
     mango('😸', 'Those other M&amp;M? Modigliani and Miller. Two economists who won Nobel Prizes for the idea you just played. With no taxes and no risk of going broke, the curve would be flat. No debt level would beat another.') +
     mango('😼', 'One more thing. Real CFOs borrow less than this model says. They keep room for bad years and guard their credit rating.') +
@@ -643,7 +643,7 @@ function resultsBody(){
     '<div class="sig"><div><i>The Board of Directors</i>M&amp;M: Mango\'s Millions</div><img class="seal" src="' + ART.face + '" alt=""></div>' +
     '<p class="note">Best possible score: ' + t.max + '. Staying put every time and answering every question right: ' + (t.safe + 5 * CONFIG.PTS_WHY) + '. Worst possible: 0. Debt % shows your plan → your call after the news.</p>' +
     '<div class="copy">Take a screenshot of this review.' + tip('shot', '<b>iPhone:</b> press the side button and volume up together. Older iPhones with a Home button: side or top button and Home.<br><b>Android:</b> press power and volume down together.<br><b>Windows:</b> press Windows + Shift + S, then drag over the review.<br><b>Mac:</b> press Shift + Command + 4, then drag over the review.<br><b>Chromebook:</b> press Ctrl + Show windows.') + '</div></div></div>' +
-    mango(pct >= 85 ? '😸' : '😼', pct >= 85 ? 'Okay, the board loves you. Don\'t brag.' : pct >= 65 ? 'Solid. Most boards would keep you.' : 'Play again. After each news story, ask what changed: the tax benefit or the cost of rising rates.') +
+    mango(pct >= 85 ? '😸' : '😼', pct >= 85 ? 'Okay, the board loves you. Don\'t brag.' : pct >= 65 ? 'Solid. Most boards would keep you.' : 'That one was hard. Try again.') +
     '<button class="wide" data-act="again">Play again</button>';
 }
 
