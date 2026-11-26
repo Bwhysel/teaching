@@ -57,7 +57,9 @@ Target outcomes: all five held (small up / small down / no change / big down / b
 8. **Credit-rating strip under the chart from Round 1** (visual pass, Nov 25). It explains the kinks the moment students see them. It adds one more thing to read in the guided round; remove or delay it if play-testing shows overload (spec §4, progressive disclosure).
 9. **No slider: students drag (or tap) the line on the chart** (Brett, Nov 26). The chart is an ARIA slider: arrow keys, Page Up/Down, Home/End. Vertical page scroll still works on phones (touch-action: pan-y).
 10. **No mood emoji on Mango's avatar** (Brett, Nov 26). Spec §7 asks for emoji tells; Mango is reliable here, and her one not-in-the-mood moment says so in words ("Purr. Not in the mood…").
-11. **Name field on the start page**, so the screenshot identifies the student (as in Leverage Legends).
+11. **Breakdown from Round 1** (Brett, Nov 26), not Round 2 as the brief planned; the guided round shows one more table.
+12. **Look-back navigation** (Brett, Nov 26): Back re-reads earlier screens with every scored choice locked; browser/phone back stays inside the game. Tested: choices unchanged after back/forward; two browser-back presses stay on the page.
+13. **Name field on the start page**, so the screenshot identifies the student (as in Leverage Legends).
 
 ## Still unverified or limited
 
