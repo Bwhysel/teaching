@@ -105,13 +105,13 @@ One plain idea per answer, same vocabulary as the game. Order is shuffled on scr
 - ✗ A higher risk premium makes the tax benefit of debt bigger.
 
 **Delta**
-- ✓ Delta's higher credit spread makes the cost of rising rates catch up with the tax benefit sooner.
+- ✓ Delta's credit spread went up, so the cost of rising rates becomes bigger than the tax benefit at a lower debt level.
 - ✗ Higher rates mean more interest to deduct, so the tax benefit grows and Delta should borrow more.
 - ✗ In a recession, a company should borrow more to get through it.
-- ✗ The tax rate went down, so debt saves less tax.
+- ✗ The tax rate went down, so the tax benefit of debt got smaller.
 
 **Con Edison**
-- ✓ The change in risk was too small to matter, and moving would cost money.
+- ✓ The change in risk was too small to matter, and changing the debt level would mean paying transaction costs.
 - ✗ Any bad news means a company should cut its debt.
 - ✗ Utilities should borrow as much as they can, because their earnings are steady.
 - ✗ More business risk always means much less debt.
@@ -123,7 +123,7 @@ One plain idea per answer, same vocabulary as the game. Order is shuffled on scr
 - ✗ Big companies can always carry more debt than small ones.
 
 **Alphabet**
-- ✓ A higher tax rate makes each dollar of debt save more tax.
+- ✓ Interest is tax-deductible, so a higher tax rate makes the tax benefit of debt bigger.
 - ✗ Higher taxes leave Alphabet less cash, so it should borrow less.
 - ✗ Alphabet has so much cash that it never needs to borrow.
 - ✗ Higher taxes push interest rates up.
