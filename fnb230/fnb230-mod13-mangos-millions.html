@@ -336,7 +336,7 @@ var ROUNDS = [
            ['Losing customers cuts Charter\'s earnings, so it has less income to shelter from taxes.',false],
            ['Big companies can always carry more debt than small ones.',false]] },
   { news:{ head:'Congress restores the 35% corporate tax rate', body:'Alphabet\'s tax rate goes from about 17% to 35%.', tick:'GOOGL · Tax bill passes · Corporate rate back to 35% · GOOGL' },
-    intro:{ face:'😼', text:'Alphabet has more cash than debt, so it starts left of zero. See the gray band? Inside it, changing debt costs more than it gains.' },
+    intro:{ face:'😼', text:'Alphabet has more cash than debt, so it starts left of zero. The gray area means do nothing: there, changing debt costs more than it gains.' },
     hint:'Listen, tax rates just went up. Every dollar of interest saves you more now. You do the math on what that means for debt. I\'ll wait. 😼',
     why:'Interest is tax-deductible, so a higher tax rate makes the tax benefit of debt bigger.',
     tier2:[['Interest is tax-deductible, so a higher tax rate makes the tax benefit of debt bigger.',true],
@@ -554,7 +554,7 @@ function setScreen(){
   var m = MODEL[S.r], R = ROUNDS[S.r], w = S.w === null ? m.w0 : S.w;
   var guide = S.r === 0 && !S.touched ? mango('😼', 'Three steps, then I step back:<ol><li>Drag the line on the chart to pick a debt level.</li><li>The curve shows firm value at each level. Find where it is highest.</li><li>Moving costs money, so make it worth it. Then confirm.</li></ol>') : '';
   var intro = R.intro && !S.touched ? mango(R.intro.face, R.intro.text) : '';
-  var leg = S.r >= 2 ? legend([['#56E0FF', 'Firm value'], ['#FFD23F', 'After transaction costs', true]].concat(m.band0 ? [['rgba(201,210,238,.5)', 'Do-nothing band', false, true]] : [])) : '';
+  var leg = S.r >= 2 ? legend([['#56E0FF', 'Firm value'], ['#FFD23F', 'After transaction costs', true]].concat(m.band0 ? [['rgba(201,210,238,.5)', 'Do nothing', false, true]] : [])) : '';
   var html = topBar() + '<div class="card">' + companyHead(m) +
     '<div class="ask"><span>The board asks</span>Can you create shareholder value by changing how much we borrow?</div>' + companyFacts(m) + '</div>' +
     guide + intro +
@@ -615,7 +615,7 @@ function revealScreen(){
   }
   var unlock = R.unlock ? mango('😼', R.unlock) : '';
   var flat = '';
-  var leg = [['#56E0FF', 'After the news'], ['#7D8BB5', 'Before', true]]; if (S.r >= 2){ leg.push(['#FFD23F', 'After transaction costs', true]); if (m.band1) leg.push(['rgba(201,210,238,.5)', 'Do-nothing band', false, true]); }
+  var leg = [['#56E0FF', 'After the news'], ['#7D8BB5', 'Before', true]]; if (S.r >= 2){ leg.push(['#FFD23F', 'After transaction costs', true]); if (m.band1) leg.push(['rgba(201,210,238,.5)', 'Do nothing', false, true]); }
   return topBar() + '<div class="card chart" id="chartbox"><p class="eyebrow">The reveal</p><h3>The new curve</h3>' +
     chartSVG({ pts:m.p1, wmin:m.p1.wmin, scale:[m.p0, m.p1], ghost:m.p0, today:r.w1, todayLabel:'Plan', you:r.w2, best:best.to.w, band:S.r >= 2 ? m.band1 : null, net:S.r >= 2 ? r.w1 : null, alt:'New firm value curve. Best debt level ' + pc(best.to.w) + '. Your call ' + pc(r.w2) + '.' }) +
     legend(leg) + '<p class="caption">Highest firm value after the news: at <b>' + pc(pk.w) + '</b> debt.</p></div>' +
@@ -762,7 +762,7 @@ function xChart(){
   var start = xStartCurve(), moved = start.some(function(q, i){ return Math.abs(q.V - pts[i].V) > 1e-9; });
   var svg = chartSVG({ pts:pts, wmin:0, scale:[pts], yRange:xAxis(pts), ghost:moved ? start : null, today:SAMPLE.today, best:flat ? undefined : bm.to.w, band:band, alt:'Sample company firm value curve' });
   COSTS = keep;
-  svg += legend([['#56E0FF', 'Firm value now']].concat(moved ? [['#7D8BB5', 'Starting point', true]] : []).concat(band ? [['rgba(201,210,238,.5)', 'Do-nothing band', false, true]] : []));
+  svg += legend([['#56E0FF', 'Firm value now']].concat(moved ? [['#7D8BB5', 'Starting point', true]] : []).concat(band ? [['rgba(201,210,238,.5)', 'Do nothing', false, true]] : []));
   return { svg:svg, best:pk, move:bm, flat:flat };
 }
 function xRead(c){
