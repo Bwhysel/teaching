@@ -96,6 +96,7 @@ h1,h2,h3,p,td,th,.bubble,button{overflow-wrap:break-word}
 .hidden-veil span{background:rgba(7,12,28,.82);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border:1.5px dashed rgba(255,210,63,.8);color:var(--yellow);font-weight:800;padding:9px 16px;border-radius:999px;letter-spacing:.3px}
 .caption{font-size:.84rem;color:var(--dim);margin-top:6px}
 .legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.8rem;color:var(--dim);margin-top:6px}
+.legend i.box{width:14px;height:10px;border-radius:2px;border:1px solid rgba(201,210,238,.55)}
 .legend i{display:inline-block;width:16px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px}
 /* slider */
 .slider{margin:16px 2px 4px;position:relative}
@@ -319,7 +320,7 @@ var ROUNDS = [
            ['In a recession, a company should borrow more to get through it.',false],
            ['The tax rate went down, so the tax benefit of debt got smaller.',false]] },
   { news:{ head:'Regulators open review of Con Ed', body:'Analysts call the review routine. Con Ed\'s business risk rises only a little.', tick:'ED · Review opens · Analysts: "routine" · ED' },
-    intro:{ face:'😼', text:'New this round: the gray band. Inside it, moving costs more than it gains. The dashed line shows value after transaction costs.' },
+    intro:{ face:'😼', text:'New this round: the dashed yellow line shows firm value after transaction costs. Where it sits below the curve, changing debt costs you.' },
     hint:'Read past the headline. How much did Con Ed\'s risk really change?',
     why:'The change in risk was too small to matter, and changing the debt level would mean paying transaction costs.',
     tier2:[['The change in risk was too small to matter, and changing the debt level would mean paying transaction costs.',true],
@@ -335,7 +336,7 @@ var ROUNDS = [
            ['Losing customers cuts Charter\'s earnings, so it has less income to shelter from taxes.',false],
            ['Big companies can always carry more debt than small ones.',false]] },
   { news:{ head:'Congress restores the 35% corporate tax rate', body:'Alphabet\'s tax rate goes from about 17% to 35%.', tick:'GOOGL · Tax bill passes · Corporate rate back to 35% · GOOGL' },
-    intro:{ face:'😼', text:'Alphabet has more cash than debt. A lot more. That\'s the zone left of zero.' },
+    intro:{ face:'😼', text:'Alphabet has more cash than debt, so it starts left of zero. See the gray band? Inside it, changing debt costs more than it gains.' },
     hint:'Listen, tax rates just went up. Every dollar of interest saves you more now. You do the math on what that means for debt. I\'ll wait. 😼',
     why:'Interest is tax-deductible, so a higher tax rate makes the tax benefit of debt bigger.',
     tier2:[['Interest is tax-deductible, so a higher tax rate makes the tax benefit of debt bigger.',true],
@@ -384,6 +385,7 @@ function move(pts, wOld, wNew){ var a = at(pts, wOld), b = at(pts, wNew), c = tc
 function bestMove(pts, wOld){ var best = null; for (var i = 0; i < pts.length; i++){ var m = move(pts, wOld, pts[i].w); if (!best || m.net > best.net + 1e-12) best = m; } return best; }
 function worstMove(pts, wOld){ var worst = null; for (var i = 0; i < pts.length; i++){ var m = move(pts, wOld, pts[i].w); if (!worst || m.net < worst.net) worst = m; } return worst; }
 function holdBand(pts){ var lo = null, hi = null; for (var i = 0; i < pts.length; i++){ if (bestMove(pts, pts[i].w).net <= 1e-9){ if (lo === null) lo = pts[i].w; hi = pts[i].w; } } return lo === null ? null : [lo, hi]; }
+function realBand(b){ return b && b[1] - b[0] >= 0.02 - 1e-9 ? b : null; }
 function peak(pts){ return pts.reduce(function(a, p){ return p.V > a.V ? p : a; }); }
 function shareOf(m, best){ var scale = Math.max(best.net, CONFIG.SCORE_FLOOR * best.from.V); return Math.max(0, Math.min(1, 1 - (best.net - m.net) / scale)); }
 
@@ -392,7 +394,7 @@ var MODEL = COMPANIES.map(function(c){
   var bU = unlever(c), wmin = wMin(c), base = { bU:bU, T:c.T, EBIT:c.EBIT, spreadMult:1, wmin:wmin };
   var sh = c.shock, news = { bU:bU * (sh.bUMult || 1), T:sh.T || c.T, EBIT:c.EBIT, spreadMult:sh.spreadMult || 1, MRP:sh.MRP || CONFIG.MRP, wmin:wmin };
   var p0 = buildCurve(base), p1 = buildCurve(news);
-  return { c:c, w0:Math.round(c.ND / (c.ND + c.E) * 100) / 100, p0:p0, p1:p1, band0:holdBand(p0), band1:holdBand(p1), news:news };
+  return { c:c, w0:Math.round(c.ND / (c.ND + c.E) * 100) / 100, p0:p0, p1:p1, band0:realBand(holdBand(p0)), band1:realBand(holdBand(p1)), news:news };
 });
 
 /* ======================= STATE ======================= */
@@ -493,7 +495,7 @@ function chartSVG(o){
   }
   return '<svg viewBox="0 0 ' + CH.W + ' ' + CH.H + '" aria-hidden="true">' + g + '</svg>';
 }
-function legend(items){ return '<div class="legend">' + items.map(function(it){ return '<span><i style="background:' + it[0] + (it[2] ? ';background:repeating-linear-gradient(90deg,' + it[0] + ' 0 4px,transparent 4px 7px)' : '') + '"></i>' + it[1] + '</span>'; }).join('') + '</div>'; }
+function legend(items){ return '<div class="legend">' + items.map(function(it){ var sw = it[3] ? '<i class="box" style="background:' + it[0] + '"></i>' : '<i style="background:' + it[0] + (it[2] ? ';background:repeating-linear-gradient(90deg,' + it[0] + ' 0 4px,transparent 4px 7px)' : '') + '"></i>'; return '<span>' + sw + it[1] + '</span>'; }).join('') + '</div>'; }
 
 /* ======================= SCREENS ======================= */
 function ptsSoFar(){ return S.res.reduce(function(a, r){ return a + (r.p1 || 0) + (r.p2 || 0) + (r.p3 || 0); }, 0); }
@@ -552,7 +554,7 @@ function setScreen(){
   var m = MODEL[S.r], R = ROUNDS[S.r], w = S.w === null ? m.w0 : S.w;
   var guide = S.r === 0 && !S.touched ? mango('😼', 'Three steps, then I step back:<ol><li>Drag the line on the chart to pick a debt level.</li><li>The curve shows firm value at each level. Find where it is highest.</li><li>Moving costs money, so make it worth it. Then confirm.</li></ol>') : '';
   var intro = R.intro && !S.touched ? mango(R.intro.face, R.intro.text) : '';
-  var leg = S.r >= 2 ? legend([['#56E0FF', 'Firm value'], ['#FFD23F', 'After transaction costs', true], ['rgba(201,210,238,.5)', 'Do-nothing band']]) : '';
+  var leg = S.r >= 2 ? legend([['#56E0FF', 'Firm value'], ['#FFD23F', 'After transaction costs', true]].concat(m.band0 ? [['rgba(201,210,238,.5)', 'Do-nothing band', false, true]] : [])) : '';
   var html = topBar() + '<div class="card">' + companyHead(m) +
     '<div class="ask"><span>The board asks</span>Can you create shareholder value by changing how much we borrow?</div>' + companyFacts(m) + '</div>' +
     guide + intro +
@@ -613,7 +615,7 @@ function revealScreen(){
   }
   var unlock = R.unlock ? mango('😼', R.unlock) : '';
   var flat = '';
-  var leg = [['#56E0FF', 'After the news'], ['#7D8BB5', 'Before', true]]; if (S.r >= 2){ leg.push(['#FFD23F', 'After transaction costs', true]); leg.push(['rgba(201,210,238,.5)', 'Do-nothing band']); }
+  var leg = [['#56E0FF', 'After the news'], ['#7D8BB5', 'Before', true]]; if (S.r >= 2){ leg.push(['#FFD23F', 'After transaction costs', true]); if (m.band1) leg.push(['rgba(201,210,238,.5)', 'Do-nothing band', false, true]); }
   return topBar() + '<div class="card chart" id="chartbox"><p class="eyebrow">The reveal</p><h3>The new curve</h3>' +
     chartSVG({ pts:m.p1, wmin:m.p1.wmin, scale:[m.p0, m.p1], ghost:m.p0, today:r.w1, todayLabel:'Plan', you:r.w2, best:best.to.w, band:S.r >= 2 ? m.band1 : null, net:S.r >= 2 ? r.w1 : null, alt:'New firm value curve. Best debt level ' + pc(best.to.w) + '. Your call ' + pc(r.w2) + '.' }) +
     legend(leg) + '<p class="caption">Highest firm value after the news: at <b>' + pc(pk.w) + '</b> debt.</p></div>' +
@@ -756,10 +758,11 @@ function xCurve(){ var x = ui.x; return buildCurve({ bU:x.bU, T:x.stage === 1 ? 
 function xChart(){
   var x = ui.x, keep = COSTS; COSTS = { up:x.up, down:x.down };
   var pts = xCurve(), pk = peak(pts), flat = (pk.V - Math.min.apply(null, pts.map(function(q){ return q.V; }))) < 0.002 * pk.V;
-  var bm = bestMove(pts, SAMPLE.today), band = flat ? null : holdBand(pts);
+  var bm = bestMove(pts, SAMPLE.today), band = flat ? null : realBand(holdBand(pts));
   var start = xStartCurve(), moved = start.some(function(q, i){ return Math.abs(q.V - pts[i].V) > 1e-9; });
   var svg = chartSVG({ pts:pts, wmin:0, scale:[pts], yRange:xAxis(pts), ghost:moved ? start : null, today:SAMPLE.today, best:flat ? undefined : bm.to.w, band:band, alt:'Sample company firm value curve' });
   COSTS = keep;
+  svg += legend([['#56E0FF', 'Firm value now']].concat(moved ? [['#7D8BB5', 'Starting point', true]] : []).concat(band ? [['rgba(201,210,238,.5)', 'Do-nothing band', false, true]] : []));
   return { svg:svg, best:pk, move:bm, flat:flat };
 }
 function xRead(c){
@@ -777,7 +780,6 @@ function exploreScreen(){
       STAGES.map(function(st, i){ return '<button class="' + (x.stage === i + 1 ? 'on' : '') + '" data-act="stage" data-v="' + (i + 1) + '" aria-pressed="' + (x.stage === i + 1) + '"><small>' + (i + 1) + '</small>' + st[0] + '</button>'; }).join('') +
       '</div><p class="small" style="margin:10px 0 0">' + STAGES[x.stage - 1][1] + '</p></div>' +
     '<div class="card chart"><p class="eyebrow">Firm value at every debt level</p><div id="xchart">' + c.svg + '</div>' +
-    legend([['#56E0FF', 'Firm value now'], ['#7D8BB5', 'Starting point', true], ['rgba(201,210,238,.5)', 'Do-nothing band']]) +
     '<p class="caption" id="xread" aria-live="polite">' + xRead(c) + '</p>' +
     '<p class="xsay" id="xsay" aria-live="polite">' + (last ? '<b>' + last.label + ':</b> ' + last.say : 'Move any input below. What it means shows up here.') + '</p>' +
     '</div>' +
