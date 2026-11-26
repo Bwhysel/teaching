@@ -30,7 +30,7 @@ Vocabulary used throughout: debt, debt level, firm value, tax benefit, cost of r
 ---
 
 ## Round 2 — Delta · small decrease
-**News:** Recession fears hit airlines. Lenders now charge Delta about 25% more above the Treasury rate, at every debt level.
+**News:** Recession fears hit airlines. Lenders raise Delta's credit spread by 25% at every debt level. (A credit spread is the extra rate lenders charge above the Treasury rate.)
 **Engine:** spreads ×1.25. Best debt level 68% → 66%.
 
 **Tier 1:** More debt · Less debt ✓ · About the same

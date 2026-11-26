@@ -35,6 +35,8 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--yellow);outline
 .lookback{text-align:center;font-size:.78rem;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--yellow);background:rgba(255,210,63,.08);border:1px solid rgba(255,210,63,.25);border-radius:999px;padding:6px 12px;margin:0 0 12px}
 .xs{padding:10px 0;border-bottom:1px solid var(--line)}.xs:last-of-type{border-bottom:0}
 .xs.off{opacity:.4}
+.xsay{margin:10px 0 0;padding:10px 12px;border-radius:12px;background:rgba(86,224,255,.07);border:1px solid rgba(86,224,255,.22);font-size:.92rem;min-height:3.2em}
+.xs{padding:6px 0}
 .xl{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-weight:700}
 .xl b{font-size:1.1rem;color:var(--cyan)}
 .xs input[type=range]{height:44px}
@@ -271,7 +273,7 @@ var COMPANIES = [
 ];
 
 /* Optional model explorer (tutorial at the start, wrap-up at the end): a sample company. */
-var SAMPLE = { EBIT:10, T:0.21, bU:1.0, RF:CONFIG.RF, MRP:CONFIG.MRP, spreadMult:1 };
+var SAMPLE = { EBIT:10, T:0.21, bU:1.0, RF:CONFIG.RF, MRP:CONFIG.MRP, spreadMult:1, today:0.20, up:CONFIG.COST_UP, down:CONFIG.COST_DOWN };
 
 /* Round copy. Each decision screen stays near 200 words. */
 var ROUNDS = [
@@ -284,7 +286,7 @@ var ROUNDS = [
            ['When stocks get riskier, every company should borrow less.',false],
            ['Lenders cut the rates they charge Nike.',false],
            ['A higher risk premium makes the tax benefit of debt bigger.',false]] },
-  { news:{ head:'Recession fears hit airlines', body:'Lenders now charge Delta about 25% more above the Treasury rate, at every debt level.', tick:'DAL ▼ · Airline bonds slide · Lenders pull back · DAL ▼' },
+  { news:{ head:'Recession fears hit airlines', body:'Lenders raise Delta\'s credit spread by 25% at every debt level. (A credit spread is the extra rate lenders charge above the Treasury rate.)', tick:'DAL ▼ · Airline bonds slide · Lenders pull back · DAL ▼' },
     intro:{ face:'🐱', text:'Purr. Not in the mood. Airlines make me nervous. You take this one.' },
     hint:'Lenders got nervous. When lenders get nervous, they charge more. Your move.',
     why:'Rates now climb a bit faster as Delta borrows, so the cost of rising rates catches up with the tax benefit a little sooner.',
@@ -300,7 +302,7 @@ var ROUNDS = [
            ['Bad news always means a company should cut its debt.',false],
            ['Utilities should always borrow as much as they can because their earnings are steady.',false],
            ['Higher risk always means much less debt.',false]] },
-  { news:{ head:'More customers cancel cable as fiber internet spreads', body:'Lenders now charge Charter about twice as much above the Treasury rate, at every debt level.', tick:'CHTR ▼ · Subscribers leave · Fiber expands · CHTR ▼' },
+  { news:{ head:'More customers cancel cable as fiber internet spreads', body:'Lenders double Charter\'s credit spread at every debt level.', tick:'CHTR ▼ · Subscribers leave · Fiber expands · CHTR ▼' },
     intro:{ face:'😼', text:'Charter borrowed heavily for the Cox merger. Look where "Today" sits on that curve.' },
     hint:'Lenders want more from Charter now. Remember where Charter started.',
     why:'At Charter\'s debt level, the cost of rising rates is far bigger than the tax benefit, even after the cost of issuing new stock.', reflect:true,
@@ -352,7 +354,8 @@ function buildCurve(s){
 }
 function idx(pts, w){ return Math.max(0, Math.min(pts.length - 1, Math.round((w - pts.wmin) * 100))); }
 function at(pts, w){ return pts[idx(pts, w)]; }
-function tcost(Dold, Dnew){ var d = Dnew - Dold; return d >= 0 ? d * CONFIG.COST_UP : -d * CONFIG.COST_DOWN; }
+var COSTS = { up:CONFIG.COST_UP, down:CONFIG.COST_DOWN };   // the explorer swaps these briefly; the game always uses CONFIG
+function tcost(Dold, Dnew){ var d = Dnew - Dold; return d >= 0 ? d * COSTS.up : -d * COSTS.down; }
 function move(pts, wOld, wNew){ var a = at(pts, wOld), b = at(pts, wNew), c = tcost(a.D, b.D); return { from:a, to:b, gain:b.V - a.V, cost:c, net:b.V - a.V - c }; }
 function bestMove(pts, wOld){ var best = null; for (var i = 0; i < pts.length; i++){ var m = move(pts, wOld, pts[i].w); if (!best || m.net > best.net + 1e-12) best = m; } return best; }
 function worstMove(pts, wOld){ var worst = null; for (var i = 0; i < pts.length; i++){ var m = move(pts, wOld, pts[i].w); if (!worst || m.net < worst.net) worst = m; } return worst; }
@@ -501,7 +504,7 @@ function companyFacts(m){
   var pct2 = function(x){ return (x * 100).toFixed(2) + '%'; };
   var btn = function(id){ var open = !!ui.tips[id]; return '<button class="tipbtn" data-act="tip" data-v="' + id + '" aria-expanded="' + open + '" aria-label="' + (open ? 'Hide details' : 'What does this mean?') + '">ⓘ</button>'; };
   var t1 = 'Market value of stock ' + bn(c.E) + '. Net debt (debt minus cash) ' + bn(c.ND) + '. Beta ' + c.beta.toFixed(2) + ' (Yahoo Finance, 5-year monthly). Tax rate from the last full-year 10-K. Operating income (EBIT) ' + bn(c.EBIT) + ' over the last 12 months (' + esc(c.filing) + '). Firm value here comes from the textbook formula, EBIT × (1 − tax rate) ÷ cost of capital. It will not match the stock market\'s value, which also prices in growth.';
-  var t2 = 'Data as of ' + CONFIG.SNAPSHOT + '. Treasury rate ' + pct2(CONFIG.RF) + ' (10-year). Market risk premium ' + pct2(CONFIG.MRP) + ' (Damodaran). Lenders\' rates come from Damodaran\'s rating table: the less a company earns compared with its interest, the lower its credit rating and the more it pays. That is why the curve has kinks. Shareholders\' required return rises with debt (levered beta). Transaction costs: ' + pct2(CONFIG.COST_UP) + ' of debt added (issuing bonds) and ' + pct2(CONFIG.COST_DOWN) + ' of debt paid down (issuing stock), from Lee, Lochhead, Ritter and Zhao (1996).';
+  var t2 = 'Data as of ' + CONFIG.SNAPSHOT + '. Treasury rate ' + pct2(CONFIG.RF) + ' (10-year). Market risk premium ' + pct2(CONFIG.MRP) + ' (Damodaran). Lenders\' rates come from Damodaran\'s rating table: the less a company earns compared with its interest, the lower its credit rating and the higher its credit spread (the extra rate above the Treasury rate). That is why the curve has kinks. Shareholders\' required return rises with debt (levered beta). Transaction costs: ' + pct2(CONFIG.COST_UP) + ' of debt added (issuing bonds) and ' + pct2(CONFIG.COST_DOWN) + ' of debt paid down (issuing stock), from Lee, Lochhead, Ritter and Zhao (1996).';
   return '<div class="facts"><div class="fact"><span>Debt level today</span><b class="num">' + pc(m.w0) + '</b></div><div class="fact"><span>Tax rate</span><b class="num">' + Math.round(c.T * 100) + '%</b></div></div>' +
     '<div class="meta small dim"><span class="nw">Company data' + btn(k1) + '</span><span class="gap"></span><span class="nw">How the model works' + btn(k2) + '</span></div>' +
     (ui.tips[k1] ? '<span class="tip" role="note">' + t1 + '</span>' : '') + (ui.tips[k2] ? '<span class="tip" role="note">' + t2 + '</span>' : '');
@@ -675,39 +678,56 @@ function reflectVeil(){
 var XS = [
   { k:'T', label:'Tax rate', min:0, max:0.40, step:0.01, fmt:function(v){ return Math.round(v * 100) + '%'; },
     say:'Interest is tax-deductible. A higher tax rate makes debt save more tax, so the best debt level rises.' },
-  { k:'spreadMult', label:'What lenders charge', min:0.5, max:3, step:0.05, fmt:function(v){ return '×' + v.toFixed(2); },
-    say:'The extra rate lenders add above the Treasury rate. When lenders charge more, the best debt level falls.' },
+  { k:'spreadMult', label:'Credit spread', min:0.5, max:3, step:0.05, fmt:function(v){ return v.toFixed(2) + '× normal'; },
+    say:'A credit spread is the extra rate lenders charge above the Treasury rate. It grows as the credit rating falls. When spreads rise at every debt level, the best debt level falls.' },
   { k:'RF', label:'Treasury rate', min:0.01, max:0.08, step:0.0025, fmt:function(v){ return (v * 100).toFixed(2) + '%'; },
-    say:'The safe rate everyone starts from. It raises the cost of debt and stock together, so its effect is small and mixed.' },
+    say:'The safe rate everyone starts from. It raises the cost of debt and stock together, so its effect on the best debt level is small and mixed.' },
   { k:'MRP', label:'Market risk premium', min:0.03, max:0.07, step:0.0025, fmt:function(v){ return (v * 100).toFixed(2) + '%'; },
-    say:'The extra return investors want for owning stocks. When it rises, debt looks cheaper, so the best debt level rises.' },
+    say:'The extra return investors want for owning stocks instead of Treasuries. When it rises, debt looks cheaper, so the best debt level rises.' },
   { k:'bU', label:'Business risk (beta)', min:0.3, max:2, step:0.05, fmt:function(v){ return v.toFixed(2); },
-    say:'How much the business swings with the economy. In this model, higher beta raises the best debt level. In real life, riskier companies usually borrow less, because lenders charge them more.' }
+    say:'Beta measures how much the business swings with the economy. In this model, higher beta raises the best debt level. In real life, riskier companies usually borrow less, because lenders charge them more.' },
+  { k:'up', label:'Cost to issue bonds', min:0, max:0.03, step:0.0025, fmt:function(v){ return (v * 100).toFixed(2) + '%'; },
+    say:'Transaction costs are the fees paid to banks and lawyers to raise money. Adding debt means issuing bonds. Bond fees are small next to the gains from adding debt, so in this model they rarely change the best move.' },
+  { k:'down', label:'Cost to issue stock', min:0, max:0.10, step:0.005, fmt:function(v){ return (v * 100).toFixed(1) + '%'; },
+    say:'Paying down debt means issuing new stock, the most expensive way to raise money. Higher stock fees widen the gray do-nothing band above the best debt level: there, cutting debt costs more than it gains.' }
 ];
 function xCurve(){ var x = ui.x; return buildCurve({ bU:x.bU, T:x.perfect ? 0 : x.T, EBIT:SAMPLE.EBIT, spreadMult:x.spreadMult, RF:x.RF, MRP:x.MRP, perfect:x.perfect, wmin:0 }); }
-function xChart(){ var pts = xCurve(), pk = peak(pts), flat = (pk.V - Math.min.apply(null, pts.map(function(q){ return q.V; }))) < 0.002 * pk.V;
-  return { svg:chartSVG({ pts:pts, wmin:0, scale:[pts], best:flat ? undefined : pk.w, alt:'Sample company firm value curve' }), best:pk, flat:flat }; }
-function xRead(c){ return c.flat ? 'Every debt level gives the same firm value: <b>' + bn(c.best.V) + '</b>.' : 'Best debt level: <b class="num">' + pc(c.best.w) + '</b> · firm value <b class="num">' + bn(c.best.V) + '</b>'; }
+function xChart(){
+  var x = ui.x, keep = COSTS; COSTS = { up:x.up, down:x.down };
+  var pts = xCurve(), pk = peak(pts), flat = (pk.V - Math.min.apply(null, pts.map(function(q){ return q.V; }))) < 0.002 * pk.V;
+  var bm = bestMove(pts, SAMPLE.today), band = flat ? null : holdBand(pts);
+  var svg = chartSVG({ pts:pts, wmin:0, scale:[pts], today:SAMPLE.today, best:flat ? undefined : bm.to.w, band:band, net:flat ? null : SAMPLE.today, alt:'Sample company firm value curve' });
+  COSTS = keep;
+  return { svg:svg, best:pk, move:bm, flat:flat };
+}
+function xRead(c){
+  if (c.flat) return 'Every debt level gives the same firm value: <b>' + bn(c.best.V) + '</b>.';
+  return 'Highest firm value at <b class="num">' + pc(c.best.w) + '</b> debt. Best move from today\'s ' + pc(SAMPLE.today) + ', after transaction costs: <b class="num">' + (Math.abs(c.move.to.w - SAMPLE.today) < 0.005 ? 'stay put' : pc(c.move.to.w)) + '</b>.';
+}
 function exploreScreen(){
-  var x = ui.x, c = xChart();
-  var rows = XS.map(function(d){ var v = x[d.k]; return '<div class="xs' + (x.perfect && (d.k === 'T' || d.k === 'spreadMult') ? ' off' : '') + '"><div class="xl"><label for="x-' + d.k + '">' + d.label + '</label><b class="num" id="xv-' + d.k + '">' + d.fmt(v) + '</b></div>' +
-    '<input type="range" id="x-' + d.k + '" data-k="' + d.k + '" min="' + d.min + '" max="' + d.max + '" step="' + d.step + '" value="' + v + '"' + (x.perfect && (d.k === 'T' || d.k === 'spreadMult') ? ' disabled' : '') + ' aria-describedby="xd-' + d.k + '">' +
-    '<p class="small dim" id="xd-' + d.k + '">' + d.say + '</p></div>'; }).join('');
+  var x = ui.x, c = xChart(), off = function(k){ return x.perfect && (k === 'T' || k === 'spreadMult'); };
+  var rows = XS.map(function(d){ var v = x[d.k]; return '<div class="xs' + (off(d.k) ? ' off' : '') + '"><div class="xl"><label for="x-' + d.k + '">' + d.label + '</label><b class="num" id="xv-' + d.k + '">' + d.fmt(v) + '</b></div>' +
+    '<input type="range" id="x-' + d.k + '" data-k="' + d.k + '" min="' + d.min + '" max="' + d.max + '" step="' + d.step + '" value="' + v + '"' + (off(d.k) ? ' disabled' : '') + ' aria-describedby="xd-' + d.k + '"><span class="sr" id="xd-' + d.k + '">' + d.say + '</span></div>'; }).join('');
+  var last = XS.filter(function(d){ return d.k === ui.x.last; })[0];
   return '<div class="card" style="margin-top:16px"><p class="eyebrow">' + (ui.x.from === 'start' ? 'Optional tutorial' : 'Wrap-up') + '</p><h2>How the model works</h2>' +
-    '<p class="small dim">A sample company that earns ' + bn(SAMPLE.EBIT) + ' a year before interest and taxes. Move an input to see how the best debt level changes.</p></div>' +
-    '<div class="card chart"><p class="eyebrow">Firm value at every debt level</p><div id="xchart">' + c.svg + '</div><p class="caption" id="xread" aria-live="polite">' + xRead(c) + '</p>' +
+    '<p class="small dim">A sample company that earns ' + bn(SAMPLE.EBIT) + ' a year before interest and taxes, with ' + pc(SAMPLE.today) + ' debt today. Move an input to see what happens.</p></div>' +
+    '<div class="card chart"><p class="eyebrow">Firm value at every debt level</p><div id="xchart">' + c.svg + '</div>' +
+    legend([['#56E0FF', 'Firm value'], ['#FFD23F', 'After transaction costs', true], ['rgba(201,210,238,.5)', 'Do-nothing band']]) +
+    '<p class="caption" id="xread" aria-live="polite">' + xRead(c) + '</p>' +
+    '<p class="xsay" id="xsay" aria-live="polite">' + (last ? '<b>' + last.label + ':</b> ' + last.say : 'Move any input below. What it means shows up here.') + '</p>' +
     '<button class="wide ' + (x.perfect ? 'btn-go' : 'btn-ghost') + '" data-act="perfect" aria-pressed="' + !!x.perfect + '" style="margin-top:8px">' + (x.perfect ? 'Back to the real world' : 'Try Modigliani and Miller\'s perfect world') + '</button>' +
     (x.perfect ? '<p class="small" style="margin-top:8px">No taxes, and lenders charge every company the Treasury rate, at any debt level. The curve goes flat: no debt level beats another. That is the MM independence idea.</p>' : '') + '</div>' +
-    '<div class="card">' + rows + '<button class="btn-ghost wide" data-act="xreset">Reset all inputs</button></div>' +
+    '<div class="card">' + rows + '<button class="btn-ghost wide" style="margin-top:8px" data-act="xreset">Reset all inputs</button></div>' +
     '<button class="btn-go wide" data-act="xdone">' + (ui.x.from === 'start' ? 'Back to the start' : 'Back to my board review') + '</button>';
 }
-function openExplore(from){ ui.x = { from:from, T:SAMPLE.T, bU:SAMPLE.bU, RF:SAMPLE.RF, MRP:SAMPLE.MRP, spreadMult:SAMPLE.spreadMult, perfect:false }; render('h2'); window.scrollTo(0, 0); }
+function openExplore(from){ ui.x = { from:from, T:SAMPLE.T, bU:SAMPLE.bU, RF:SAMPLE.RF, MRP:SAMPLE.MRP, spreadMult:SAMPLE.spreadMult, up:SAMPLE.up, down:SAMPLE.down, perfect:false, last:null }; render('h2'); window.scrollTo(0, 0); }
 function bindExplore(){
   document.querySelectorAll('input[data-k]').forEach(function(inp){
     inp.addEventListener('input', function(){
       var d = XS.filter(function(q){ return q.k === inp.getAttribute('data-k'); })[0];
-      ui.x[d.k] = +inp.value; document.getElementById('xv-' + d.k).textContent = d.fmt(+inp.value);
+      ui.x[d.k] = +inp.value; ui.x.last = d.k; document.getElementById('xv-' + d.k).textContent = d.fmt(+inp.value);
       var c = xChart(); document.getElementById('xchart').innerHTML = c.svg; document.getElementById('xread').innerHTML = xRead(c);
+      document.getElementById('xsay').innerHTML = '<b>' + d.label + ':</b> ' + d.say;
     });
   });
 }
@@ -874,7 +894,7 @@ try { history.replaceState({ mm:0 }, ''); history.pushState({ mm:1 }, ''); } cat
 window.addEventListener('popstate', function(){ if (ui.x){ ui.x = null; render(); try { history.pushState({ mm:1 }, ''); } catch (e) {} return; } if (doBack()){ try { history.pushState({ mm:1 }, ''); } catch (e) {} } else if (S && S.step !== 'start'){ try { history.pushState({ mm:1 }, ''); } catch (e) {} } });
 
 /* Test hook (no effect on play) */
-window.__MM = { buildCurve:buildCurve, peak:peak, SAMPLE:SAMPLE, CH:CH, CONFIG:CONFIG, MODEL:MODEL, move:move, bestMove:bestMove, worstMove:worstMove, shareOf:shareOf, peak:peak, holdBand:holdBand, state:function(){ return S; } };
+window.__MM = { COSTS:function(){ return COSTS; }, holdBand:holdBand, buildCurve:buildCurve, peak:peak, SAMPLE:SAMPLE, CH:CH, CONFIG:CONFIG, MODEL:MODEL, move:move, bestMove:bestMove, worstMove:worstMove, shareOf:shareOf, peak:peak, holdBand:holdBand, state:function(){ return S; } };
 </script>
 </body>
 </html>
