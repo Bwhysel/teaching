@@ -677,19 +677,19 @@ function reflectVeil(){
 /* ======================= MODEL EXPLORER ======================= */
 var XS = [
   { k:'T', label:'Tax rate', min:0, max:0.40, step:0.01, fmt:function(v){ return Math.round(v * 100) + '%'; },
-    say:'Interest is tax-deductible. A higher tax rate makes debt save more tax, so the best debt level rises.' },
+    say:'The share of profit paid in taxes. Interest is tax-deductible, so the tax rate sets how much each dollar of interest saves.' },
   { k:'spreadMult', label:'Credit spread', min:0.5, max:3, step:0.05, fmt:function(v){ return v.toFixed(2) + '× normal'; },
-    say:'A credit spread is the extra rate lenders charge above the Treasury rate. It grows as the credit rating falls. When spreads rise at every debt level, the best debt level falls.' },
+    say:'A credit spread is the extra rate lenders charge above the Treasury rate. It grows as the credit rating (the colored bar) falls.' },
   { k:'RF', label:'Treasury rate', min:0.01, max:0.08, step:0.0025, fmt:function(v){ return (v * 100).toFixed(2) + '%'; },
-    say:'The safe rate everyone starts from. It raises the cost of debt and stock together, so its effect on the best debt level is small and mixed.' },
+    say:'The rate on U.S. government debt. It is the safe starting point for what lenders and shareholders both charge.' },
   { k:'MRP', label:'Market risk premium', min:0.03, max:0.07, step:0.0025, fmt:function(v){ return (v * 100).toFixed(2) + '%'; },
-    say:'The extra return investors want for owning stocks instead of Treasuries. When it rises, debt looks cheaper, so the best debt level rises.' },
+    say:'The extra return investors want for owning stocks instead of Treasuries. It sets how expensive money from shareholders is.' },
   { k:'bU', label:'Business risk (beta)', min:0.3, max:2, step:0.05, fmt:function(v){ return v.toFixed(2); },
-    say:'Beta measures how much the business swings with the economy. In this model, higher beta raises the best debt level. In real life, riskier companies usually borrow less, because lenders charge them more.' },
+    say:'Beta measures how much the business swings with the economy. Shareholders want a higher return from a business that swings more. (In real life, riskier companies usually borrow less, because lenders charge them more.)' },
   { k:'up', label:'Cost to issue bonds', min:0, max:0.03, step:0.0025, fmt:function(v){ return (v * 100).toFixed(2) + '%'; },
-    say:'Transaction costs are the fees paid to banks and lawyers to raise money. Adding debt means issuing bonds. Bond fees are small next to the gains from adding debt, so in this model they rarely change the best move.' },
+    say:'Transaction costs are the fees paid to banks and lawyers to raise money. Adding debt means issuing bonds.' },
   { k:'down', label:'Cost to issue stock', min:0, max:0.10, step:0.005, fmt:function(v){ return (v * 100).toFixed(1) + '%'; },
-    say:'Paying down debt means issuing new stock, the most expensive way to raise money. Higher stock fees widen the gray do-nothing band above the best debt level: there, cutting debt costs more than it gains.' }
+    say:'Paying down debt means issuing new stock, the most expensive way to raise money.' }
 ];
 function xCurve(){ var x = ui.x; return buildCurve({ bU:x.bU, T:x.perfect ? 0 : x.T, EBIT:SAMPLE.EBIT, spreadMult:x.spreadMult, RF:x.RF, MRP:x.MRP, perfect:x.perfect, wmin:0 }); }
 function xChart(){
@@ -716,7 +716,7 @@ function exploreScreen(){
     '<p class="caption" id="xread" aria-live="polite">' + xRead(c) + '</p>' +
     '<p class="xsay" id="xsay" aria-live="polite">' + (last ? '<b>' + last.label + ':</b> ' + last.say : 'Move any input below. What it means shows up here.') + '</p>' +
     '<button class="wide ' + (x.perfect ? 'btn-go' : 'btn-ghost') + '" data-act="perfect" aria-pressed="' + !!x.perfect + '" style="margin-top:8px">' + (x.perfect ? 'Back to the real world' : 'Try Modigliani and Miller\'s perfect world') + '</button>' +
-    (x.perfect ? '<p class="small" style="margin-top:8px">No taxes, and lenders charge every company the Treasury rate, at any debt level. The curve goes flat: no debt level beats another. That is the MM independence idea.</p>' : '') + '</div>' +
+    (x.perfect ? '<p class="small" style="margin-top:8px">No taxes, and every company borrows at the Treasury rate, at any debt level. What happens to the curve?</p>' : '') + '</div>' +
     '<div class="card">' + rows + '<button class="btn-ghost wide" style="margin-top:8px" data-act="xreset">Reset all inputs</button></div>' +
     '<button class="btn-go wide" data-act="xdone">' + (ui.x.from === 'start' ? 'Back to the start' : 'Back to my board review') + '</button>';
 }
