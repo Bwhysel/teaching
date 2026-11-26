@@ -60,14 +60,17 @@ h1,h2,h3,p,td,th,.bubble,button{overflow-wrap:break-word}
 .mango{display:flex;gap:12px;align-items:flex-start;margin:0 0 14px}
 .mface{flex:0 0 52px;height:52px;border-radius:50%;position:relative;box-shadow:0 0 0 2px #E9B949,0 6px 16px -6px rgba(233,185,73,.6)}
 .mface img{width:100%;height:100%;border-radius:50%;display:block;object-fit:cover}
-.mface .mood{position:absolute;right:-6px;bottom:-4px;font-size:1.05rem;line-height:1;background:#0B1226;border-radius:50%;padding:2px;box-shadow:0 0 0 1.5px #E9B949}
 .bubble{position:relative;background:#FFF7E6;color:#1A1A2B;border-radius:18px 18px 18px 6px;padding:11px 14px;flex:1;font-weight:600;min-width:0;box-shadow:0 10px 26px -14px rgba(0,0,0,.8)}
 .bubble:before{content:"";position:absolute;left:-7px;top:16px;border:8px solid transparent;border-right-color:#FFF7E6;border-left:0}
 .bubble ol{margin:6px 0 0;padding-left:20px}
 .bubble li{margin:2px 0}
 /* chart */
 .chart{position:relative}
-.chart svg{width:100%;height:auto;display:block;touch-action:pan-y;overflow:visible}
+.chart svg{width:100%;height:auto;display:block;overflow:visible}
+.drag{position:relative;touch-action:pan-y;cursor:ew-resize;border-radius:12px;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+.drag:focus-visible{outline:3px solid var(--yellow);outline-offset:4px}
+.chart .readout{margin:4px 0 8px}
+.readout .ph{font-size:1rem;font-weight:700;color:var(--faint);-webkit-text-fill-color:var(--faint);letter-spacing:0}
 .halo{transform-box:fill-box;transform-origin:center;animation:halo 1.8s ease-out infinite}
 @keyframes halo{0%{opacity:.7;transform:scale(.6)}100%{opacity:0;transform:scale(2.2)}}
 .drawn{stroke-dasharray:1600;stroke-dashoffset:1600;animation:draw 1.1s cubic-bezier(.3,.7,.2,1) forwards}
@@ -369,7 +372,7 @@ function bnR(x){ var a = Math.abs(x), v = a >= 10 ? Math.round(a).toLocaleString
 function axisB(x){ var a = Math.abs(x); return '$' + (a >= 100 ? Math.round(x).toLocaleString('en-US') : x.toFixed(0)) + 'B'; }
 function pc(w){ return Math.round(w * 100) + '%'; }
 function pct1(x){ return (x * 100).toFixed(1) + '%'; }
-function mango(face, html){ return '<div class="mango"><div class="mface" aria-hidden="true"><img src="' + ART.face + '" alt=""><span class="mood">' + face + '</span></div><div class="bubble">' + html + '</div></div>'; }
+function mango(face, html){ return '<div class="mango"><div class="mface" aria-hidden="true"><img src="' + ART.face + '" alt=""></div><div class="bubble">' + html + '</div></div>'; }
 function tip(id, text){ var open = !!ui.tips[id]; return '<button class="tipbtn" data-act="tip" data-v="' + id + '" aria-expanded="' + open + '" aria-label="' + (open ? 'Hide details' : 'What does this mean?') + '">ⓘ</button>' + (open ? '<span class="tip" role="note">' + text + '</span>' : ''); }
 
 /* ======================= CHART ======================= */
@@ -440,7 +443,12 @@ function chartSVG(o){
     g += '<rect x="' + f1(lx - wpx / 2) + '" y="' + (ly - 7) + '" width="' + f1(wpx) + '" height="15" rx="7.5" fill="' + mk.color + '"/><text x="' + f1(lx) + '" y="' + (ly + 3.5) + '" fill="' + mk.ink + '" font-size="9" font-weight="800" text-anchor="middle">' + mk.label + '</text>';
     if (!o.veil){ var py = y(at(o.pts, mk.w).V); if (mk.halo) g += '<circle class="halo" cx="' + f1(px) + '" cy="' + f1(py) + '" r="8" fill="none" stroke="' + mk.color + '" stroke-width="2"/>'; g += '<circle cx="' + f1(px) + '" cy="' + f1(py) + '" r="' + (mk.dash ? 4.5 : 6) + '" fill="' + (mk.dash ? '#0B1226' : mk.color) + '" stroke="' + (mk.dash ? mk.color : '#0B1226') + '" stroke-width="2.2"/>'; }
   });
-  return '<svg viewBox="0 0 ' + CH.W + ' ' + CH.H + '" role="img" aria-label="' + esc(o.alt || 'Firm value at each debt level') + '">' + g + '</svg>';
+  if (o.grab !== undefined){
+    var gx = x(o.grab.w), gy = yb - 16, col = o.grab.on ? '#FF8A1F' : '#8C97B8';
+    if (!o.grab.on) g += '<circle class="halo" cx="' + f1(gx) + '" cy="' + gy + '" r="12" fill="none" stroke="#C9D2EE" stroke-width="2"/>';
+    g += '<g class="knob"><rect x="' + f1(gx - 17) + '" y="' + (gy - 11) + '" width="34" height="22" rx="11" fill="' + col + '" stroke="#FFF7E6" stroke-width="2"/><path d="M' + f1(gx - 9) + ' ' + gy + 'l5 -5v10z M' + f1(gx + 9) + ' ' + gy + 'l-5 -5v10z" fill="' + (o.grab.on ? '#231000' : '#0B1226') + '"/></g>';
+  }
+  return '<svg viewBox="0 0 ' + CH.W + ' ' + CH.H + '" aria-hidden="true">' + g + '</svg>';
 }
 function legend(items){ return '<div class="legend">' + items.map(function(it){ return '<span><i style="background:' + it[0] + (it[2] ? ';background:repeating-linear-gradient(90deg,' + it[0] + ' 0 4px,transparent 4px 7px)' : '') + '"></i>' + it[1] + '</span>'; }).join('') + '</div>'; }
 
@@ -483,28 +491,29 @@ function companyFacts(m){
     (ui.tips[k1] ? '<span class="tip" role="note">' + t1 + '</span>' : '') + (ui.tips[k2] ? '<span class="tip" role="note">' + t2 + '</span>' : '');
 }
 
-function sliderBlock(m, w, opts){
-  var lo = Math.round(m.p0.wmin * 100), val = Math.round(w * 100), fill = ((val - lo) / (90 - lo) * 100).toFixed(1) + '%';
-  var vtxt = opts.showValue ? '<div class="v"><span class="lbl">Firm value</span><b class="num" id="vread">' + bn(at(opts.curve, w).V) + '</b></div>' : '';
-  return '<div class="slider' + (S.touched ? '' : ' untouched') + '"><div class="readout"><div><span class="lbl">Debt level</span><b class="num" id="wread">' + val + '%</b></div>' + vtxt + '</div>' +
-    '<label class="sr" for="sl">Debt level, percent of firm value</label>' +
-    '<div class="track" style="--pos:calc(' + fill + ' + (' + (0.5 - (val - lo) / (90 - lo)).toFixed(3) + ' * 36px))"><span class="tipb num" id="tipb" aria-hidden="true">' + val + '%</span>' +
-    '<input id="sl" type="range" min="' + lo + '" max="90" step="1" value="' + val + '" style="--fill:' + fill + '" aria-valuetext="' + val + ' percent debt"></div>' +
-    '<div class="ticks"><span>' + lo + '%</span><span>90%</span></div></div>' +
-    '<div class="row2"><button class="btn-ghost" data-act="keep">' + opts.keepLabel + '</button><button class="btn-go" data-act="confirm"' + (S.touched ? '' : ' disabled') + '>' + (S.touched ? 'Confirm ' + val + '%' : 'Choose a debt level first') + '</button></div>';
+function readout(m, w, curve){
+  var val = Math.round(w * 100);
+  return '<div class="readout"><div><span class="lbl">Debt level</span><b class="num" id="wread">' + (S.touched ? val + '%' : '<span class="ph">Not set</span>') + '</b></div>' +
+    (curve ? '<div class="v"><span class="lbl">Firm value</span><b class="num" id="vread">' + (S.touched ? bn(at(curve, w).V) : '<span class="ph">Not set</span>') + '</b></div>' : '') + '</div>';
 }
+function dragWrap(m, w, svg, extra){
+  var lo = Math.round(m.p0.wmin * 100), val = Math.round(w * 100);
+  return '<div id="drag" class="drag" role="slider" tabindex="0" aria-label="Debt level. Drag across the chart, or use the arrow keys." aria-valuemin="' + lo + '" aria-valuemax="90" aria-valuenow="' + val + '" aria-valuetext="' + (S.touched ? val + ' percent debt' : 'not chosen yet') + '">' + svg + (extra || '') + '</div>' +
+    '<p class="caption" id="draghint">' + (S.touched ? 'Drag the orange line to change it.' : 'Drag the handle, or tap anywhere on the chart, to set your debt level.') + '</p>';
+}
+function buttons(keepLabel, w){ var val = Math.round(w * 100); return '<div class="row2"><button class="btn-ghost" data-act="keep">' + keepLabel + '</button><button class="btn-go" data-act="confirm"' + (S.touched ? '' : ' disabled') + '>' + (S.touched ? 'Confirm ' + val + '%' : 'Choose a debt level first') + '</button></div>'; }
 
-function setChart(m, w){ var showNet = S.r >= 2; return chartSVG({ pts:m.p0, wmin:m.p0.wmin, scale:[m.p0], today:m.w0, you:S.touched ? w : null, band:showNet ? m.band0 : null, net:showNet ? m.w0 : null, draw:!S.touched && !ui.drawn, alt:'Firm value curve for ' + m.c.name + ' at each debt level, today\'s level ' + pc(m.w0) }); }
+function setChart(m, w){ var showNet = S.r >= 2; return chartSVG({ pts:m.p0, wmin:m.p0.wmin, scale:[m.p0], today:m.w0, you:S.touched ? w : null, grab:{ w:S.touched ? w : m.w0, on:S.touched }, band:showNet ? m.band0 : null, net:showNet ? m.w0 : null, draw:!S.touched && !ui.drawn, alt:'Firm value curve for ' + m.c.name + ' at each debt level, today\'s level ' + pc(m.w0) }); }
 function setScreen(){
   var m = MODEL[S.r], R = ROUNDS[S.r], w = S.w === null ? m.w0 : S.w;
-  var guide = S.r === 0 && !S.touched ? mango('😼', 'Three steps, then I step back:<ol><li>Drag the slider to pick a debt level.</li><li>The curve shows firm value at each level. Find the top.</li><li>Moving costs money, so make it worth it. Then confirm.</li></ol>') : '';
+  var guide = S.r === 0 && !S.touched ? mango('😼', 'Three steps, then I step back:<ol><li>Drag the line on the chart to pick a debt level.</li><li>The curve shows firm value at each level. Find the top.</li><li>Moving costs money, so make it worth it. Then confirm.</li></ol>') : '';
   var intro = R.intro && !S.touched ? mango(R.intro.face, R.intro.text) : '';
   var leg = S.r >= 2 ? legend([['#56E0FF', 'Firm value'], ['#FFD23F', 'After transaction costs', true], ['rgba(201,210,238,.5)', 'Do-nothing band']]) : '';
   var html = topBar() + '<div class="card">' + companyHead(m) +
     '<div class="ask"><span>The board asks</span>Can you make our shareholders richer by changing how much we borrow?</div>' + companyFacts(m) + '</div>' +
     guide + intro +
-    '<div class="card chart" id="chartbox"><p class="eyebrow">Firm value at every debt level</p>' + setChart(m, w) + leg +
-    sliderBlock(m, w, { showValue:true, curve:m.p0, keepLabel:'Keep today\'s ' + pc(m.w0) }) + '</div>';
+    '<div class="card chart" id="chartbox"><p class="eyebrow">Firm value at every debt level</p>' + readout(m, w, m.p0) + dragWrap(m, w, setChart(m, w)) + leg +
+    buttons('Keep today\'s ' + pc(m.w0), w) + '</div>';
   ui.drawn = true;
   return html;
 }
@@ -522,14 +531,14 @@ function newsScreen(){
     '<button class="btn-go wide" data-act="tobet">Make your call</button>';
 }
 
-function betChart(m, r, w){ return chartSVG({ pts:m.p0, wmin:m.p0.wmin, scale:[m.p0, m.p1], ghost:m.p0, veil:true, today:r.w1, todayLabel:'Your plan', you:S.touched ? w : null, alt:'Old curve shown dashed. The new curve is hidden.' }); }
+function betChart(m, r, w){ return chartSVG({ pts:m.p0, wmin:m.p0.wmin, scale:[m.p0, m.p1], ghost:m.p0, veil:true, today:r.w1, todayLabel:'Your plan', you:S.touched ? w : null, grab:{ w:S.touched ? w : r.w1, on:S.touched }, alt:'Old curve shown dashed. The new curve is hidden.' }); }
 function betScreen(){
   var m = MODEL[S.r], r = S.res[S.r], w = S.w === null ? r.w1 : S.w;
   return topBar() + '<div class="news compact"><div class="bar"><span class="dot" aria-hidden="true"></span>AFTER THE NEWS<i>Hypothetical</i></div><div class="body"><p style="margin:0"><b>' + esc(ROUNDS[S.r].news.head) + '.</b> ' + esc(ROUNDS[S.r].news.body) + '</p></div></div>' +
     '<div class="card chart" id="chartbox"><p class="eyebrow">Your call</p><h3>Where is the new best debt level?</h3>' +
-    '<div style="position:relative">' + betChart(m, r, w) + '<div class="hidden-veil"><span>New curve hidden</span></div></div>' +
+    readout(m, w, null) + dragWrap(m, w, betChart(m, r, w), '<div class="hidden-veil"><span>New curve hidden</span></div>') +
     legend([['#7D8BB5', 'Curve before the news', true]]) +
-    sliderBlock(m, w, { showValue:false, keepLabel:'Keep my ' + pc(r.w1) }) + '</div>';
+    buttons('Keep my ' + pc(r.w1), w) + '</div>';
 }
 
 function labelFor(share, best, m){
@@ -676,24 +685,37 @@ function runCounters(){
   }
 }
 
-/* Live slider updates without a full re-render, so keyboard focus stays on the slider. */
+/* Drag the line on the chart (pointer) or use arrow keys. Updates in place, so focus and pointer capture survive. */
+function setW(w, deferRender){
+  var m = MODEL[S.r], lo = m.p0.wmin, first = !S.touched;
+  w = Math.round(Math.max(lo, Math.min(CONFIG.W_MAX, w)) * 100) / 100;
+  if (!first && w === S.w) return;
+  S.w = w; S.touched = true;
+  if (first && !deferRender){ render('#drag'); return; }
+  var v = Math.round(w * 100), dg = document.getElementById('drag');
+  var wr = document.getElementById('wread'); if (wr){ wr.textContent = v + '%'; wr.classList.remove('bump'); void wr.offsetWidth; wr.classList.add('bump'); }
+  var vr = document.getElementById('vread'); if (vr) vr.textContent = bn(at(m.p0, w).V);
+  var btn = document.querySelector('[data-act=confirm]'); if (btn){ btn.disabled = false; btn.textContent = 'Confirm ' + v + '%'; }
+  if (dg){ dg.setAttribute('aria-valuenow', v); dg.setAttribute('aria-valuetext', v + ' percent debt'); var old = dg.querySelector('svg'), tmp = document.createElement('div'); tmp.innerHTML = S.step === 'set' ? setChart(m, w) : betChart(m, S.res[S.r], w); old.replaceWith(tmp.firstChild); }
+  if (navigator.vibrate && v % 10 === 0) try { navigator.vibrate(4); } catch (e) {}
+}
+function wFromX(dg, clientX){
+  var m = MODEL[S.r], svg = dg.querySelector('svg'), r = svg.getBoundingClientRect();
+  var vx = (clientX - r.left) / r.width * CH.W, xr = CH.W - CH.R;
+  return m.p0.wmin + (vx - CH.L) / (xr - CH.L) * (CONFIG.W_MAX - m.p0.wmin);
+}
 function bindSlider(){
-  var sl = document.getElementById('sl'); if (!sl) return;
-  var onInput = function(){
-    var v = +sl.value, w = v / 100, m = MODEL[S.r], first = !S.touched;
-    S.w = w; S.touched = true;
-    if (first){ render('#sl'); return; }
-    var lo = +sl.min; sl.style.setProperty('--fill', ((v - lo) / (90 - lo) * 100).toFixed(1) + '%'); sl.setAttribute('aria-valuetext', v + ' percent debt');
-    var wr = document.getElementById('wread'); if (wr){ wr.textContent = v + '%'; wr.classList.remove('bump'); void wr.offsetWidth; wr.classList.add('bump'); }
-    var vr = document.getElementById('vread'); if (vr) vr.textContent = bn(at(m.p0, w).V);
-    var btn = document.querySelector('[data-act=confirm]'); if (btn){ btn.disabled = false; btn.textContent = 'Confirm ' + v + '%'; }
-    var frac = (v - lo) / (90 - lo), trk = sl.parentNode; trk.style.setProperty('--pos', 'calc(' + (frac * 100).toFixed(1) + '% + (' + (0.5 - frac).toFixed(3) + ' * 36px))');
-    var tb = document.getElementById('tipb'); if (tb) tb.textContent = v + '%';
-    var box = document.querySelector('#chartbox svg');
-    if (box){ var tmp = document.createElement('div'); tmp.innerHTML = S.step === 'set' ? setChart(m, w) : betChart(m, S.res[S.r], w); box.replaceWith(tmp.firstChild); }
-    if (navigator.vibrate && v % 10 === 0) try { navigator.vibrate(4); } catch (e) {}
-  };
-  sl.addEventListener('input', onInput);
+  var dg = document.getElementById('drag'); if (!dg) return;
+  var dragging = false, wasFirst = false;
+  dg.addEventListener('pointerdown', function(e){ dragging = true; wasFirst = !S.touched; try { dg.setPointerCapture(e.pointerId); } catch (x) {} setW(wFromX(dg, e.clientX), true); });
+  dg.addEventListener('pointermove', function(e){ if (dragging) setW(wFromX(dg, e.clientX), true); });
+  var end = function(){ if (!dragging) return; dragging = false; save(); if (wasFirst){ wasFirst = false; render('#drag'); } };
+  dg.addEventListener('pointerup', end); dg.addEventListener('pointercancel', end);
+  dg.addEventListener('keydown', function(e){
+    var m = MODEL[S.r], cur = S.touched ? S.w : (S.step === 'set' ? m.w0 : S.res[S.r].w1), d = { ArrowLeft:-0.01, ArrowDown:-0.01, ArrowRight:0.01, ArrowUp:0.01, PageDown:-0.1, PageUp:0.1 }[e.key];
+    if (e.key === 'Home') d = m.p0.wmin - cur; if (e.key === 'End') d = CONFIG.W_MAX - cur;
+    if (d === undefined) return; e.preventDefault(); setW(cur + d, false); save();
+  });
 }
 
 /* ======================= ACTIONS ======================= */
@@ -748,7 +770,7 @@ document.addEventListener('keydown', function(e){ if (e.key === 'Enter' && e.tar
 (function(){ var s = load(); if (s && s.step && s.step !== 'start' && s.step !== 'done'){ S = null; } render(); })();
 
 /* Test hook (no effect on play) */
-window.__MM = { CONFIG:CONFIG, MODEL:MODEL, move:move, bestMove:bestMove, worstMove:worstMove, shareOf:shareOf, peak:peak, holdBand:holdBand, state:function(){ return S; } };
+window.__MM = { CH:CH, CONFIG:CONFIG, MODEL:MODEL, move:move, bestMove:bestMove, worstMove:worstMove, shareOf:shareOf, peak:peak, holdBand:holdBand, state:function(){ return S; } };
 </script>
 </body>
 </html>

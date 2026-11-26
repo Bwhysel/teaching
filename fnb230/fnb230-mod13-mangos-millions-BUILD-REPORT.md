@@ -27,7 +27,7 @@ Target outcomes: all five held (small up / small down / no change / big down / b
 | Mango tells | Pass. Reliable throughout; the one not-in-the-mood moment (Round 2) uses 🐱 and says so. |
 | Reflection moment | Pass. Charter reveal opens a held screen; Continue is disabled for 4 seconds; a fast tap during the hold does not skip it. |
 | Results page | Pass. Score, label, per-round table, best/safe/worst line, screenshot ⓘ with five platforms. |
-| Accessibility | Pass. All buttons and the slider ≥ 44px. Slider fully keyboard-operable; focus stays on the slider after each change; Tab + Enter confirms. Native range input with `aria-valuetext`. Contrast not machine-checked (see below). |
+| Accessibility | Pass. All buttons and the slider ≥ 44px. Chart drag control fully keyboard-operable (role="slider", arrow keys, Page Up/Down, Home/End); focus stays on the chart after each change; Tab + Enter confirms. Touch tap and mouse drag tested. Contrast not machine-checked (see below). |
 | Reading load | Pass. Words per screen at 360px: 85–168 (highest: Delta reveal, 168). |
 | Layout | Pass. No sideways scrolling at 320px or 360px on any screen tested. |
 | Single file / offline | Pass. No `script src`, `link`, or `img` references; system fonts only. |
@@ -55,7 +55,9 @@ Target outcomes: all five held (small up / small down / no change / big down / b
 6. **Risk-free rate is the 10-year Treasury** (brief), while Lasher p. 623 uses short-term T-bills. Brett chose to keep the 10-year.
 7. **No sound.** Web Audio is optional (§1); "juice" is visual (slider bump, live chart marker, count-ups, curve morph, news flash).
 8. **Credit-rating strip under the chart from Round 1** (visual pass, Nov 25). It explains the kinks the moment students see them. It adds one more thing to read in the guided round; remove or delay it if play-testing shows overload (spec §4, progressive disclosure).
-9. **Name field on the start page**, so the screenshot identifies the student (as in Leverage Legends).
+9. **No slider: students drag (or tap) the line on the chart** (Brett, Nov 26). The chart is an ARIA slider: arrow keys, Page Up/Down, Home/End. Vertical page scroll still works on phones (touch-action: pan-y).
+10. **No mood emoji on Mango's avatar** (Brett, Nov 26). Spec §7 asks for emoji tells; Mango is reliable here, and her one not-in-the-mood moment says so in words ("Purr. Not in the mood…").
+11. **Name field on the start page**, so the screenshot identifies the student (as in Leverage Legends).
 
 ## Still unverified or limited
 

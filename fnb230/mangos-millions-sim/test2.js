@@ -32,8 +32,8 @@ const FILE = 'file:///home/user/teaching/fnb230/fnb230-mod13-mangos-millions.htm
   console.log(ex.join('\n'));
   // 2. Keyboard: focus stays on slider across first input re-render
   await p.fill('#nm', 'Keys'); await p.click('[data-act=start]');
-  await p.focus('#sl'); await p.keyboard.press('ArrowRight'); await p.keyboard.press('ArrowRight'); await p.keyboard.press('ArrowRight');
-  const kb = await p.evaluate(() => ({ focus: document.activeElement && document.activeElement.id, val: document.getElementById('sl').value, btn: document.querySelector('[data-act=confirm]').textContent }));
+  await p.focus('#drag'); await p.keyboard.press('ArrowRight'); await p.keyboard.press('ArrowRight'); await p.keyboard.press('ArrowRight');
+  const kb = await p.evaluate(() => ({ focus: document.activeElement && document.activeElement.id, val: document.getElementById('drag').getAttribute('aria-valuenow'), btn: document.querySelector('[data-act=confirm]').textContent }));
   console.log('keyboard:', JSON.stringify(kb));
   // Tab to confirm and press Enter
   await p.keyboard.press('Tab'); await p.keyboard.press('Tab'); await p.keyboard.press('Enter');
