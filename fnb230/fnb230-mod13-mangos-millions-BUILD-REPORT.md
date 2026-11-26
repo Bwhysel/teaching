@@ -1,6 +1,6 @@
 # M&M: Mango's Millions — build report
 
-**File:** `fnb230/fnb230-mod13-mangos-millions.html` (single file, no external dependencies). **Built:** Nov 25, 2026. **Status:** first build, ready for Brett's play-test. Not merged to `main`, not uploaded to decisionfish.com.
+**File:** `fnb230/fnb230-mod13-mangos-millions.html` (single file, no external dependencies). **Built:** Nov 25, 2026; final review Nov 26, 2026. **Status:** final review complete, ready for Brett's play-test and publishing. Not merged to `main`, not uploaded to decisionfish.com.
 
 Inputs and sources: `fnb230-mod13-mangos-millions-INPUTS.md`. Decisions: brief §17. Questions: `fnb230-mod13-mangos-millions-MCQ-DRAFT.md`. Engine and test scripts: `fnb230/mangos-millions-sim/`.
 
@@ -28,7 +28,7 @@ Target outcomes: all five held (small up / small down / no change / big down / b
 | Reflection moment | Pass. Charter reveal opens a held screen; Continue is disabled for 4 seconds; a fast tap during the hold does not skip it. |
 | Results page | Pass. Score, label, per-round table, best/safe/worst line, screenshot ⓘ with five platforms. |
 | Accessibility | Pass. All buttons and the slider ≥ 44px. Chart drag control fully keyboard-operable (role="slider", arrow keys, Page Up/Down, Home/End); focus stays on the chart after each change; Tab + Enter confirms. Touch tap and mouse drag tested. Contrast not machine-checked (see below). |
-| Reading load | Pass. Words per screen at 360px: 85–168 (highest: Delta reveal, 168). |
+| Reading load | Pass. Words per game screen at 360px: 71–164 (highest: Nike reveal, 164, now with breakdown and required-return row). Optional explorer ~205 words. |
 | Layout | Pass. No sideways scrolling at 320px or 360px on any screen tested. |
 | Single file / offline | Pass. No `script src`, `link`, or `img` references; system fonts only. |
 | Edge cases | Pass. Double-tap on Confirm plays one round. Reload mid-game offers "Continue where you left off" at the same step. Reduced motion shows final values at once and skips curve animation. |
@@ -71,6 +71,24 @@ Target outcomes: all five held (small up / small down / no change / big down / b
 - **The model says Nike, Delta and Alphabet should hold 63–68% debt.** Real levels are about 0–15%. Mango's debrief line addresses this.
 - **Contrast** was chosen to pass AA (light text on dark navy, dark text on cream) but not machine-measured.
 - **Screen reader** behavior not tested with VoiceOver/TalkBack.
+
+## Final review (Nov 26, 2026)
+
+**Checks run and passed:** JavaScript syntax; best play 100/100; stay put 39; fast tapper 14; all 45,265 choice paths with the best path equal to the rule path in all five rounds; personas (debt-is-free 27, debt-is-dangerous 29, timid 74, overshooter 64, direction-only 48, with all reasons right); keyboard on the chart and explorer sliders; touch tap; reload resume; double-tap; read-only Back with locked choices; browser back stays in game; reduced motion; no external files; no sideways scroll at 320/360px; 44px targets; explorer stages, locked axis, reset keeping the step.
+
+**Full text read** of every screen and feedback branch (best, stay-put and wrong-answer playthroughs, explorer). Fixed in this pass: a correct hold at Con Ed with a wrong reason was told "The market fooled you" (now "Right call, but that's not the reason"); Nike's −1% start was unexplained in the guided round (now in its description).
+
+**Learning objectives**
+| SLO | Where it lives | Status |
+|---|---|---|
+| 1. Firm value and capital structure | Every chart; breakdown in every reveal (tax benefit, cost of rising rates, transaction costs); explorer | Built |
+| 2. MM Independence Hypothesis | Explorer step 1 (flat curve); debrief Mango line | Feel built; paraphrase left to assignment |
+| 3. Taxes in MM; M&A premiums | Alphabet tax round; tax benefit row; explorer step 2 | Taxes built; M&A link left to the LBO assignment question (Brett, Nov 26) |
+| 4. Optimal structure with levered beta | Engine uses Hamada every round; every reveal now shows shareholders' required return and levered beta, plan → call | Feel built, numbers visible; calculation left to Queens Quality question |
+
+**Decided in the final review (Brett):** add the required-return/levered-beta row (SLO 4); leave M&A to the assignment (SLO 3); shorter Alphabet hint; keep the model's deal size on the deal toy (Alphabet best play shows $1,167 billion; Charter's paydown ~$25B vs. $107B real, a consequence of model firm value below market).
+
+**Likely student reactions to watch in class:** surprise that the model wants 60–90% debt (Mango's debrief line addresses it); the very large Alphabet numbers; Nike as the heaviest-reading round; the chart drag on small phones.
 
 ## Publishing (§14), not done yet
 
