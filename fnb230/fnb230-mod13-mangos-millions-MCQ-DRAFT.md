@@ -94,36 +94,36 @@ Vocabulary used throughout: debt, debt level, firm value, tax benefit, cost of r
 
 ---
 
-## Current "Why?" options (Nov 26, lengths evened out; Brett approved)
+## Current "Why?" options (Nov 26, rewritten for clarity; lengths may differ)
 
-The correct answer is never the longest option. Order is shuffled on screen.
+One plain idea per answer, same vocabulary as the game. Order is shuffled on screen.
 
 **Nike**
-- ✓ Shareholders now demand a higher return, so debt is a little cheaper by comparison, and a bit more debt pays off.
-- ✗ When investors get nervous about stocks, every company should borrow less, because debt makes its stock even riskier.
-- ✗ Lenders cut the rates they charge Nike at every debt level, so borrowing more became cheaper and added more value to Nike.
-- ✗ A higher risk premium makes each dollar of interest save more tax, so the tax benefit of debt grows.
+- ✓ Shareholders want a higher return, so debt is now cheaper by comparison.
+- ✗ When investors are nervous about stocks, every company should borrow less.
+- ✗ Lenders cut the rates they charge Nike.
+- ✗ A higher risk premium makes the tax benefit of debt bigger.
 
 **Delta**
-- ✓ Delta's credit spread is higher at every debt level, so the cost of rising rates catches up with the tax benefit sooner.
-- ✗ Higher rates mean more interest to deduct, so the tax benefit grows faster than the cost, and Delta should borrow more.
-- ✗ In a recession, a company should borrow more money to get through the slow months, even if lenders charge more.
-- ✗ The tax rate went down, so each dollar of debt saves less tax, and Delta should borrow a little less than before.
+- ✓ Delta's higher credit spread makes the cost of rising rates catch up with the tax benefit sooner.
+- ✗ Higher rates mean more interest to deduct, so the tax benefit grows and Delta should borrow more.
+- ✗ In a recession, a company should borrow more to get through it.
+- ✗ The tax rate went down, so debt saves less tax.
 
 **Con Edison**
-- ✓ The news barely changed the balance between the tax benefit and the cost of rising rates, and moving would cost money.
-- ✗ Bad news about a company always means it should cut its debt right away, before lenders start charging it more for every dollar.
-- ✗ Utilities should always borrow as much as they can, because steady earnings mean lenders never raise their rates.
-- ✗ Higher business risk always means a company should hold much less debt, no matter how small the change in risk is.
+- ✓ The change in risk was too small to matter, and moving would cost money.
+- ✗ Any bad news means a company should cut its debt.
+- ✗ Utilities should borrow as much as they can, because their earnings are steady.
+- ✗ More business risk always means much less debt.
 
 **Charter**
-- ✓ With its credit spread doubled, Charter's cost of rising rates far outweighs its tax benefit, even after the cost of issuing stock.
-- ✗ Charter should keep its debt, because issuing new stock to pay it down would cost more than all the value it adds back.
-- ✗ Losing customers cuts Charter's earnings, so it has less income to protect from taxes, and the tax benefit shrinks.
-- ✗ Big companies like Charter can always carry more debt than small ones, so its debt level was already about right.
+- ✓ At Charter's debt level, the cost of rising rates now far outweighs the tax benefit.
+- ✗ Issuing new stock to pay down debt costs more than it gains, so Charter should keep its debt.
+- ✗ Losing customers cuts Charter's earnings, so it has less income to shelter from taxes.
+- ✗ Big companies can always carry more debt than small ones.
 
 **Alphabet**
-- ✓ A higher tax rate makes each dollar of debt save more tax, so more debt pays off before rising rates catch up.
-- ✗ Higher taxes leave Alphabet with less cash after taxes, so it should borrow less to keep its interest payments safe.
-- ✗ Alphabet has so much cash that it never needs to borrow, so a change in the tax rate cannot affect its best debt level.
-- ✗ Higher taxes push up interest rates and credit spreads for every company, so borrowing more becomes too expensive.
+- ✓ A higher tax rate makes each dollar of debt save more tax.
+- ✗ Higher taxes leave Alphabet less cash, so it should borrow less.
+- ✗ Alphabet has so much cash that it never needs to borrow.
+- ✗ Higher taxes push interest rates up.
