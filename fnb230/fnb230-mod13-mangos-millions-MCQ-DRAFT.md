@@ -91,3 +91,39 @@ Vocabulary used throughout: debt, debt level, firm value, tax benefit, cost of r
 1. Is 2 of 5 points the right partial credit for tier 1 only?
 2. Are these the misconceptions you see most in FNB 230? Replace any that don't match your students.
 3. Debrief: add one line on what the model leaves out (flexibility, signaling, rating targets), since it says these companies should borrow far more than they do?
+
+---
+
+## Current "Why?" options (Nov 26, lengths evened out; Brett approved)
+
+The correct answer is never the longest option. Order is shuffled on screen.
+
+**Nike**
+- ✓ Shareholders now demand a higher return, so debt is a little cheaper by comparison, and a bit more debt pays off.
+- ✗ When investors get nervous about stocks, every company should borrow less, because debt makes its stock even riskier.
+- ✗ Lenders cut the rates they charge Nike at every debt level, so borrowing more became cheaper and added more value to Nike.
+- ✗ A higher risk premium makes each dollar of interest save more tax, so the tax benefit of debt grows.
+
+**Delta**
+- ✓ Delta's credit spread is higher at every debt level, so the cost of rising rates catches up with the tax benefit sooner.
+- ✗ Higher rates mean more interest to deduct, so the tax benefit grows faster than the cost, and Delta should borrow more.
+- ✗ In a recession, a company should borrow more money to get through the slow months, even if lenders charge more.
+- ✗ The tax rate went down, so each dollar of debt saves less tax, and Delta should borrow a little less than before.
+
+**Con Edison**
+- ✓ The news barely changed the balance between the tax benefit and the cost of rising rates, and moving would cost money.
+- ✗ Bad news about a company always means it should cut its debt right away, before lenders start charging it more for every dollar.
+- ✗ Utilities should always borrow as much as they can, because steady earnings mean lenders never raise their rates.
+- ✗ Higher business risk always means a company should hold much less debt, no matter how small the change in risk is.
+
+**Charter**
+- ✓ With its credit spread doubled, Charter's cost of rising rates far outweighs its tax benefit, even after the cost of issuing stock.
+- ✗ Charter should keep its debt, because issuing new stock to pay it down would cost more than all the value it adds back.
+- ✗ Losing customers cuts Charter's earnings, so it has less income to protect from taxes, and the tax benefit shrinks.
+- ✗ Big companies like Charter can always carry more debt than small ones, so its debt level was already about right.
+
+**Alphabet**
+- ✓ A higher tax rate makes each dollar of debt save more tax, so more debt pays off before rising rates catch up.
+- ✗ Higher taxes leave Alphabet with less cash after taxes, so it should borrow less to keep its interest payments safe.
+- ✗ Alphabet has so much cash that it never needs to borrow, so a change in the tax rate cannot affect its best debt level.
+- ✗ Higher taxes push up interest rates and credit spreads for every company, so borrowing more becomes too expensive.
