@@ -285,7 +285,7 @@ var CONFIG = {
 
 /* Company inputs. $ billions. Sources: Yahoo Finance quote pages (market value, 5Y monthly beta) and latest SEC filings. */
 var COMPANIES = [
-  { id:'NKE', name:'Nike', what:'Sneakers and sportswear', E:54.45, ND:-0.475, beta:1.03, T:0.203, EBIT:3.853, filing:'10-Q, Aug 31, 2026',
+  { id:'NKE', name:'Nike', what:'Sneakers and sportswear. Nike has a little more cash than debt, so it starts just left of zero.', E:54.45, ND:-0.475, beta:1.03, T:0.203, EBIT:3.853, filing:'10-Q, Aug 31, 2026',
     shock:{ MRP:0.0491 } },       // small increase
   { id:'DAL', name:'Delta Air Lines', what:'Airline. Planes cost a lot, and travel drops in bad times', E:54.57, ND:8.318, beta:1.42, T:0.191, EBIT:5.286, filing:'10-Q, Sep 30, 2026',
     shock:{ spreadMult:1.25 } },  // small decrease
@@ -625,14 +625,14 @@ function revealScreen(){
     '<button class="btn-go wide" data-act="toexplain">Explain what happened</button>';
 }
 
-function readRight(i){ var m = MODEL[i], r = S.res[i], best = bestMove(m.p1, r.w1), db = best.to.w - r.w1, dy = r.w2 - r.w1; return Math.abs(db) < 0.005 ? Math.abs(dy) <= CONFIG.HOLD_TOL : db * dy > 0; }
+function readRight(i){ var m = MODEL[i], r = S.res[i], best = bestMove(m.p1, r.w1), db = best.to.w - r.w1, dy = r.w2 - r.w1; return Math.abs(db) <= CONFIG.HOLD_TOL + 1e-9 ? Math.abs(dy) <= CONFIG.HOLD_TOL + 1e-9 : db * dy > 0; }
 function explainScreen(){
   var R = ROUNDS[S.r], r = S.res[S.r], done = r.p3 !== undefined;
   var t2 = r.order.map(function(i){ var o = R.tier2[i], on = r.t2 === i; var cls = done ? (o[1] ? ' right' : on ? ' wrong' : '') : ''; return '<button class="opt' + cls + '" data-act="t2" data-v="' + i + '" aria-pressed="' + on + '"' + (done ? ' disabled' : '') + '>' + esc(o[0]) + '</button>'; }).join('');
   var fb = '';
   if (done){
     var read = readRight(S.r), ok = R.tier2[r.t2][1];
-    var msg = ok && read ? 'Right call and right reason.' : ok ? 'Right reason, but your debt level didn\'t follow it all the way. Next time, move as far as the reason says.' : read ? 'You moved the right way, but that\'s not the reason. Here\'s the real one: ' + esc(R.why) : 'The market fooled you on that one. Here\'s what happened: ' + esc(R.why);
+    var msg = ok && read ? 'Right call and right reason.' : ok ? 'Right reason, but your debt level didn\'t follow it all the way. Next time, move as far as the reason says.' : read ? 'Right call, but that\'s not the reason. Here\'s the real one: ' + esc(R.why) : 'The market fooled you on that one. Here\'s what happened: ' + esc(R.why);
     fb = mango(ok ? '😸' : '😼', msg + ' <b>+' + r.p3 + ' pts</b>') +
       '<button class="btn-go wide" data-act="next">' + (S.r < 4 ? 'Next boardroom' : 'See the debrief') + '</button>';
   }
